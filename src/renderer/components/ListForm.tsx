@@ -59,7 +59,7 @@ export default function ListForm({
         maxLength={100}
       />
       {error && (
-        <div className="form-error" data-testid="list-form-error">
+        <div className="form-error" role="alert" aria-live="polite" data-testid="list-form-error">
           {error}
         </div>
       )}

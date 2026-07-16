@@ -20,3 +20,15 @@
 - Root cause unclear — may be a caching issue or the tasks state not refreshing on list change.
 - Not blocking T6 (visual redesign), but should be investigated in a future task.
 - E2E test for T6 skips list scoping verification due to this bug.
+
+## [2026-07-16] Task: T6 — List scoping bug claim CORRECTED
+- Initial T6 report suspected a pre-existing board-view list-scoping bug and skipped the scoping assertion.
+- Follow-up verification: existing `src/__tests__/e2e/quadrant.spec.ts` test "switching lists while in board view hides tasks from the previously selected list" PASSES after T6.
+- Conclusion: no reproducible scoping bug; the T6 failure-evidence screenshot (hover actions) is acceptable, but the issue note is retracted.
+
+## [2026-07-16] Task: T7 — search-filter e2e test pre-existing failure
+- `search-filter.spec.ts` "shows empty state when no results match" looks for `.task-list-empty-text` class.
+- T5 renamed the empty state class to `.tasklist-card-text` (card treatment).
+- The test selector was not updated in T5, causing a pre-existing failure.
+- Not caused by T7 changes; should be fixed in a future cleanup task.
+- `integration.spec.ts` packaged app test remains a pre-existing failure (documented above).

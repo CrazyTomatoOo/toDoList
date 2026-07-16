@@ -217,3 +217,64 @@
 - e2e: 1/1 passed (task6-quadrant-screenshots.spec.ts)
 - Evidence: `.omo/evidence/ui-redesign/task-6-quadrant.png` (board view with 4 tasks in correct quadrants)
 - Evidence: `.omo/evidence/ui-redesign/task-6-quadrant-failure.png` (task with hover state showing action buttons)
+
+## [2026-07-16 20:30:00] Task: T7 - Form Redesign
+
+**Modal a11y (TaskForm.tsx):**
+- Added `role="dialog"`, `aria-modal="true"`, `aria-labelledby="task-form-title-heading"` to `.modal-overlay`
+- Gave the `<h2>` an `id="task-form-title-heading"` for `aria-labelledby`
+- Added `aria-label="Close"` to the close button (Lucide X icon, already integrated in T2)
+- Wrapped form content in `.modal-body` div for proper scroll containment
+- Moved top-level error above the form into `.form-error-top` banner with `role="alert"` and `aria-live="polite"`
+- Added `aria-invalid` to title input when title validation fails
+
+**Focus trap implementation:**
+- `useEffect` stores `document.activeElement` as `triggerRef.current` on mount
+- On mount, focuses first focusable element in modal via `requestAnimationFrame`
+- `keydown` listener on `document` handles:
+  - `Escape` → calls `onCancel()`
+  - `Tab` at last focusable → wraps to first; `Shift+Tab` at first → wraps to last
+- Cleanup restores focus to `triggerRef.current` (the element that opened the modal)
+- Overlay click handler uses `e.target === e.currentTarget` to only close on backdrop click
+
+**Field-level error announcements:**
+- TaskForm: top-level error uses `role="alert"` + `aria-live="polite"` in `.form-error-top` banner
+- TaskForm: recurrence error uses `role="alert"` + `aria-live="polite"` in `.form-error` div
+- DurationFields: duration error uses `role="alert"` + `aria-live="polite"` in `.form-error` div
+- ListForm: error uses `role="alert"` + `aria-live="polite"` in `.form-error` div
+
+**CSS restyling (styles.css):**
+- `.modal-overlay`: added `backdrop-filter: blur(2px)`, darker scrim (0.45), fade-in animation
+- `.modal-content`: added border, flex column layout, slide-up entrance animation, 520px width
+- `.modal-header`: added padding, border-bottom separator, flex-shrink: 0
+- Added `.modal-body`: padding, overflow-y: auto, flex: 1 for scroll containment
+- `.form-label`: changed color from `--color-text-secondary` to `--color-text-primary` for stronger hierarchy
+- `.form-input`: added explicit padding, font-size, line-height, border, border-radius, hover/focus/disabled states, placeholder styling
+- Added `.form-select` with matching padding and font-size
+- `.form-textarea`: added explicit padding, font-size, line-height
+- `input[type="datetime-local"]` and `input[type="date"]`: added `appearance: none` for consistent look
+- `.form-error`: added flex layout with gap, line-height
+- Added `.form-error-top`: banner-style error with danger-light bg, border, border-radius
+- `.form-actions`: added border-top separator, changed margin-top to smaller value
+- Added `.modal-content button:focus-visible` for keyboard navigation ring
+
+**Test changes:**
+- Zero unit test changes — all 217 tests pass
+- Created new e2e spec: `task7-form-screenshots.spec.ts`
+  - Opens task form via keyboard (Enter on Add Task button)
+  - Verifies `role="dialog"` and `aria-modal="true"` attributes
+  - Closes with Escape, reopens with mouse click
+  - Enters invalid dates (start > end), submits, verifies field-level error with `role="alert"` and `aria-live="polite"`
+  - Captures success and failure screenshots
+
+**Pre-existing e2e failures (not caused by T7):**
+- `integration.spec.ts` — packaged app test (documented in issues.md)
+- `search-filter.spec.ts` "shows empty state when no results match" — looking for `.task-list-empty-text` class that was renamed to `.tasklist-card-text` in T5
+
+**Verification:**
+- typecheck: exit 0
+- lint: exit 0
+- tests: 217/217 passed
+- e2e: 57/59 passed (2 pre-existing failures)
+- Evidence: `.omo/evidence/ui-redesign/task-7-form.png` (task form modal with Feishu styling)
+- Evidence: `.omo/evidence/ui-redesign/task-7-form-failure.png` (field-level validation error for invalid dates)

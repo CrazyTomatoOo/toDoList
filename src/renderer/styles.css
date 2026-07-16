@@ -810,34 +810,60 @@ select:focus {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 100;
+  animation: modal-overlay-in var(--transition-fast, 150ms) ease;
+}
+
+@keyframes modal-overlay-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .modal-content {
   background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border-light, #e5e6eb);
   border-radius: var(--border-radius-xl, 12px);
-  box-shadow: var(--shadow-lg);
-  width: 480px;
+  box-shadow: var(--shadow-lg, 0 8px 24px rgba(29, 33, 41, 0.12));
+  width: 520px;
   max-width: 90vw;
-  max-height: 80vh;
-  overflow-y: auto;
-  padding: var(--space-6, 24px);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modal-content-in var(--transition-fast, 150ms) ease;
+}
+
+@keyframes modal-content-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: var(--space-5, 20px);
+  padding: var(--space-5, 20px) var(--space-6, 24px);
+  border-bottom: 1px solid var(--color-border-light, #e5e6eb);
+  flex-shrink: 0;
 }
 
 .modal-header h2 {
   font-size: var(--font-size-lg, 18px);
   font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-primary, #1d2129);
+  margin: 0;
+  line-height: var(--line-height-tight, 1.25);
+}
+
+.modal-body {
+  padding: var(--space-6, 24px);
+  overflow-y: auto;
+  flex: 1;
 }
 
 .form-group {
@@ -848,24 +874,84 @@ select:focus {
   display: block;
   font-size: var(--font-size-sm, 13px);
   font-weight: var(--font-weight-medium, 500);
-  color: var(--color-text-secondary, #4e5969);
+  color: var(--color-text-primary, #1d2129);
   margin-bottom: var(--space-1, 4px);
+  line-height: var(--line-height, 1.5);
 }
 
 .form-input {
   width: 100%;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  font-size: var(--font-size-base, 14px);
+  line-height: var(--line-height, 1.5);
+  color: var(--color-text-primary, #1d2129);
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #c9cdd4);
+  border-radius: var(--border-radius-md, 6px);
+  outline: none;
+  transition: border-color var(--transition-fast, 150ms) ease,
+    box-shadow var(--transition-fast, 150ms) ease;
+}
+
+.form-input:hover {
+  border-color: var(--color-accent, #1456f0);
+}
+
+.form-input:focus {
+  border-color: var(--color-accent, #1456f0);
+  box-shadow: 0 0 0 2px var(--color-accent-light, #e8eefd);
+}
+
+.form-input::placeholder {
+  color: var(--color-text-tertiary, #86909c);
+}
+
+.form-input:disabled {
+  background: var(--color-bg-secondary, #f7f8fa);
+  color: var(--color-text-tertiary, #86909c);
+  cursor: not-allowed;
+}
+
+/* datetime-local and date restyle — match Feishu input look */
+input[type="datetime-local"].form-input,
+input[type="date"].form-input {
+  appearance: none;
+  -webkit-appearance: none;
 }
 
 .form-textarea {
   width: 100%;
   min-height: 80px;
   resize: vertical;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  font-size: var(--font-size-base, 14px);
+  line-height: var(--line-height, 1.5);
+}
+
+.form-select {
+  width: 100%;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  font-size: var(--font-size-base, 14px);
 }
 
 .form-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-1, 4px);
   font-size: var(--font-size-xs, 12px);
   color: var(--color-danger, #f53f3f);
   margin-top: var(--space-1, 4px);
+  line-height: var(--line-height, 1.5);
+}
+
+.form-error-top {
+  padding: var(--space-3, 12px) var(--space-4, 16px);
+  background: var(--color-danger-light, #ffece8);
+  border: 1px solid var(--color-danger, #f53f3f);
+  border-radius: var(--border-radius-md, 6px);
+  color: var(--color-danger, #f53f3f);
+  font-size: var(--font-size-sm, 13px);
+  margin-bottom: var(--space-4, 16px);
 }
 
 .form-row {
@@ -881,7 +967,15 @@ select:focus {
   display: flex;
   justify-content: flex-end;
   gap: var(--space-2, 8px);
-  margin-top: var(--space-5, 20px);
+  padding-top: var(--space-4, 16px);
+  border-top: 1px solid var(--color-border-light, #e5e6eb);
+  margin-top: var(--space-2, 8px);
+}
+
+/* Focus-visible for modal buttons */
+.modal-content button:focus-visible {
+  outline: 2px solid var(--color-accent, #1456f0);
+  outline-offset: 2px;
 }
 
 /* ── Loading / Error ── */

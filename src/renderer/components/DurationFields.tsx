@@ -49,7 +49,7 @@ export default function DurationFields({
         </div>
       </div>
       {error && (
-        <div className="form-error" data-testid="task-form-duration-error">
+        <div className="form-error" role="alert" aria-live="polite" data-testid="task-form-duration-error">
           {error}
         </div>
       )}
