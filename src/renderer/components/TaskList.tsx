@@ -51,7 +51,13 @@ export default function TaskList({
       description: data.description,
       priority: data.priority,
       due_date: data.due_date,
-      reminder_at: data.reminder_at
+      reminder_at: data.reminder_at,
+      recurrence: data.recurrence,
+      recurrence_end_date: data.recurrence_end_date,
+      start_date: data.start_date,
+      end_date: data.end_date,
+      is_urgent: data.is_urgent,
+      is_important: data.is_important
     })
     onCloseAddForm()
   }
@@ -63,7 +69,13 @@ export default function TaskList({
       description: data.description,
       priority: data.priority,
       due_date: data.due_date,
-      reminder_at: data.reminder_at
+      reminder_at: data.reminder_at,
+      recurrence: data.recurrence,
+      recurrence_end_date: data.recurrence_end_date,
+      start_date: data.start_date,
+      end_date: data.end_date,
+      is_urgent: data.is_urgent,
+      is_important: data.is_important
     })
     setEditingTask(null)
   }

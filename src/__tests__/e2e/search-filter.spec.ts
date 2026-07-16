@@ -31,6 +31,37 @@ async function createTask(page: Page, title: string, priority: string, descripti
   await page.click('[data-testid="task-form-save"]')
 }
 
+async function createAndSelectList(page: Page, name: string) {
+  const taskFormCancel = page.locator('[data-testid="task-form-cancel"]')
+  if (await taskFormCancel.count() > 0) {
+    await taskFormCancel.click()
+  }
+
+  const listFormCancel = page.locator('[data-testid="list-form-cancel"]')
+  if (await listFormCancel.count() > 0) {
+    await listFormCancel.click()
+  }
+
+  await page.click('[data-testid="add-list-button"]')
+  await page.fill('[data-testid="list-form-input"]', name)
+  await page.click('[data-testid="list-form-save"]')
+
+  const newListItem = page.locator('[data-testid="sidebar-item"]').filter({
+    has: page.locator('[data-testid="sidebar-item-name"]', { hasText: name })
+  })
+  await expect(newListItem).toBeVisible({ timeout: 10000 })
+  await newListItem.click()
+
+  await expect(page.locator('.main-header h1')).toHaveText(name, { timeout: 10000 })
+
+  const listToggle = page.locator('[data-testid="view-toggle-list"]')
+  if (await listToggle.count() > 0) {
+    await listToggle.click()
+  }
+
+  await expect(page.locator('[data-testid="task-list-empty"]')).toBeVisible({ timeout: 10000 })
+}
+
 test.describe('Search and Filter', () => {
   let electronApp: ElectronApplication
 
@@ -181,3 +212,81 @@ test.describe('Search and Filter', () => {
     await expect(page.locator('[data-testid="search-input"]')).toHaveValue('')
   })
 })
+
+test.describe('Recurrence and Quadrant Filters', () => {
+  let electronApp: ElectronApplication
+  let listCounter = 0
+
+  test.beforeAll(async () => {
+    const userDataDir = createTempUserDataDir('todolist-filter-extra-e2e-')
+    electronApp = await electron.launch({
+      args: [path.resolve(__dirname, '../../../out/main/main.js')],
+      env: {
+        ...process.env,
+        TODO_USER_DATA_DIR: userDataDir
+      }
+    })
+    const page = await electronApp.firstWindow()
+    await waitForDbReady(page)
+  })
+
+  test.afterAll(async () => {
+    await electronApp.close()
+  })
+
+  test.beforeEach(async () => {
+    const page = await electronApp.firstWindow()
+    listCounter++
+    await createAndSelectList(page, `Filter List ${listCounter}`)
+  })
+
+  test('filters by recurrence in list view', async () => {
+    const page = await electronApp.firstWindow()
+
+    await page.click('[data-testid="add-task-button"]')
+    await page.fill('[data-testid="task-form-title"]', 'Daily filter task')
+    await page.fill('[data-testid="task-form-due-date"]', '2026-07-16')
+    await page.selectOption('[data-testid="task-form-recurrence"]', 'daily')
+    await page.fill('[data-testid="task-form-recurrence-end-date"]', '2026-07-31')
+    await page.click('[data-testid="task-form-save"]')
+
+    await page.click('[data-testid="add-task-button"]')
+    await page.fill('[data-testid="task-form-title"]', 'Plain task')
+    await page.click('[data-testid="task-form-save"]')
+
+    await expect(page.locator('[data-testid="task-item"]')).toHaveCount(2, { timeout: 10000 })
+
+    await page.selectOption('[data-testid="filter-recurrence"]', 'daily')
+    await page.waitForTimeout(500)
+    await expect(page.locator('[data-testid="task-item"]')).toHaveCount(1, { timeout: 5000 })
+    await expect(page.locator('[data-testid="task-title"]').first()).toHaveText('Daily filter task')
+
+    await page.selectOption('[data-testid="filter-recurrence"]', '')
+    await page.waitForTimeout(500)
+  })
+
+  test('filters by quadrant in list view', async () => {
+    const page = await electronApp.firstWindow()
+
+    await page.click('[data-testid="add-task-button"]')
+    await page.fill('[data-testid="task-form-title"]', 'Q1 filter task')
+    await page.check('[data-testid="task-form-urgent"]')
+    await page.check('[data-testid="task-form-important"]')
+    await page.click('[data-testid="task-form-save"]')
+
+    await page.click('[data-testid="add-task-button"]')
+    await page.fill('[data-testid="task-form-title"]', 'Q4 filter task')
+    await page.click('[data-testid="task-form-save"]')
+
+    await expect(page.locator('[data-testid="task-item"]')).toHaveCount(2, { timeout: 10000 })
+
+    await page.selectOption('[data-testid="filter-quadrant"]', 'q1-urgent-important')
+    await page.waitForTimeout(500)
+    await expect(page.locator('[data-testid="task-item"]')).toHaveCount(1, { timeout: 5000 })
+    await expect(page.locator('[data-testid="task-title"]').first()).toHaveText('Q1 filter task')
+
+    await page.selectOption('[data-testid="filter-quadrant"]', '')
+    await page.waitForTimeout(500)
+  })
+})
+

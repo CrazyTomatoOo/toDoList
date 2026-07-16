@@ -141,3 +141,20 @@
 - No product source changes were required; all test failures were test-only issues (ambiguous selectors, un-enterable date input values, missing mock cleanup between tests).
 - Final verification: `npm run lint && npm run typecheck && npm test` all pass with 217 tests (24 test files).
 - Evidence saved to `.omo/evidence/periodic-long-quadrant/task-12-tests.txt`.
+# T13: E2E specs for recurring, long-duration, and quadrant board behaviors
+
+- Created `src/__tests__/e2e/recurring.spec.ts` covering:
+  - Creating a recurring task (daily/weekly/monthly) with a fixed due date and recurrence end date.
+  - Completing a recurring task and asserting the new incomplete instance has the correctly advanced due date (daily +1 day, weekly +7 days, monthly Jan 31 → Feb 28).
+  - Creating a long-duration task with start and end dates.
+  - Verifying that a task cannot be saved with `end_date < start_date`.
+- Created `src/__tests__/e2e/quadrant.spec.ts` covering:
+  - Creating tasks in each quadrant (Q1-Q4) and asserting correct placement on the quadrant board.
+  - Switching lists while in board view and asserting tasks from the previous list do not appear.
+  - Toggling a task complete from the board and asserting the completion state reflects in list view.
+- Added a new `test.describe` block in `src/__tests__/e2e/search-filter.spec.ts` covering recurrence and quadrant filters in list view.
+- All tests use fixed date strings (`2026-07-16`, `2026-01-31`, etc.) and a `beforeEach` helper that creates a fresh list via a temporary `TODO_USER_DATA_DIR` per spec file.
+- The shared `createAndSelectList` helper had to select the newly created list by its name and verify the header changed; relying on `.last()` was flaky because the new list is not always the last actionable element by the time the click is evaluated.
+- Added one product fix in `src/renderer/components/TaskList.tsx`: `handleCreate` and `handleEdit` now forward the new fields (`recurrence`, `recurrence_end_date`, `start_date`, `end_date`, `is_urgent`, `is_important`) from `TaskFormData` to the IPC handlers. Without this fix, the E2E specs could not create recurring, long-duration, or quadrant tasks.
+- Final verification: `npm run test:e2e` passes with 49/49 tests.
+- Evidence saved to `.omo/evidence/periodic-long-quadrant/task-13-e2e.txt`.
