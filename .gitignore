@@ -1,0 +1,8 @@
+node_modules/
+out/
+dist/
+*.log
+test-results/
+.sisyphus/test-results/
+._*
+.DS_Store
