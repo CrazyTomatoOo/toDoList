@@ -1,0 +1,70 @@
+
+> todolist-app@0.0.0 build:win
+> npm run build && electron-builder --win
+
+
+> todolist-app@0.0.0 build
+> electron-vite build
+
+vite v5.4.21 building SSR bundle for production...
+transforming...
+✓ 13 modules transformed.
+rendering chunks...
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Volumes/work/Project/toDoList/src/main/db/connection.ts is dynamically imported by /Volumes/work/Project/toDoList/src/main/main.ts but also statically imported by /Volumes/work/Project/toDoList/src/main/db/migrations.ts, /Volumes/work/Project/toDoList/src/main/db/repositories/listRepository.ts, /Volumes/work/Project/toDoList/src/main/db/repositories/taskRepository.ts, /Volumes/work/Project/toDoList/src/main/services/importExport.ts, dynamic import will not move module into another chunk.
+
+out/main/chunks/migrations-BHBUj5up.js   1.95 kB
+out/main/main.js                        26.64 kB
+✓ built in 92ms
+vite v5.4.21 building SSR bundle for production...
+transforming...
+✓ 2 modules transformed.
+rendering chunks...
+out/preload/preload.js  3.10 kB
+✓ built in 9ms
+vite v5.4.21 building for production...
+transforming...
+✓ 50 modules transformed.
+rendering chunks...
+out/renderer/index.html                   0.82 kB
+out/renderer/assets/index-DIgiqu1X.css   14.16 kB
+out/renderer/assets/index-CSzB-NKx.js   366.25 kB
+✓ built in 301ms
+  • electron-builder  version=26.15.3 os=25.5.0
+  • loaded configuration  file=/Volumes/work/Project/toDoList/electron-builder.yml
+  • author is missed in the package.json  appPackageFile=/Volumes/work/Project/toDoList/package.json
+  • @electron/rebuild already used by electron-builder, please consider to remove excess dependency from devDependencies
+
+To ensure your native dependencies are always matched electron version, simply add script `"postinstall": "electron-builder install-app-deps" to your `package.json`
+  • executing @electron/rebuild  electronVersion=37.10.3 arch=x64 buildFromSource=false workspaceRoot=/Volumes/work/Project/toDoList projectDir=./ appDir=./
+  • installing native dependencies  arch=x64
+  • preparing       moduleName=better-sqlite3 arch=x64
+  • finished        moduleName=better-sqlite3 arch=x64
+  • completed installing native dependencies
+  • packaging       platform=win32 arch=x64 electron=37.10.3 appOutDir=dist/win-unpacked
+  • downloaded      label=electron progress=100%
+  • downloaded electron zip extracted successfully  output=/Volumes/work/Project/toDoList/dist/win-unpacked
+  • searching for node modules  pm=npm searchDir=/Volumes/work/Project/toDoList
+  • duplicate dependency references  dependencies=["react@18.3.1","@dnd-kit/utilities@3.2.2","react-dom@18.3.1","react@18.3.1","@dnd-kit/core@6.3.1","@dnd-kit/utilities@3.2.2","react@18.3.1","react@18.3.1","once@1.4.0","once@1.4.0","pump@3.0.4","readable-stream@3.6.2","end-of-stream@1.4.5","react@18.3.1","loose-envify@1.4.0","loose-envify@1.4.0"]
+  • updating asar integrity executable resource  executablePath=dist/win-unpacked/ToDoList.exe
+  • file signing skipped via signExecutable configuration  file=dist/win-unpacked/ToDoList.exe
+  • building        target=nsis file=dist/ToDoList-0.0.0-x64.exe archs=x64 oneClick=true perMachine=false
+  • file signing skipped via signExecutable configuration  file=dist/ToDoList-0.0.0-x64.__uninstaller.exe
+  • file signing skipped via signExecutable configuration  file=dist/ToDoList-0.0.0-x64.exe
+  • building block map  blockMapFile=dist/ToDoList-0.0.0-x64.exe.blockmap
+
+
+--- T17 Summary ---
+Date: 2026-07-15
+Command: npm run build:win
+Status: success
+Windows artifacts in dist/:
+  - ToDoList-0.0.0-x64.exe (91.3 MB) - Nullsoft Installer self-extracting archive
+  - ToDoList-0.0.0-x64.exe.blockmap (98.7 KB)
+  - win-unpacked/ directory
+Notes:
+  - NSIS build succeeded on macOS arm64 using electron-builder's bundled nsis/7zip tools (no Wine required).
+  - Code signing disabled via win.signExecutable: false.
+  - Windows icon generated from build/icon.png using png2icons (multi-resolution ICO).
+  - macOS build (npm run build:mac) was also verified to still produce dist/ToDoList-0.0.0-arm64.dmg after adding the win section.
+  - Runtime launch screenshot not captured because Windows executables cannot be run natively on macOS.

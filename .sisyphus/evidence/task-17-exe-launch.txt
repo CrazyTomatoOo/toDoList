@@ -1,0 +1,17 @@
+Task T17 — Windows EXE launch verification limitation
+Generated: 2026-07-15
+Host: macOS (darwin)
+
+Artifact location:
+  dist/ToDoList-0.0.0-x64.exe
+
+Status:
+  The Windows installer executable was produced successfully by electron-builder and is present in the dist/ directory.
+
+Why runtime verification is not performed:
+  The current host is macOS. Windows PE executables (.exe) cannot run natively on macOS, and attempting to launch the installer here would fail immediately.
+
+Verification path:
+  Runtime verification of the Windows EXE launch is blocked until a Windows host (or Windows VM) is available. On a Windows host, run the installer and confirm the application window opens and the initial UI loads.
+
+No fake screenshot or synthetic evidence is provided.

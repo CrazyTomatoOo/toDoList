@@ -1,0 +1,5 @@
+T18 Windows packaged-app smoke test limitation
+
+This project is being verified from macOS, so the Windows packaged-app smoke test cannot be executed locally. Only the macOS packaged .app smoke test is exercised on this host.
+
+The Windows EXE artifact was built and verified as a valid Nullsoft Installer, but runtime smoke testing of that Windows artifact must be performed on a Windows environment.
