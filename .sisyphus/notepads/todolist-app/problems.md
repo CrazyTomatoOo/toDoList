@@ -1,0 +1,1 @@
+- T17 Windows EXE runtime verification cannot be done on macOS. The artifact exists (dist/ToDoList-0.0.0-x64.exe), but actual launch verification requires a Windows host or VM.
