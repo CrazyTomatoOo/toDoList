@@ -1,0 +1,18 @@
+T19 packaged app performance report
+Date: 2026-07-15T11:53:08.900Z
+Seed method before launch: direct seed unavailable: The module '/Volumes/work/Project/toDoList/node_modules/better-sqlite3/build/Release/better_sqlite3.node'
+was compiled against a different Node.js version using
+NODE_MODULE_VERSION 136. This version of Node.js requires
+NODE_MODULE_VERSION 127. Please try re-compiling or re-installing
+the module (for instance, using `npm rebuild` or `npm install`).
+Executable: /Volumes/work/Project/toDoList/dist/mac-arm64/ToDoList.app/Contents/MacOS/ToDoList
+Renderer saw 0 seeded tasks; falling back to renderer IPC seed.
+Renderer load to 1000 tasks: 683ms
+Rendered task items: 1000
+Scroll total: 748.3ms
+Average frame: 8.3ms (120.3 FPS)
+Worst frame: 10.0ms
+Smooth threshold passed: yes
+Heap growth after repeated scrolls: 0.49%
+Memory leak threshold passed: yes
+Virtualization not required by this run.

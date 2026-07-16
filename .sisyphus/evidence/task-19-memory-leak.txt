@@ -1,0 +1,7 @@
+T19 memory leak evidence
+Date: 2026-07-15T11:53:12.396Z
+Before JS heap: 14588048 bytes
+After JS heap: 14660136 bytes
+Heap growth: 72088 bytes (0.49%)
+Repeated scrolls: 3
+Leak threshold passed (<20% growth): yes

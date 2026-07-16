@@ -1,0 +1,14 @@
+
+> todolist-app@0.0.0 test
+> npm rebuild better-sqlite3 && vitest run src/__tests__/perf/edge-cases.test.ts
+
+rebuilt dependencies successfully
+
+ RUN  v4.1.10 /Volumes/work/Project/toDoList
+
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  18:57:30
+   Duration  124ms (transform 25ms, setup 0ms, import 35ms, tests 19ms, environment 0ms)
+
