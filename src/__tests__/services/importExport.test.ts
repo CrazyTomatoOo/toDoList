@@ -54,7 +54,7 @@ describe('importExport service', () => {
     const csv = exportToCsv()
     const lines = csv.split('\n')
 
-    expect(lines[0]).toBe('listName,title,description,priority,dueDate,reminderAt,completed,sortOrder')
+    expect(lines[0]).toBe('listName,title,description,priority,dueDate,reminderAt,completed,sortOrder,recurrence,recurrenceEndDate,startDate,endDate,isUrgent,isImportant')
     expect(lines[1]).toContain('Task 1')
     expect(lines[1]).toContain('Work')
   })

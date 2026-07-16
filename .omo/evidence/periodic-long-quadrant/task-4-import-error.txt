@@ -1,0 +1,19 @@
+T4: Import/export JSON/CSV support for new fields - error evidence
+
+Scenario: Import invalid recurrence and malformed date fields, verify transaction rolls back.
+
+Tests executed:
+- rejects invalid recurrence values (JSON with recurrence: 'hourly')
+- rejects malformed date-only fields (JSON with startDate: '2024-13-01')
+- rejects startDate after endDate
+- rolls back the entire import when a new field is invalid (CSV with recurrenceEndDate: 'not-a-date')
+
+Command: npm test src/__tests__/services/importExportNewFields.test.ts
+Result: all 10 tests passed, including the 4 failure/rollback tests above.
+
+Observations:
+- Invalid recurrence values throw an error containing 'Invalid recurrence'.
+- Malformed date-only fields throw an error containing 'must be a valid YYYY-MM-DD date'.
+- Start date after end date throws 'Start date must be before or equal to end date'.
+- The DB transaction rolls back, so no lists or tasks are persisted when any row is invalid.
+- The import service uses validateDateOnly from src/shared/utils/dateValidator.ts and validateRecurrence from the existing taskValidation helpers.

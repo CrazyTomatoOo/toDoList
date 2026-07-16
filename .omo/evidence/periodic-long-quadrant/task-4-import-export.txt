@@ -1,0 +1,16 @@
+T4: Import/export JSON/CSV support for new fields - happy evidence
+
+Command: npm test src/__tests__/services/importExport.test.ts
+Result: 10/10 tests passed
+
+Command: npm test src/__tests__/services/importExportNewFields.test.ts
+Result: 10/10 tests passed
+
+Observations:
+- JSON export now includes recurrence, recurrenceEndDate, startDate, endDate, isUrgent, and isImportant fields.
+- CSV export header is updated to include the same new fields in the same order.
+- JSON/CSV round-trip tests confirm the new fields are preserved after import.
+- Legacy JSON and CSV files without the new fields still import successfully with defaults:
+  recurrence: null, recurrenceEndDate: null, startDate: null, endDate: null, isUrgent: false, isImportant: false.
+- Type checking passes: npm run typecheck exits 0.
+- LSP diagnostics report no errors for importExport.ts or the new test file.
