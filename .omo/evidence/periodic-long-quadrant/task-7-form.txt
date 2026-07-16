@@ -1,0 +1,66 @@
+T7: Task Form UI - Recurrence, Duration, and Quadrant Fields
+==============================================================
+
+Implementation Summary:
+-----------------------
+Extended TaskForm.tsx with new fields for recurrence, duration, and quadrant classification.
+
+New Fields Added:
+- recurrence: select (None/Daily/Weekly/Monthly/Yearly)
+- recurrence_end_date: date input (shown when recurrence is selected)
+- start_date: date input
+- end_date: date input
+- is_urgent: checkbox
+- is_important: checkbox
+
+Component Structure:
+--------------------
+TaskForm.tsx (270 lines) - main form component
+  - RecurrenceFields.tsx (67 lines) - recurrence select + end date
+  - DurationFields.tsx (59 lines) - start/end date inputs
+  - QuadrantFlags.tsx (46 lines) - urgent/important checkboxes
+
+TaskFormData interface extended with:
+  recurrence: Recurrence | null
+  recurrence_end_date: string | null
+  start_date: string | null
+  end_date: string | null
+  is_urgent: boolean
+  is_important: boolean
+
+Validation Rules:
+-----------------
+1. Date format validation using shared validateDateOnly() from src/shared/utils/dateValidator.ts
+2. start_date <= end_date when both present (inline error: "Start date must be before or equal to end date")
+3. When recurrence is set, either due_date or start_date must be set (inline error: "Recurring tasks require a due date or start date")
+
+Test Results:
+-------------
+Component test: src/__tests__/components/TaskForm.test.tsx
+- 10 tests covering:
+  * Rendering of all new fields
+  * Recurrence end date conditional display
+  * Pre-filling from existing task
+  * Validation: start_date > end_date blocked
+  * Validation: recurrence without due_date/start_date blocked
+  * Validation: recurrence with due_date allowed
+  * Validation: recurrence with start_date allowed
+  * Full submission with all new fields
+
+All tests pass: 10/10
+Full test suite: 201/201 tests pass
+Typecheck: clean
+Lint: clean
+
+CSS Styles Added:
+-----------------
+Added to src/renderer/styles.css:
+- .form-checkbox-group - flex container for checkbox labels
+- .form-checkbox-label - label with checkbox and text
+- .form-checkbox - styled checkbox with accent color
+
+Data Flow:
+----------
+Form submits all new fields via window.api.tasks.create/update IPC calls.
+CreateTaskInput and UpdateTaskInput already include the new fields (from T2).
+Boolean flags (is_urgent, is_important) are passed as boolean, normalized to 0/1 in repository (T3).

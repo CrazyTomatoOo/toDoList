@@ -1,0 +1,52 @@
+T7: Task Form Validation Error Handling
+========================================
+
+Validation Error Cases:
+-----------------------
+
+1. Invalid Date Format
+   - Triggered by: malformed date strings (not YYYY-MM-DD)
+   - Handler: validateDateOnly() from src/shared/utils/dateValidator.ts
+   - Error message: "{field} must be a valid YYYY-MM-DD date"
+   - Displayed in: main form error div (data-testid="task-form-error")
+
+2. Start Date After End Date
+   - Triggered by: start_date > end_date when both present
+   - Handler: validate() function in TaskForm.tsx
+   - Error message: "Start date must be before or equal to end date"
+   - Displayed in: DurationFields component (data-testid="task-form-duration-error")
+   - Behavior: prevents form submission, shows inline error
+
+3. Recurrence Without Base Date
+   - Triggered by: recurrence selected but no due_date or start_date
+   - Handler: validate() function in TaskForm.tsx
+   - Error message: "Recurring tasks require a due date or start date"
+   - Displayed in: form error div (data-testid="task-form-recurrence-error")
+   - Behavior: prevents form submission, shows inline error
+
+Test Coverage:
+--------------
+- test('blocks submission when start_date > end_date')
+  * Sets start_date to 2026-12-31, end_date to 2026-01-01
+  * Clicks save
+  * Verifies error message appears
+  * Verifies onSubmit not called
+
+- test('blocks submission when recurrence is set without due_date or start_date')
+  * Sets recurrence to 'daily'
+  * Leaves due_date and start_date empty
+  * Clicks save
+  * Verifies error message appears
+  * Verifies onSubmit not called
+
+- test('allows submission when recurrence is set with due_date')
+  * Sets recurrence to 'daily', due_date to 2026-07-16
+  * Clicks save
+  * Verifies onSubmit called with correct data
+
+- test('allows submission when recurrence is set with start_date')
+  * Sets recurrence to 'weekly', start_date to 2026-07-16
+  * Clicks save
+  * Verifies onSubmit called with correct data
+
+All validation tests pass.

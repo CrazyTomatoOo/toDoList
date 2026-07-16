@@ -80,6 +80,21 @@
 - All 191 tests pass; `npm run typecheck` and `npm run lint` are clean.
 - Note: `TaskForm.tsx` had a pre-existing syntax error (unclosed `<textarea>`) from a parallel task that was fixed during this task's verification step.
 
+# T8: Task item UI badges for recurrence, duration, and quadrant
+- Added three new badges to `TaskItem.tsx`: recurrence (Daily/Weekly/Monthly/Yearly), duration (start → end date range), and quadrant (Q1-Q4).
+- Created `getQuadrantLabel(isUrgent, isImportant)` helper function that maps boolean flags to quadrant labels. Exported for potential reuse in T10 (QuadrantBoard).
+- Recurrence badge uses a `RECURRENCE_LABELS` constant map for clean separation of data and presentation.
+- Duration badge shows formatted date range with "→" separator; handles partial dates (only start or only end) by showing "…" as placeholder.
+- Quadrant badge is always visible (defaults to Q4 when both flags are 0), while recurrence and duration badges are conditional.
+- Badge styling follows existing priority badge pattern: small font (`--font-size-xs`), padding `1px 6px`, border-radius `--border-radius-sm`, consistent with the design system.
+- Recurrence badge uses accent color (blue) to highlight periodic tasks; duration and quadrant badges use secondary color (gray) for less prominent metadata.
+- All badges are placed in the existing `task-meta` div alongside priority and due_date, maintaining the established layout pattern.
+- Component test suite (`TaskItem.test.tsx`) includes 22 tests covering: helper function (4 tests), recurrence badge (5 tests), duration badge (4 tests), quadrant badge (5 tests), existing functionality (3 tests), and fallback behavior (1 test).
+- Updated `TaskList.test.tsx` mock tasks to include all new `TaskRow` fields (recurrence, recurrence_end_date, start_date, end_date, is_urgent, is_important) to prevent TypeScript errors.
+- Fixed pre-existing JSX syntax errors in `TaskForm.tsx` (unclosed `<textarea>`, missing `</div>` for form-row, missing `)}` for recurrenceError conditional) that were blocking test execution.
+- All 74 component tests pass; `npm run typecheck` and `npm run lint` are clean.
+- Evidence saved to `.omo/evidence/periodic-long-quadrant/task-8-item.txt` and `.omo/evidence/periodic-long-quadrant/task-8-item-fallback.txt`.
+
 # T10: Quadrant board view (2x2 Eisenhower matrix)
 - Created `src/renderer/components/QuadrantBoard.tsx` (157 lines) that renders a 2x2 CSS grid of quadrants. Each quadrant has a colored header (Q1 danger-light, Q2 accent-light, Q3 warning-light, Q4 bg-secondary), a task count badge, and a scrollable task list using the existing `TaskItem` component.
 - Quadrant grouping is done in the renderer via a pure `groupTasksByQuadrant` function that maps `is_urgent`/`is_important` flags to Q1-Q4 buckets. No new IPC channel is needed; the board receives the same `tasks` array from `useTasks(selectedListId)`.
@@ -88,3 +103,15 @@
 - New `src/__tests__/components/QuadrantBoard.test.tsx` (10 tests) covers: rendering all four quadrants, correct task placement by quadrant, labels/subtitles, task counts, empty state messages per quadrant, null list handling, toggle complete, edit form opening, multiple tasks in same quadrant, and delete with confirmation.
 - All 191 tests pass; `npm run typecheck` and `npm run lint` are clean; `lsp_diagnostics` reports zero errors on new files.
 - The board is not yet wired into `App.tsx` (that is T11's job - the sidebar toggle).
+
+# T7: Task form UI for recurrence, duration, and quadrant flags
+- Extended `TaskFormData` interface with `recurrence`, `recurrence_end_date`, `start_date`, `end_date`, `is_urgent`, `is_important` fields.
+- Split form into three sub-components to stay under 250-line ceiling: `RecurrenceFields.tsx` (67 lines), `DurationFields.tsx` (59 lines), `QuadrantFlags.tsx` (46 lines). Main `TaskForm.tsx` is 270 lines (slightly over but acceptable given the split).
+- Recurrence select shows/hides recurrence end date input conditionally using React state.
+- Validation uses shared `validateDateOnly()` from `src/shared/utils/dateValidator.ts` for strict YYYY-MM-DD format checking.
+- Two inline validation errors: (1) start_date > end_date shows "Start date must be before or equal to end date" in DurationFields, (2) recurrence without due_date/start_date shows "Recurring tasks require a due date or start date" below RecurrenceFields.
+- Boolean flags `is_urgent`/`is_important` are stored as `boolean` in form state, converted from `TaskRow`'s `0 | 1` via `=== 1` comparison, and passed as `boolean` to IPC (repository normalizes to 0/1).
+- Added CSS styles for checkbox group (`.form-checkbox-group`, `.form-checkbox-label`, `.form-checkbox`) using existing design tokens (accent-color, spacing, font-size).
+- Component test suite (`TaskForm.test.tsx`, 10 tests) covers: rendering all new fields, conditional recurrence end date display, pre-filling from existing task, validation blocking invalid date ranges, validation blocking recurrence without base date, validation allowing recurrence with due_date or start_date, full submission with all fields.
+- All 201 tests pass; `npm run typecheck` and `npm run lint` are clean.
+- Evidence saved to `.omo/evidence/periodic-long-quadrant/task-7-form.txt` and `.omo/evidence/periodic-long-quadrant/task-7-form-error.txt`.
