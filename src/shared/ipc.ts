@@ -34,6 +34,13 @@ export const REMINDER_CLICKED_CHANNEL = 'reminder:clicked' as const
 export const REMINDER_FIRED_CHANNEL = 'reminder:fired' as const
 
 export type Priority = 'high' | 'medium' | 'low'
+export type Recurrence = 'daily' | 'weekly' | 'monthly' | 'yearly'
+export type Quadrant =
+  | 'q1-urgent-important'
+  | 'q2-not-urgent-important'
+  | 'q3-urgent-not-important'
+  | 'q4-not-urgent-not-important'
+export type DurationFilter = 'all' | 'hasDateRange' | 'noDateRange'
 export type ThemeMode = 'light' | 'dark' | 'system'
 export type ResolvedTheme = 'light' | 'dark'
 
@@ -56,6 +63,12 @@ export interface TaskRow {
   reminder_at: string | null
   completed: 0 | 1
   sort_order: number
+  recurrence: Recurrence | null
+  recurrence_end_date: string | null
+  start_date: string | null
+  end_date: string | null
+  is_urgent: 0 | 1
+  is_important: 0 | 1
   created_at: string
   updated_at: string
 }
@@ -67,6 +80,12 @@ export interface CreateTaskInput {
   priority?: Priority
   due_date?: string | null
   reminder_at?: string | null
+  recurrence?: Recurrence | null
+  recurrence_end_date?: string | null
+  start_date?: string | null
+  end_date?: string | null
+  is_urgent?: boolean
+  is_important?: boolean
 }
 
 export interface UpdateTaskInput {
@@ -77,10 +96,28 @@ export interface UpdateTaskInput {
   reminder_at: string | null
   completed: boolean
   sort_order: number
+  recurrence: Recurrence | null
+  recurrence_end_date: string | null
+  start_date: string | null
+  end_date: string | null
+  is_urgent: boolean
+  is_important: boolean
 }
 
-export type TaskListOptions = { completed?: boolean; priority?: Priority; search?: string }
-export type TaskSearchFilters = { listId?: number; completed?: boolean; priority?: Priority }
+export type TaskListOptions = {
+  completed?: boolean
+  priority?: Priority
+  search?: string
+  quadrant?: Quadrant
+}
+export type TaskSearchFilters = {
+  listId?: number
+  completed?: boolean
+  priority?: Priority
+  recurrence?: Recurrence
+  durationFilter?: DurationFilter
+  quadrant?: Quadrant
+}
 
 export interface ImportResult {
   importedLists: number

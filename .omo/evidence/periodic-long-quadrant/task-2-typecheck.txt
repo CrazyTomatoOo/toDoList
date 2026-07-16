@@ -1,0 +1,16 @@
+T2: Shared IPC type updates - typecheck evidence
+
+$ npm run typecheck
+> tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit
+
+$ npm test src/__tests__/types/taskContracts.test.ts
+> npm rebuild better-sqlite3 && vitest run src/__tests__/types/taskContracts.test.ts
+rebuilt dependencies successfully
+ RUN  v4.1.10 /Volumes/work/Project/toDoList
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  14:55:42
+   Duration  87ms (transform 8ms, setup 0ms, import 12ms, tests 1ms, environment 0ms)
+
+The type test file now contains both compile-time type assertions and a minimal
+Vitest runtime test so that `npm test` recognizes the file as a test suite.
