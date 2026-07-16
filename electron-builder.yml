@@ -1,0 +1,31 @@
+appId: com.example.todolist
+productName: ToDoList
+copyright: Copyright © 2026 ToDoList
+asar: true
+asarUnpack:
+  - node_modules/better-sqlite3/**/*.node
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**/*
+  - package.json
+  - node_modules/better-sqlite3/**/*
+  - node_modules/bindings/**/*
+  - node_modules/file-uri-to-path/**/*
+mac:
+  category: public.app-category.productivity
+  target:
+    - dmg
+  minimumSystemVersion: '11.0'
+  hardenedRuntime: false
+  gatekeeperAssess: false
+win:
+  icon: build/icon.ico
+  target:
+    - target: nsis
+      arch: x64
+  signExecutable: false
+  artifactName: '${productName}-${version}-${arch}.${ext}'
+  verifyUpdateCodeSignature: false
+  requestedExecutionLevel: asInvoker
