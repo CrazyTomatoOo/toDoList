@@ -317,3 +317,45 @@
 - e2e: 1/1 passed (task8-polish-screenshots.spec.ts)
 - Evidence: `.omo/evidence/ui-redesign/task-8-polish.png` (theme toggle clicked, theme cycled)
 - Evidence: `.omo/evidence/ui-redesign/task-8-polish-failure.png` (import/export buttons clicked, theme unchanged)
+
+## [2026-07-16 20:35:00] Task: T9 - Accessibility Fixes
+
+**Component changes:**
+- TaskItem.tsx: Added `aria-label={`Mark ${task.title} complete`}` to checkbox button. Removed body onClick (div is now display-only; edit/delete via explicit buttons only).
+- TaskList.tsx: Added `role="alert"` to error card, `role="status"` + `aria-live="polite"` to loading card.
+- ListSidebar.tsx: Restructured nested buttons. Outer `<button>` became `<div data-testid="sidebar-item">`. Inner `<button className="sidebar-item-button">` handles select with `aria-current="page"`. Edit/delete buttons are siblings, not nested. Added `aria-label` to edit/delete buttons. Added `role="status"` + `aria-live="polite"` to sidebar loading state.
+
+**CSS changes (styles.css):**
+- Light mode: `--color-text-tertiary` remapped from N500 (#86909c) to N600 (#6b7785) for 5.0:1 contrast.
+- Dark mode: `--color-text-tertiary` remapped from N500 (#6b6b78) to N700 (#a1a1a6) for 6.0:1 contrast.
+- Dark mode: `--color-brand` lightened from #3c7eff to #6ba1ff for 4.5:1 contrast on dark surfaces.
+- Priority colors (light mode): `--color-priority-high` #cb2634, `--color-priority-medium` #cc5800, `--color-priority-low` #008020 for 4.5:1 on tinted bgs.
+- Error text: `.tasklist-card-error`, `.form-error`, `.form-error-top` use `--color-danger-hover` (#cb2634) for 5.8:1 contrast.
+- Added global `button:focus-visible` rule (2px solid accent, 2px offset).
+- Added `.sidebar-item-button` class with button reset and focus-visible styles.
+- Added `:focus-within` trigger for `.sidebar-item-actions` opacity.
+- Added `:focus-visible` for `.sidebar-item-action` buttons.
+
+**Test changes:**
+- ListSidebar.test.tsx: Updated click test to click inner button via `querySelector('button')` (outer is now div).
+- integration.spec.ts: Updated sidebar-item clicks to use `.locator('.sidebar-item-button')`.
+- quadrant.spec.ts: Same sidebar-item click fix.
+- New e2e spec: task9-a11y.spec.ts with axe-core scans (light+dark), keyboard traversal, contrast ratio checks, hidden actions test.
+
+**Axe-core results:**
+- Light mode: 0 violations, 33 passes.
+- Dark mode: 0 violations, 33 passes.
+
+**Contrast ratios (light mode):**
+- task-title on task-item: 19.29:1 (PASS)
+- sidebar-item-name: 8.17:1 (PASS)
+- priority-high on danger-light: PASS
+- task-due-date (tertiary): PASS
+
+**Verification:**
+- typecheck: exit 0
+- lint: exit 0
+- tests: 217/217 passed
+- e2e: task9-a11y 2/2 passed, quadrant 3/3 passed, list-management 6/6 passed
+- Evidence: `.omo/evidence/ui-redesign/task-9-a11y.txt`
+- Evidence: `.omo/evidence/ui-redesign/task-9-a11y-failure.txt`

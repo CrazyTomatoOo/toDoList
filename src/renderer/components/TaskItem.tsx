@@ -67,10 +67,11 @@ export default function TaskItem({ task, onToggleComplete, onEdit, onDelete, dra
         data-testid="task-checkbox"
         role="checkbox"
         aria-checked={isCompleted}
+        aria-label={`Mark ${task.title} complete`}
         title={isCompleted ? 'Mark incomplete' : 'Mark complete'}
       />
 
-      <div className="task-item-body" onClick={() => onEdit(task)} style={{ cursor: 'pointer' }}>
+      <div className="task-item-body">
         <div
           className={`task-title${isCompleted ? ' completed' : ''}`}
           data-testid="task-title"

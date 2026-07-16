@@ -1,0 +1,14 @@
+=== Task 9: Hidden Actions Keyboard Test ===
+Date: 2026-07-16T12:35:07.648Z
+
+Test: Tab to a hidden action and verify behavior.
+
+Result: Task actions (edit/delete) are hidden via opacity:0 by default.
+They become visible (opacity:1) when the task-item has focus-within.
+Keyboard navigation: Tab focuses task-checkbox -> task-edit-button -> task-delete-button.
+The actions are reachable via keyboard ONLY when focus is within the task item.
+
+Focused elements after tabbing to task:
+  1. task-checkbox (focused first)
+  2. task-edit-button (after first Tab)
+  3. task-delete-button (after second Tab)

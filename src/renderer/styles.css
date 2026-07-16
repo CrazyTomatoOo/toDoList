@@ -38,7 +38,7 @@
   /* Text */
   --color-text-primary: var(--color-n900);
   --color-text-secondary: var(--color-n700);
-  --color-text-tertiary: var(--color-n500);
+  --color-text-tertiary: var(--color-n600); /* Darkened from N500 for WCAG AA 4.5:1 contrast */
   --color-text-inverse: #ffffff;
 
   /* Accent (mapped to brand) */
@@ -60,9 +60,9 @@
   --color-warning-light: rgba(255, 125, 0, 0.12);
 
   /* Priority (mapped to semantic colors) */
-  --color-priority-high: var(--color-danger);
-  --color-priority-medium: var(--color-warning);
-  --color-priority-low: var(--color-success);
+  --color-priority-high: #cb2634; /* Darkened for WCAG AA contrast on danger-light bg */
+  --color-priority-medium: #cc5800; /* Darkened for WCAG AA contrast on warning-light bg */
+  --color-priority-low: #008020; /* Darkened for WCAG AA contrast on success-light bg */
 
   /* Typography — Feishu scale: 11/12/13/14/16/18/20/24 */
   --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
@@ -131,7 +131,7 @@
   --color-n900: #f5f5f7;
 
   /* Brand (lighter for dark mode contrast) */
-  --color-brand: #3c7eff;
+  --color-brand: #6ba1ff; /* Lightened further for WCAG AA 4.5:1 contrast */
   --color-brand-hover: #6699ff;
   --color-brand-pressed: #2963e6;
   --color-brand-light: rgba(60, 126, 255, 0.15);
@@ -152,7 +152,7 @@
   /* Text */
   --color-text-primary: var(--color-n900);
   --color-text-secondary: var(--color-n700);
-  --color-text-tertiary: var(--color-n500);
+  --color-text-tertiary: var(--color-n700); /* Lightened from N500 for WCAG AA contrast on dark surfaces */
   --color-text-inverse: #1d2129;
 
   /* Accent (mapped to brand) */
@@ -265,6 +265,11 @@ button {
   color: inherit;
 }
 
+button:focus-visible {
+  outline: 2px solid var(--color-accent, #1456f0);
+  outline-offset: 2px;
+}
+
 input,
 textarea,
 select {
@@ -331,18 +336,27 @@ select:focus {
   width: 100%;
   padding: var(--space-2, 8px) var(--space-3, 12px);
   border-radius: var(--border-radius-md, 6px);
-  cursor: pointer;
   transition: background var(--transition-fast, 150ms ease);
-  user-select: none;
-  text-align: left;
+}
+
+.sidebar-item-button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
   font-family: inherit;
   font-size: inherit;
   color: inherit;
-  border: none;
-  background: transparent;
+  text-align: left;
+  border-radius: inherit;
 }
 
-.sidebar-item:focus-visible {
+.sidebar-item-button:focus-visible {
   outline: 2px solid var(--color-accent, #1456f0);
   outline-offset: 2px;
 }
@@ -351,7 +365,7 @@ select:focus {
   background: var(--color-surface-hover, rgba(29, 33, 41, 0.08));
 }
 
-.sidebar-item:active {
+.sidebar-item-button:active {
   background: var(--color-surface-active, rgba(29, 33, 41, 0.12));
 }
 
@@ -389,7 +403,10 @@ select:focus {
   transition: opacity var(--transition-fast, 150ms ease);
 }
 
-.sidebar-item:hover .sidebar-item-actions {
+.sidebar-item:hover .sidebar-item-actions,
+.sidebar-item:focus-within .sidebar-item-actions {
+  opacity: 1;
+}
   opacity: 1;
 }
 
@@ -398,6 +415,11 @@ select:focus {
   color: var(--color-text-tertiary, #86909c);
   border-radius: var(--border-radius-sm, 4px);
   font-size: var(--font-size-sm, 13px);
+}
+
+.sidebar-item-action:focus-visible {
+  outline: 2px solid var(--color-accent, #1456f0);
+  outline-offset: 2px;
 }
 
 .sidebar-item-action:hover {
@@ -696,7 +718,7 @@ select:focus {
 .tasklist-card-error {
   background: var(--color-danger-light, #ffece8);
   border-color: var(--color-danger, #f53f3f);
-  color: var(--color-danger, #f53f3f);
+  color: var(--color-danger-hover, #cb2634); /* Darkened for WCAG AA contrast on danger-light bg */
   text-align: left;
   font-size: var(--font-size-sm, 13px);
 }
@@ -989,7 +1011,7 @@ input[type="date"].form-input {
   align-items: flex-start;
   gap: var(--space-1, 4px);
   font-size: var(--font-size-xs, 12px);
-  color: var(--color-danger, #f53f3f);
+  color: var(--color-danger-hover, #cb2634); /* Darkened for WCAG AA contrast */
   margin-top: var(--space-1, 4px);
   line-height: var(--line-height, 1.5);
 }
@@ -999,7 +1021,7 @@ input[type="date"].form-input {
   background: var(--color-danger-light, #ffece8);
   border: 1px solid var(--color-danger, #f53f3f);
   border-radius: var(--border-radius-md, 6px);
-  color: var(--color-danger, #f53f3f);
+  color: var(--color-danger-hover, #cb2634); /* Darkened for WCAG AA contrast on danger-light bg */
   font-size: var(--font-size-sm, 13px);
   margin-bottom: var(--space-4, 16px);
 }

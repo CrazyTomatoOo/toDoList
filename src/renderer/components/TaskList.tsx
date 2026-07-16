@@ -95,13 +95,13 @@ export default function TaskList({
   return (
     <div className="main-content" data-testid="task-list-container">
       {error && (
-        <div className="tasklist-card tasklist-card-error" data-testid="task-list-error">
+        <div className="tasklist-card tasklist-card-error" data-testid="task-list-error" role="alert">
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="tasklist-card" data-testid="task-list-loading">
+        <div className="tasklist-card" data-testid="task-list-loading" role="status" aria-live="polite">
           <div className="tasklist-card-text">Loading tasks...</div>
         </div>
       ) : tasks.length === 0 ? (

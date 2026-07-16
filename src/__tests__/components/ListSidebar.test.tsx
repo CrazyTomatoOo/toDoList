@@ -53,7 +53,9 @@ describe('ListSidebar', () => {
   it('calls onSelectList when clicking a list', () => {
     render(<ListSidebar {...defaultProps} />)
     const items = screen.getAllByTestId('sidebar-item')
-    fireEvent.click(items[1])
+    // Click the inner button (sidebar-item-button) within the outer div
+    const innerButton = items[1].querySelector('button')!
+    fireEvent.click(innerButton)
     expect(defaultProps.onSelectList).toHaveBeenCalledWith(2)
   })
 

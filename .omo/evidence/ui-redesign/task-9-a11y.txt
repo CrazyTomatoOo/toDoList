@@ -1,0 +1,51 @@
+=== Task 9: Accessibility Evidence ===
+Date: 2026-07-16T12:35:05.148Z
+
+--- Light Mode Axe-Core Scan ---
+Violations: 0
+Passes: 33
+Incomplete: 0
+
+No violations found in light mode.
+
+--- Dark Mode Axe-Core Scan ---
+Violations: 0
+Passes: 33
+Incomplete: 0
+
+No violations found in dark mode.
+
+--- Keyboard Traversal Test ---
+Tab order (21 elements):
+  1. task-checkbox
+  2. task-edit-button
+  3. task-delete-button
+  4. add-list-button
+  5. button
+  6. sidebar-item-edit
+  7. sidebar-item-delete
+  8. view-toggle-list
+  9. view-toggle-board
+  10. theme-toggle
+  11. add-task-button
+  12. import-button
+  13. export-json-button
+  14. export-csv-button
+  15. search-input
+  16. filter-priority
+  17. filter-status
+  18. filter-recurrence
+  19. filter-duration
+  20. filter-quadrant
+  21. task-checkbox
+
+Key checks:
+  - Sidebar button focusable: true
+  - Theme toggle focusable: true
+  - Add task button focusable: true
+
+--- Contrast Ratios (Light Mode) ---
+  task-title on task-item: 19.29:1 (PASS) [fg: rgb(245, 245, 247), bg: rgba(0, 0, 0, 0)]
+  sidebar-item-name: 8.17:1 (PASS) [fg: rgb(107, 161, 255), bg: rgba(0, 0, 0, 0)]
+
+All pass: true

@@ -180,10 +180,10 @@ test.describe('Packaged macOS app integration', () => {
     )
 
     // 4. Switch to the default list and back to "Integration".
-    await page.locator('[data-testid="sidebar-item"]').nth(1).click()
+    await page.locator('[data-testid="sidebar-item"]').nth(1).locator('.sidebar-item-button').click()
     await expect(page.locator('.main-header h1')).toHaveText('Default', { timeout: 5000 })
 
-    await page.locator('[data-testid="sidebar-item"]').nth(0).click()
+    await page.locator('[data-testid="sidebar-item"]').nth(0).locator('.sidebar-item-button').click()
     await expect(page.locator('.main-header h1')).toHaveText('Integration', { timeout: 5000 })
 
     // 5. Search for "smoke" and verify the task is visible.

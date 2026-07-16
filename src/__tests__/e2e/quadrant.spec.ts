@@ -138,7 +138,7 @@ test.describe('Quadrant Board View', () => {
     await page.click('[data-testid="add-list-button"]')
     await page.fill('[data-testid="list-form-input"]', `Quadrant List ${listCounter}`)
     await page.click('[data-testid="list-form-save"]')
-    await page.locator('[data-testid="sidebar-item"]').last().click()
+    await page.locator('[data-testid="sidebar-item"]').last().locator('.sidebar-item-button').click()
 
     await expect(page.locator('[data-testid="quadrant-q1-tasks"] [data-testid="task-item"]')).toHaveCount(0)
     await expect(page.locator('[data-testid="quadrant-q1-empty"]')).toBeVisible()
