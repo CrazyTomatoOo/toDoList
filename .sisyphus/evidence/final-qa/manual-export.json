@@ -1,0 +1,22 @@
+{
+  "lists": [
+    {
+      "id": 1,
+      "name": "QA Integration",
+      "createdAt": "2026-07-15T11:38:36.143Z",
+      "updatedAt": "2026-07-15T11:38:36.143Z"
+    }
+  ],
+  "tasks": [
+    {
+      "listName": "QA Integration",
+      "title": "QA roundtrip task",
+      "description": null,
+      "priority": "high",
+      "dueDate": "2026-07-16",
+      "reminderAt": null,
+      "completed": true,
+      "sortOrder": 0
+    }
+  ]
+}
