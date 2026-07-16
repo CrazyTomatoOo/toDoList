@@ -1,0 +1,23 @@
+Command: npx vitest run src/__tests__/services/importExport.test.ts --reporter=verbose
+Timestamp: 2026-07-15T11:09:12Z
+Note: better-sqlite3 was rebuilt for the current Node.js version before running this command.
+---
+
+ RUN  v4.1.10 /Volumes/work/Project/toDoList
+
+ ✓ src/__tests__/services/importExport.test.ts > importExport service > exports JSON with nested lists and tasks 7ms
+ ✓ src/__tests__/services/importExport.test.ts > importExport service > exports CSV with header and task rows 3ms
+ ✓ src/__tests__/services/importExport.test.ts > importExport service > imports JSON and merges lists by name 3ms
+ ✓ src/__tests__/services/importExport.test.ts > importExport service > imports CSV and creates missing lists 2ms
+ ✓ src/__tests__/services/importExport.test.ts > importExport service > does not duplicate lists with the same name 2ms
+ ✓ src/__tests__/services/importExport.test.ts > importExport service > appends imported tasks to the end of existing lists 2ms
+ ✓ src/__tests__/services/importExport.test.ts > importExport service > rejects tasks with empty titles 2ms
+ ✓ src/__tests__/services/importExport.test.ts > importExport service > rejects invalid priority values 2ms
+ ✓ src/__tests__/services/importExport.test.ts > importExport service > rolls back the entire import when a task is invalid 2ms
+ ✓ src/__tests__/services/importExport.test.ts > importExport service > handles CSV fields with commas and quotes 2ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  19:09:13
+   Duration  135ms (transform 26ms, setup 0ms, import 37ms, tests 28ms, environment 0ms)
+

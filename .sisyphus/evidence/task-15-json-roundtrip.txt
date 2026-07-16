@@ -1,0 +1,11 @@
+Command: npx playwright test src/__tests__/e2e/import-export.spec.ts
+Timestamp: 2026-07-15T11:08:03Z
+---
+
+Running 3 tests using 1 worker
+
+  ✓  1 src/__tests__/e2e/import-export.spec.ts:48:3 › Import and Export › exports and imports JSON roundtrip (2.1s)
+  ✓  2 src/__tests__/e2e/import-export.spec.ts:101:3 › Import and Export › exports and imports CSV roundtrip (2.2s)
+  ✓  3 src/__tests__/e2e/import-export.spec.ts:152:3 › Import and Export › import is additive for existing data (745ms)
+
+  3 passed (5.4s)
