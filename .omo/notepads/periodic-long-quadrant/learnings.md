@@ -79,3 +79,12 @@
 - New `FilterBar.test.tsx` (9 tests) covers: rendering all five selects, correct option values for each new select, controlled value reflection, callback firing on change, and backward compatibility with existing priority/status filters.
 - All 191 tests pass; `npm run typecheck` and `npm run lint` are clean.
 - Note: `TaskForm.tsx` had a pre-existing syntax error (unclosed `<textarea>`) from a parallel task that was fixed during this task's verification step.
+
+# T10: Quadrant board view (2x2 Eisenhower matrix)
+- Created `src/renderer/components/QuadrantBoard.tsx` (157 lines) that renders a 2x2 CSS grid of quadrants. Each quadrant has a colored header (Q1 danger-light, Q2 accent-light, Q3 warning-light, Q4 bg-secondary), a task count badge, and a scrollable task list using the existing `TaskItem` component.
+- Quadrant grouping is done in the renderer via a pure `groupTasksByQuadrant` function that maps `is_urgent`/`is_important` flags to Q1-Q4 buckets. No new IPC channel is needed; the board receives the same `tasks` array from `useTasks(selectedListId)`.
+- The board component accepts `tasks`, `selectedListId`, `onUpdateTask`, `onDeleteTask`, and `onToggleComplete` props. Clicking a task opens the existing `TaskForm` in edit mode (same pattern as `TaskList`).
+- Added CSS styles to `styles.css` using the existing design tokens (spacing, colors, border-radius, shadows). The grid uses `grid-template-columns: 1fr 1fr` and `grid-template-rows: 1fr 1fr` for equal quadrants.
+- New `src/__tests__/components/QuadrantBoard.test.tsx` (10 tests) covers: rendering all four quadrants, correct task placement by quadrant, labels/subtitles, task counts, empty state messages per quadrant, null list handling, toggle complete, edit form opening, multiple tasks in same quadrant, and delete with confirmation.
+- All 191 tests pass; `npm run typecheck` and `npm run lint` are clean; `lsp_diagnostics` reports zero errors on new files.
+- The board is not yet wired into `App.tsx` (that is T11's job - the sidebar toggle).
