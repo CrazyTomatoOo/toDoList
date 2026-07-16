@@ -1,28 +1,12 @@
 import { getDb } from '../connection.js'
-import type { CreateTaskInput, Priority, TaskRow, UpdateTaskInput } from '../schema.js'
-
-function validateTitle(title: string): void {
-  if (title.trim().length === 0) {
-    throw new Error('Task title must not be empty')
-  }
-  if (title.trim().length > 200) {
-    throw new Error('Task title must be 200 characters or fewer')
-  }
-}
-
-function validateIsoDate(value: string | null | undefined, field: string): void {
-  if (value === undefined || value === null || value === '') {
-    return
-  }
-  const timestamp = Date.parse(value)
-  if (Number.isNaN(timestamp)) {
-    throw new Error(`${field} must be a valid ISO date string`)
-  }
-}
-
-function normalizeCompleted(value: boolean): 0 | 1 {
-  return value ? 1 : 0
-}
+import type { CreateTaskInput, TaskRow, UpdateTaskInput } from '../schema.js'
+import {
+  normalizeBoolean,
+  validateIsoDate,
+  validateTaskDates,
+  validateTitle,
+} from './taskValidation.js'
+export { getTasksByListId, searchTasks } from './taskQueries.js'
 
 function now(): string {
   return new Date().toISOString()
@@ -40,6 +24,7 @@ export function createTask(input: CreateTaskInput): TaskRow {
   validateTitle(input.title)
   validateIsoDate(input.due_date, 'Task due date')
   validateIsoDate(input.reminder_at, 'Task reminder date')
+  validateTaskDates(input)
 
   const db = getDb()
   const list = db.prepare('SELECT id FROM lists WHERE id = ?').get(input.list_id)
@@ -54,8 +39,10 @@ export function createTask(input: CreateTaskInput): TaskRow {
   const result = db
     .prepare(
       `INSERT INTO tasks (
-        list_id, title, description, priority, due_date, reminder_at, completed, sort_order, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?)`,
+        list_id, title, description, priority, due_date, reminder_at, completed, sort_order,
+        recurrence, recurrence_end_date, start_date, end_date, is_urgent, is_important,
+        created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       input.list_id,
@@ -65,6 +52,12 @@ export function createTask(input: CreateTaskInput): TaskRow {
       input.due_date ?? null,
       input.reminder_at ?? null,
       maxSort.maxSortOrder + 1,
+      input.recurrence ?? null,
+      input.recurrence_end_date ?? null,
+      input.start_date ?? null,
+      input.end_date ?? null,
+      normalizeBoolean(input.is_urgent ?? false),
+      normalizeBoolean(input.is_important ?? false),
       timestamp,
       timestamp,
     )
@@ -76,38 +69,13 @@ export function getTaskById(id: number): TaskRow | undefined {
   return getDb().prepare('SELECT * FROM tasks WHERE id = ?').get(id) as TaskRow | undefined
 }
 
-export function getTasksByListId(
-  listId: number,
-  options: { completed?: boolean; priority?: Priority; search?: string } = {},
-): TaskRow[] {
-  const conditions = ['list_id = ?']
-  const params: unknown[] = [listId]
-
-  if (options.completed !== undefined) {
-    conditions.push('completed = ?')
-    params.push(normalizeCompleted(options.completed))
-  }
-  if (options.priority) {
-    conditions.push('priority = ?')
-    params.push(options.priority)
-  }
-  if (options.search?.trim()) {
-    conditions.push('(LOWER(title) LIKE LOWER(?) OR LOWER(COALESCE(description, \'\')) LIKE LOWER(?))')
-    const query = `%${options.search.trim()}%`
-    params.push(query, query)
-  }
-
-  return getDb()
-    .prepare(`SELECT * FROM tasks WHERE ${conditions.join(' AND ')} ORDER BY sort_order ASC, created_at ASC`)
-    .all(...params) as TaskRow[]
-}
-
 export function updateTask(id: number, input: Partial<UpdateTaskInput>): TaskRow {
   if (input.title !== undefined) {
     validateTitle(input.title)
   }
   validateIsoDate(input.due_date, 'Task due date')
   validateIsoDate(input.reminder_at, 'Task reminder date')
+  validateTaskDates(input)
 
   const fields: string[] = []
   const params: unknown[] = []
@@ -134,11 +102,35 @@ export function updateTask(id: number, input: Partial<UpdateTaskInput>): TaskRow
   }
   if (input.completed !== undefined) {
     fields.push('completed = ?')
-    params.push(normalizeCompleted(input.completed))
+    params.push(normalizeBoolean(input.completed))
   }
   if (input.sort_order !== undefined) {
     fields.push('sort_order = ?')
     params.push(input.sort_order)
+  }
+  if (input.recurrence !== undefined) {
+    fields.push('recurrence = ?')
+    params.push(input.recurrence)
+  }
+  if (input.recurrence_end_date !== undefined) {
+    fields.push('recurrence_end_date = ?')
+    params.push(input.recurrence_end_date)
+  }
+  if (input.start_date !== undefined) {
+    fields.push('start_date = ?')
+    params.push(input.start_date)
+  }
+  if (input.end_date !== undefined) {
+    fields.push('end_date = ?')
+    params.push(input.end_date)
+  }
+  if (input.is_urgent !== undefined) {
+    fields.push('is_urgent = ?')
+    params.push(normalizeBoolean(input.is_urgent))
+  }
+  if (input.is_important !== undefined) {
+    fields.push('is_important = ?')
+    params.push(normalizeBoolean(input.is_important))
   }
 
   const existing = getTaskById(id)
@@ -159,33 +151,10 @@ export function deleteTask(id: number): void {
   getDb().prepare('DELETE FROM tasks WHERE id = ?').run(id)
 }
 
-export function searchTasks(
-  query: string,
-  filters: { listId?: number; completed?: boolean; priority?: Priority } = {},
-): TaskRow[] {
-  const conditions = ['(LOWER(title) LIKE LOWER(?) OR LOWER(COALESCE(description, \'\')) LIKE LOWER(?))']
-  const params: unknown[] = [`%${query.trim()}%`, `%${query.trim()}%`]
-
-  if (filters.listId !== undefined) {
-    conditions.push('list_id = ?')
-    params.push(filters.listId)
-  }
-  if (filters.completed !== undefined) {
-    conditions.push('completed = ?')
-    params.push(normalizeCompleted(filters.completed))
-  }
-  if (filters.priority) {
-    conditions.push('priority = ?')
-    params.push(filters.priority)
-  }
-
-  return getDb()
-    .prepare(`SELECT * FROM tasks WHERE ${conditions.join(' AND ')} ORDER BY sort_order ASC, created_at ASC`)
-    .all(...params) as TaskRow[]
-}
-
 export function countTasksByList(listId: number): number {
-  const row = getDb().prepare('SELECT COUNT(*) AS count FROM tasks WHERE list_id = ?').get(listId) as { count: number }
+  const row = getDb().prepare('SELECT COUNT(*) AS count FROM tasks WHERE list_id = ?').get(listId) as {
+    count: number
+  }
   return row.count
 }
 

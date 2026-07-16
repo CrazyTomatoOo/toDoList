@@ -1,0 +1,7 @@
+> npm rebuild better-sqlite3 && vitest run src/__tests__/db/taskRepositoryNewFields.test.ts
+rebuilt dependencies successfully
+ RUN  v4.1.10 /Volumes/work/Project/toDoList
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  15:23:15
+   Duration  138ms (transform 28ms, setup 0ms, import 39ms, tests 32ms, environment 0ms)

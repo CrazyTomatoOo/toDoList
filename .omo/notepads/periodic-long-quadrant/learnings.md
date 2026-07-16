@@ -26,3 +26,14 @@
   DB schema contracts stay in sync, that `Recurrence` is assignable to `TaskRow['recurrence']`, and
   that `CreateTaskInput` / `UpdateTaskInput` accept the new fields with the intended optionality.
 - `npm run typecheck` passes with no errors.
+
+# T3: Task repository updates for new fields and filters
+- Placed the strict `YYYY-MM-DD` validator in `src/shared/utils/dateValidator.ts` so it can be imported by both the main process (DB repository, import/export) and the renderer (task form validation) without dragging in main-only dependencies like better-sqlite3.
+- `createTask` and `updateTask` validate the `recurrence` enum, run `validateDateOnly` for `recurrence_end_date`, `start_date`, and `end_date`, and enforce `start_date <= end_date` when both are present. When `recurrence` is set, `due_date` is also validated as date-only so recurrence math has a clean base date.
+- Boolean inputs `is_urgent` / `is_important` are normalized to `0` / `1` via a shared helper before insert/update, matching the existing `completed` pattern.
+- `searchTasks` supports `recurrence` exact match, `durationFilter` (`all`, `hasDateRange`, `noDateRange`), and `quadrant` filters using bound parameters only. `getTasksByListId` also exposes the `quadrant` option from `TaskListOptions` so T6 can reuse it.
+- Added an `eslint-disable @typescript-eslint/no-unused-vars` comment to `src/__tests__/types/taskContracts.test.ts` (T2 artifact) because the compile-time type aliases are intentionally unused at runtime. This keeps `npm run lint` green for the feature branch.
+
+# T3 refactor note
+- Split the repository to keep each file under the 250 pure-LOC ceiling: `taskValidation.ts` holds validation helpers and `taskQueries.ts` holds `getTasksByListId` / `searchTasks`. `taskRepository.ts` now implements the core CRUD operations and re-exports the query functions so existing imports continue to work.
+- All repository tests (18 total) and `npm run typecheck` / `npm run lint` remain green after the split.

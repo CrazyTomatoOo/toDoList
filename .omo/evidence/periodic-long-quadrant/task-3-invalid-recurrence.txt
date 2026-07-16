@@ -1,0 +1,7 @@
+> npm rebuild better-sqlite3 && vitest run src/__tests__/db/taskRepositoryNewFields.test.ts -t rejects invalid recurrence values
+rebuilt dependencies successfully
+ RUN  v4.1.10 /Volumes/work/Project/toDoList
+ Test Files  1 passed (1)
+      Tests  1 passed | 9 skipped (10)
+   Start at  15:23:19
+   Duration  115ms (transform 28ms, setup 0ms, import 39ms, tests 8ms, environment 0ms)
