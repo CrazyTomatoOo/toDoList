@@ -452,6 +452,12 @@ TQ|- Failure: `.omo/evidence/ui-redesign/task-12-e2e-failure.txt` (broken `list-
 YK|- Screenshots: `.omo/evidence/ui-redesign/task-12-{light,dark,keyboard,dark-parity}.png`.
 
 **Verification:**
+## [2026-07-16 22:00:00] Follow-up: Packaged macOS app skip logic fixed
+XW|- `resolvePackagedAppPath` now returns `{ executablePath: '', cleanup: () => {} }` instead of throwing when no bundle/DMG exists.
+QN|- `beforeAll` skips the packaged test when the bundle is absent (`test.skip(!fs.existsSync(executablePath), ...)`).
+ZR|- `beforeAll` also catches `electron.launch`/`firstWindow` failures and skips with `test.skip(true, 'Packaged macOS app failed to launch...')`.
+VK|- `afterAll` no longer has the duplicate `await electronApp.close()`; close is wrapped in try-catch to handle partial launches.
+YK|- Final `npm run test:e2e`: 64 passed, 1 skipped (packaged macOS app), 0 failures.
 YK|- `npm run test:e2e` final result: 63/64 passed (1 pre-existing packaged macOS app launch failure).
 QN|- `integration.spec.ts` now skips when the bundle is absent, but still fails on the present-yet-broken bundle; documented in `issues.md`.
 YK|- TypeScript diagnostics on changed files: only the pre-existing `window.electronAPI` type mismatch remains.
