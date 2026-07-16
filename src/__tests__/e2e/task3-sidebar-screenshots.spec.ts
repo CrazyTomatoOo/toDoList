@@ -71,19 +71,19 @@ test.describe('Task 3 - Sidebar screenshots', () => {
     })
 
     // Now click the second list
-    await items.nth(1).click()
+    await items.nth(1).locator('.sidebar-item-button').click()
     await page.waitForTimeout(300)
 
     // Verify the second list is active (has aria-current="page")
-    const secondItem = items.nth(1)
-    const ariaCurrent = await secondItem.getAttribute('aria-current')
+    const secondItemButton = items.nth(1).locator('.sidebar-item-button')
+    const ariaCurrent = await secondItemButton.getAttribute('aria-current')
     if (ariaCurrent !== 'page') {
       throw new Error(`Expected aria-current="page" on second item, got "${ariaCurrent}"`)
     }
 
     // Verify the first item is NOT active
-    const firstItem = items.first()
-    const firstAriaCurrent = await firstItem.getAttribute('aria-current')
+    const firstItemButton = items.first().locator('.sidebar-item-button')
+    const firstAriaCurrent = await firstItemButton.getAttribute('aria-current')
     if (firstAriaCurrent === 'page') {
       throw new Error('First item should not have aria-current="page" after clicking second item')
     }

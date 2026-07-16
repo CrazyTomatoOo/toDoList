@@ -37,3 +37,15 @@
 - The test selector was not updated in T5, causing a pre-existing failure.
 - Not caused by T7 changes; should be fixed in a future cleanup task.
 - `integration.spec.ts` packaged app test remains a pre-existing failure (documented above).
+## [2026-07-16] Task: T12 — Packaged macOS app test failure (environmental, pre-existing)
+XW|- `integration.spec.ts` requires a packaged macOS `.app` bundle (`dist/mac-arm64/ToDoList.app`).
+QJ|- A bundle exists in the workspace but crashes immediately on launch (`electron.launch` closes the target page/context).
+ZP|- Attempted to rebuild via `npm run build:mac`; it failed during electron download with `TypeError: Invalid URL` inside `HttpProxyAgent`, indicating an environment proxy/network issue unrelated to the app.
+ZR|- Decision: keep the test, but skip when the bundle is absent. The existing launch failure is documented as a pre-existing environmental issue and is the only expected E2E failure.
+YV|- Verification: `npm run test:e2e` reports 63/64 passed (1 pre-existing packaged app failure).
+
+## [2026-07-16] Task: T12 — E2E UI regression spec added
+MN|- Added `src/__tests__/e2e/task12-e2e-regression.spec.ts` with visual consistency, keyboard navigation, and dark mode parity tests.
+YK|- Screenshots saved to `.omo/evidence/ui-redesign/task-12-{light,dark,keyboard,dark-parity}.png`.
+TQ|- Failure evidence saved to `.omo/evidence/ui-redesign/task-12-e2e-failure.txt` (broken selector).
+QS|- Success evidence saved to `.omo/evidence/ui-redesign/task-12-e2e.txt`.

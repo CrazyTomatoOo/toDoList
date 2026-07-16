@@ -434,3 +434,24 @@
 - `npm run lint` → no issues
 - No production code or other test files modified
 
+## [2026-07-16 21:45:00] Task: T12 — E2E UI Regression Tests
+
+**Existing E2E fixes:**
+XW|- `task3-sidebar-screenshots.spec.ts` updated to look for `aria-current="page"` on `.sidebar-item-button` (inner button) after T9 restructured the sidebar item into a wrapper `div` + inner `button`.
+BN|- `integration.spec.ts` updated to skip the packaged macOS app test when the bundle is absent (`test.skip(!fs.existsSync(executablePath), ...)`).
+
+**New E2E coverage:**
+MN|- Added `src/__tests__/e2e/task12-e2e-regression.spec.ts` with three tests:
+YK|  - Visual consistency screenshots in light and dark modes (`task-12-light.png`, `task-12-dark.png`).
+YK|  - Keyboard navigation creates a task without mouse (focus Add Task button, Enter, Tab to title, type, Enter to submit).
+YK|  - Dark mode parity checks visibility of theme toggle, add-task, add-list, view toggles, and search input.
+
+**Evidence:**
+QS|- Success: `.omo/evidence/ui-redesign/task-12-e2e.txt` (3/3 passed).
+TQ|- Failure: `.omo/evidence/ui-redesign/task-12-e2e-failure.txt` (broken `list-sidebar-broken` selector).
+YK|- Screenshots: `.omo/evidence/ui-redesign/task-12-{light,dark,keyboard,dark-parity}.png`.
+
+**Verification:**
+YK|- `npm run test:e2e` final result: 63/64 passed (1 pre-existing packaged macOS app launch failure).
+QN|- `integration.spec.ts` now skips when the bundle is absent, but still fails on the present-yet-broken bundle; documented in `issues.md`.
+YK|- TypeScript diagnostics on changed files: only the pre-existing `window.electronAPI` type mismatch remains.

@@ -1,0 +1,57 @@
+> npm run build && npx electron-rebuild --force
+> electron-vite build
+vite v5.4.21 building SSR bundle for production...
+transforming...
+✓ 21 modules transformed.
+rendering chunks...
+out/main/chunks/migrations-BHBUj5up.js   1.95 kB
+out/main/main.js                        39.01 kB
+✓ built in 111ms
+vite v5.4.21 building SSR bundle for production...
+transforming...
+✓ 2 modules transformed.
+rendering chunks...
+out/preload/preload.js  3.50 kB
+✓ built in 8ms
+vite v5.4.21 building for production...
+transforming...
+✓ 1812 modules transformed.
+rendering chunks...
+out/renderer/index.html                   0.53 kB
+out/renderer/assets/index-BA0ULK--.css   33.24 kB
+out/renderer/assets/index-BCz_8uud.js   400.88 kB
+✓ built in 936ms
+> playwright test src/__tests__/e2e/task12-e2e-regression.spec.ts
+Running 3 tests using 1 worker
+  ✘  1 src/__tests__/e2e/task12-e2e-regression.spec.ts:100:3 › Task 12 - E2E UI regression › visual consistency screenshots in light and dark modes (8.3s)
+  ✓  2 src/__tests__/e2e/task12-e2e-regression.spec.ts:119:3 › Task 12 - E2E UI regression › keyboard navigation can create a task without mouse (1.5s)
+  ✓  3 src/__tests__/e2e/task12-e2e-regression.spec.ts:148:3 › Task 12 - E2E UI regression › dark mode parity preserves interactive element visibility (1.0s)
+  1) src/__tests__/e2e/task12-e2e-regression.spec.ts:100:3 › Task 12 - E2E UI regression › visual consistency screenshots in light and dark modes 
+    Error: expect(locator).toBeVisible() failed
+    Locator: locator('[data-testid="list-sidebar-broken"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for locator('[data-testid="list-sidebar-broken"]')
+      111 |     await captureScreenshot(page, 'task-12-dark')
+      112 |
+    > 113 |     await expect(page.locator('[data-testid="list-sidebar-broken"]')).toBeVisible()
+          |                                                                       ^
+      114 |     await expect(page.locator('[data-testid="search-filter-bar"]')).toBeVisible()
+      115 |     await expect(page.locator('[data-testid="task-list"]')).toBeVisible()
+      116 |     await expect(page.locator('[data-testid="task-item"]')).toHaveCount(2)
+        at /Volumes/work/Project/toDoList/src/__tests__/e2e/task12-e2e-regression.spec.ts:113:71
+    Error Context: .sisyphus/test-results/task12-e2e-regression-Task-02795-ots-in-light-and-dark-modes/error-context.md
+    Error Context: .sisyphus/test-results/task12-e2e-regression-Task-02795-ots-in-light-and-dark-modes/error-context.md
+  1 failed
+    src/__tests__/e2e/task12-e2e-regression.spec.ts:100:3 › Task 12 - E2E UI regression › visual consistency screenshots in light and dark modes 
+  2 passed (12.2s)
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Volumes/work/Project/toDoList/src/main/db/connection.ts is dynamically imported by /Volumes/work/Project/toDoList/src/main/main.ts but also statically imported by /Volumes/work/Project/toDoList/src/main/db/migrations.ts, /Volumes/work/Project/toDoList/src/main/db/repositories/listRepository.ts, /Volumes/work/Project/toDoList/src/main/db/repositories/taskQueries.ts, /Volumes/work/Project/toDoList/src/main/db/repositories/taskRepository.ts, /Volumes/work/Project/toDoList/src/main/services/importExport.ts, /Volumes/work/Project/toDoList/src/main/services/importExportImport.ts, /Volumes/work/Project/toDoList/src/main/services/theme.ts, dynamic import will not move module into another chunk.
+node_modules/lucide-react/dist/esm/context.mjs (2:0): Module level directives cause errors when bundled, "use client" in "node_modules/lucide-react/dist/esm/context.mjs" was ignored.
+node_modules/lucide-react/dist/esm/Icon.mjs (2:0): Module level directives cause errors when bundled, "use client" in "node_modules/lucide-react/dist/esm/Icon.mjs" was ignored.
+Searching dependency tree
+Building modules: better-sqlite3
+✔ Rebuild Complete
