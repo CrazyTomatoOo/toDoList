@@ -1,5 +1,10 @@
 # UI Redesign — Issues
 
+## [2026-07-16] Task: T7 — search-filter empty-state selector fix
+- Updated `src/__tests__/e2e/search-filter.spec.ts` to use `.tasklist-card-text` after T5 renamed the empty-state text container.
+- The `data-testid="task-list-empty"` assertion remains unchanged.
+- Verification: run `npm run test:e2e -- src/__tests__/e2e/search-filter.spec.ts` plus typecheck and lint.
+
 ## [2026-07-16] Task: T2 — Evidence filename deviation (minor, mitigated)
 - Plan required `task-2-icons.png`; agent produced `task-2-icons.png.txt` (build log).
 - Mitigation: `task-1-tokens.png` (post Wave-1) shows Lucide icons rendering. Not blocking.

@@ -191,7 +191,7 @@ test.describe('Search and Filter', () => {
     await page.waitForTimeout(500)
 
     await expect(page.locator('[data-testid="task-list-empty"]')).toBeVisible({ timeout: 5000 })
-    await expect(page.locator('.task-list-empty-text')).toHaveText('No tasks match your search')
+    await expect(page.locator('.tasklist-card-text')).toHaveText('No tasks match your search')
 
     await page.fill('[data-testid="search-input"]', '')
     await page.waitForTimeout(500)
