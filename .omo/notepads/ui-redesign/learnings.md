@@ -173,3 +173,47 @@
 - e2e: 1/1 passed (task5-tasklist-screenshots.spec.ts)
 - Evidence: `.omo/evidence/ui-redesign/task-5-tasklist.png` (task list with 3 tasks, first hovered showing actions)
 - Evidence: `.omo/evidence/ui-redesign/task-5-tasklist-failure.png` (first task completed with strikethrough)
+
+## [2026-07-16 20:15:00] Task: T6 - Quadrant Board Redesign
+
+**CSS changes:**
+- `.quadrant`: changed border from `--color-border-light` (N200) to `--color-border` (N300) for stronger definition, added `box-shadow: var(--shadow-sm)` for card elevation
+- `.quadrant-header`: added default `background: var(--color-bg-secondary)` as fallback, kept per-quadrant accent backgrounds (Q1=danger-light, Q2=accent-light, Q3=warning-light, Q4=bg-secondary)
+- `.quadrant-label`: increased font-size from `--font-size-sm` (13px) to `--font-size-base` (14px) for better hierarchy, added `line-height: var(--line-height-tight)`
+- `.quadrant-subtitle`: added `line-height: var(--line-height)` for consistent text alignment
+- `.quadrant-count`: changed from `--font-weight-medium` to `--font-weight-semibold`, changed bg from `--color-bg-tertiary` to `--color-surface`, added `border: 1px solid var(--color-border-light)` for pill treatment, changed color to `--color-text-primary` for stronger contrast
+- `.quadrant-body`: added `padding: var(--space-2)` for internal spacing
+- `.quadrant-empty`: added card treatment with `background: var(--color-bg-secondary)`, `border: 1px dashed var(--color-border-light)`, `border-radius: var(--border-radius-md)`, `margin: var(--space-2)` for visual distinction
+- `.quadrant .task-list`: added `padding: 0` and `list-style: none` to reset browser defaults
+- `.quadrant .task-item`: added `margin-bottom: var(--space-1)` for spacing between tasks, added `border-radius: var(--border-radius-md)` for rounded corners
+- Added `.quadrant .task-item:last-child` rule to remove bottom margin from last task
+
+**Component changes:**
+- Zero JSX changes to QuadrantBoard.tsx — all visual improvements handled via CSS
+- All data-testid attributes preserved (quadrant-board, quadrant-q1/q2/q3/q4, quadrant-q1-tasks, etc.)
+- Quadrant grouping logic unchanged
+- Task edit/toggle handlers unchanged
+
+**E2E test:**
+- Created `task6-quadrant-screenshots.spec.ts`
+- Creates tasks in list view (add button doesn't work in board view — pre-existing limitation)
+- Switches to board view and verifies tasks are in correct quadrants
+- Captures screenshot with tasks in quadrants
+- Captures failure screenshot showing task hover state with action buttons
+
+**Pre-existing bug discovered:**
+- List scoping bug: tasks from multiple lists appear in the board view
+- The `useTasks` hook filters by `selectedListId`, but the board view shows tasks from all lists
+- This is outside T6 scope (visual redesign only) — documented in issues.md
+
+**Test changes:**
+- Zero unit test changes required — all 217 tests pass
+- Tests use `data-testid` selectors which were preserved
+
+**Verification:**
+- typecheck: exit 0
+- lint: exit 0
+- tests: 217/217 passed
+- e2e: 1/1 passed (task6-quadrant-screenshots.spec.ts)
+- Evidence: `.omo/evidence/ui-redesign/task-6-quadrant.png` (board view with 4 tasks in correct quadrants)
+- Evidence: `.omo/evidence/ui-redesign/task-6-quadrant-failure.png` (task with hover state showing action buttons)
