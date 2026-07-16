@@ -44,7 +44,7 @@ describe('database connection and migrations', () => {
     const db = getDb()
     const version = runMigrations()
 
-    expect(version).toBe(3)
+    expect(version).toBe(4)
 
     const table = db
       .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'migrations'")
@@ -56,7 +56,7 @@ describe('database connection and migrations', () => {
       version: number
     }[]
 
-    expect(rows.map((row) => row.version)).toEqual([1, 2, 3])
+    expect(rows.map((row) => row.version)).toEqual([1, 2, 3, 4])
   })
 
   it('is idempotent when run twice', () => {
@@ -64,13 +64,13 @@ describe('database connection and migrations', () => {
     runMigrations()
     const version = runMigrations()
 
-    expect(version).toBe(3)
+    expect(version).toBe(4)
 
     const db = getDb()
     const rows = db.prepare('SELECT version FROM migrations ORDER BY version').all() as {
       version: number
     }[]
 
-    expect(rows).toHaveLength(3)
+    expect(rows).toHaveLength(4)
   })
 })

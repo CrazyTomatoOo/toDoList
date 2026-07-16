@@ -83,6 +83,12 @@ describe('lists and tasks schema', () => {
       { name: 'sort_order', type: 'INTEGER', notnull: 1, dflt_value: '0', pk: 0 },
       { name: 'created_at', type: 'TEXT', notnull: 1, dflt_value: null, pk: 0 },
       { name: 'updated_at', type: 'TEXT', notnull: 1, dflt_value: null, pk: 0 },
+      { name: 'recurrence', type: 'TEXT', notnull: 0, dflt_value: null, pk: 0 },
+      { name: 'recurrence_end_date', type: 'TEXT', notnull: 0, dflt_value: null, pk: 0 },
+      { name: 'start_date', type: 'TEXT', notnull: 0, dflt_value: null, pk: 0 },
+      { name: 'end_date', type: 'TEXT', notnull: 0, dflt_value: null, pk: 0 },
+      { name: 'is_urgent', type: 'INTEGER', notnull: 1, dflt_value: '0', pk: 0 },
+      { name: 'is_important', type: 'INTEGER', notnull: 1, dflt_value: '0', pk: 0 },
     ])
   })
 
@@ -113,6 +119,12 @@ describe('lists and tasks schema', () => {
         'idx_tasks_completed',
         'idx_tasks_due_date',
         'idx_tasks_priority',
+        'idx_tasks_recurrence',
+        'idx_tasks_recurrence_end_date',
+        'idx_tasks_start_date',
+        'idx_tasks_end_date',
+        'idx_tasks_is_urgent',
+        'idx_tasks_is_important',
       ]),
     )
   })
@@ -144,5 +156,91 @@ describe('lists and tasks schema', () => {
 
     const taskCount = db.prepare('SELECT COUNT(*) AS count FROM tasks').get() as { count: number }
     expect(taskCount.count).toBe(0)
+  })
+  it('keeps the tasks updated_at trigger after migration', () => {
+    const db = migratedDb()
+    const triggers = db.prepare("SELECT name FROM sqlite_master WHERE type = 'trigger' AND tbl_name = 'tasks'").all() as { name: string }[]
+    expect(triggers.map((trigger) => trigger.name)).toContain('trg_tasks_updated_at')
+  })
+
+  it('includes CHECK constraints for is_urgent and is_important', () => {
+    const db = migratedDb()
+    const row = db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'tasks'").get() as { sql: string }
+
+    expect(row.sql).toContain('CHECK (is_urgent IN (0, 1))')
+    expect(row.sql).toContain('CHECK (is_important IN (0, 1))')
+  })
+
+  it('rejects invalid recurrence values', () => {
+    const db = migratedDb()
+    const list = db.prepare("INSERT INTO lists (name, created_at, updated_at) VALUES ('Inbox', ?, ?)")
+      .run('2026-07-15T00:00:00.000Z', '2026-07-15T00:00:00.000Z')
+
+    expect(() => {
+      db.prepare(
+        `INSERT INTO tasks (list_id, title, recurrence, created_at, updated_at)
+         VALUES (?, 'bad recurrence', 'hourly', ?, ?)`,
+      ).run(list.lastInsertRowid, '2026-07-15T00:00:00.000Z', '2026-07-15T00:00:00.000Z')
+    }).toThrow(/CHECK constraint failed/)
+  })
+
+  it('rejects invalid is_urgent values', () => {
+    const db = migratedDb()
+    const list = db.prepare("INSERT INTO lists (name, created_at, updated_at) VALUES ('Inbox', ?, ?)")
+      .run('2026-07-15T00:00:00.000Z', '2026-07-15T00:00:00.000Z')
+
+    expect(() => {
+      db.prepare(
+        `INSERT INTO tasks (list_id, title, is_urgent, created_at, updated_at)
+         VALUES (?, 'bad urgent', 2, ?, ?)`,
+      ).run(list.lastInsertRowid, '2026-07-15T00:00:00.000Z', '2026-07-15T00:00:00.000Z')
+    }).toThrow(/CHECK constraint failed/)
+  })
+
+  it('rejects invalid is_important values', () => {
+    const db = migratedDb()
+    const list = db.prepare("INSERT INTO lists (name, created_at, updated_at) VALUES ('Inbox', ?, ?)")
+      .run('2026-07-15T00:00:00.000Z', '2026-07-15T00:00:00.000Z')
+
+    expect(() => {
+      db.prepare(
+        `INSERT INTO tasks (list_id, title, is_important, created_at, updated_at)
+         VALUES (?, 'bad important', 2, ?, ?)`,
+      ).run(list.lastInsertRowid, '2026-07-15T00:00:00.000Z', '2026-07-15T00:00:00.000Z')
+    }).toThrow(/CHECK constraint failed/)
+  })
+
+  it('rejects malformed date values for new date fields', () => {
+    const db = migratedDb()
+    const list = db.prepare("INSERT INTO lists (name, created_at, updated_at) VALUES ('Inbox', ?, ?)")
+      .run('2026-07-15T00:00:00.000Z', '2026-07-15T00:00:00.000Z')
+
+    for (const field of ['recurrence_end_date', 'start_date', 'end_date']) {
+      expect(() => {
+        db.prepare(
+          `INSERT INTO tasks (list_id, title, ${field}, created_at, updated_at)
+           VALUES (?, 'bad date', 'not-a-date', ?, ?)`,
+        ).run(list.lastInsertRowid, '2026-07-15T00:00:00.000Z', '2026-07-15T00:00:00.000Z')
+      }).toThrow(/CHECK constraint failed/)
+    }
+  })
+
+  it('accepts valid recurrence, duration, and quadrant values', () => {
+    const db = migratedDb()
+    const list = db.prepare("INSERT INTO lists (name, created_at, updated_at) VALUES ('Inbox', ?, ?)")
+      .run('2026-07-15T00:00:00.000Z', '2026-07-15T00:00:00.000Z')
+
+    const result = db.prepare(
+      `INSERT INTO tasks (list_id, title, recurrence, recurrence_end_date, start_date, end_date, is_urgent, is_important, created_at, updated_at)
+       VALUES (?, 'valid recurring', 'daily', '2026-12-31', '2026-07-15', '2026-07-16', 1, 1, ?, ?)`,
+    ).run(list.lastInsertRowid, '2026-07-15T00:00:00.000Z', '2026-07-15T00:00:00.000Z')
+
+    expect(result.lastInsertRowid).toBeGreaterThan(0)
+  })
+
+  it('records migration version 4', () => {
+    const db = migratedDb()
+    const versions = db.prepare('SELECT version FROM migrations ORDER BY version').all() as { version: number }[]
+    expect(versions.map((version) => version.version)).toContain(4)
   })
 })

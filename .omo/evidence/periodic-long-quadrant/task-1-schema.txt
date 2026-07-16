@@ -1,0 +1,42 @@
+T1: Schema migration for recurrence, duration, and quadrant fields
+===================================================================
+
+Verification: npm test src/__tests__/db/schema.test.ts
+
+Result: 15 tests passed
+
+Verification: npm test src/__tests__/db/migrations.test.ts
+
+Result: 3 tests passed (current version 4, migrations idempotent)
+
+sqlite_master.sql for tasks after migration
+---------------------------------------------
+CREATE TABLE tasks (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  list_id INTEGER NOT NULL,
+  title TEXT NOT NULL CHECK (length(title) <= 200),
+  description TEXT CHECK (description IS NULL OR length(description) <= 2000),
+  priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('high', 'medium', 'low')),
+  due_date TEXT,
+  reminder_at TEXT,
+  completed INTEGER NOT NULL DEFAULT 0 CHECK (completed IN (0, 1)),
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  recurrence TEXT CHECK (recurrence IS NULL OR recurrence IN ('daily', 'weekly', 'monthly', 'yearly')),
+  recurrence_end_date TEXT CHECK (recurrence_end_date IS NULL OR (recurrence_end_date LIKE '____-__-__' AND date(recurrence_end_date) IS NOT NULL AND strftime('%Y-%m-%d', recurrence_end_date) = recurrence_end_date)),
+  start_date TEXT CHECK (start_date IS NULL OR (start_date LIKE '____-__-__' AND date(start_date) IS NOT NULL AND strftime('%Y-%m-%d', start_date) = start_date)),
+  end_date TEXT CHECK (end_date IS NULL OR (end_date LIKE '____-__-__' AND date(end_date) IS NOT NULL AND strftime('%Y-%m-%d', end_date) = end_date)),
+  is_urgent INTEGER NOT NULL DEFAULT 0 CHECK (is_urgent IN (0, 1)),
+  is_important INTEGER NOT NULL DEFAULT 0 CHECK (is_important IN (0, 1)),
+  FOREIGN KEY (list_id) REFERENCES lists(id) ON DELETE CASCADE
+)
+
+Notes
+-----
+- New columns added via ALTER TABLE (no table recreation, no data loss).
+- Existing columns, foreign key, and the trg_tasks_updated_at trigger are preserved.
+- New date fields enforce strict YYYY-MM-DD via schema-level CHECK constraints so malformed
+  dates throw CHECK constraint errors at the DB layer.
+- New indexes created for each new column.
+- Migration version 4 is recorded in the migrations table.
