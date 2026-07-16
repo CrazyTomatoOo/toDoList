@@ -177,7 +177,7 @@ export default function App() {
               </div>
             )}
             <button
-              className="btn btn-ghost btn-icon"
+              className="btn btn-ghost btn-icon theme-toggle"
               onClick={toggleTheme}
               data-testid="theme-toggle"
               title={`Theme: ${themeMode}`}

@@ -278,3 +278,42 @@
 - e2e: 57/59 passed (2 pre-existing failures)
 - Evidence: `.omo/evidence/ui-redesign/task-7-form.png` (task form modal with Feishu styling)
 - Evidence: `.omo/evidence/ui-redesign/task-7-form-failure.png` (field-level validation error for invalid dates)
+
+## [2026-07-16 20:45:00] Task: T8 - Theme Toggle & Import/Export Polish
+
+**CSS changes:**
+- Added `.theme-toggle` class with explicit 36x36px dimensions, transparent background, and proper hover/active/focus-visible states
+- Theme toggle uses semantic tokens: `--color-text-secondary` for default, `--color-text-primary` on hover, `--color-surface-hover` for hover bg, `--color-surface-active` for press bg
+- Focus-visible ring: 2px solid accent with 2px offset for keyboard navigation
+- Added `.import-export-actions` container with `inline-flex` layout and 4px gap (space-1)
+- Changed import/export buttons from `btn-secondary` to `btn-ghost` to match header action button style
+- Added scoped `.import-export-actions .btn` styles: 4px/8px padding, 13px font-size, medium weight, no border, 6px radius
+- Added focus-visible styles for import/export buttons matching theme toggle pattern
+
+**Component changes:**
+- App.tsx: Added `theme-toggle` class to theme toggle button (line 180). All other attributes preserved (data-testid, aria-label, title, onClick handler, Lucide icons)
+- ImportExportButtons.tsx: Changed all three buttons from `btn btn-secondary` to `btn btn-ghost`. All data-testids preserved (import-button, export-json-button, export-csv-button)
+- Zero logic changes: theme persistence, theme mode state, import/export IPC calls all unchanged
+
+**Design decisions:**
+- Theme toggle is now a clean icon-only button (36x36px square) with transparent background and subtle hover state
+- Import/export buttons are ghost-style (no background fill) matching the header action buttons pattern from T4
+- Consistent interaction states across all header buttons: hover=`--color-surface-hover`, press=`--color-surface-active`, focus-visible=2px accent ring
+- 4px gap between import/export buttons (space-1) for tight grouping while maintaining visual separation
+
+**Test changes:**
+- Zero unit test changes — all 217 tests pass
+- Created new e2e spec: `task8-polish-screenshots.spec.ts`
+  - Creates a list to make header actions visible
+  - Clicks theme toggle and verifies aria-label changes (theme cycled)
+  - Clicks import, export-json, export-csv buttons
+  - Verifies theme aria-label does NOT change after import/export clicks (proving they're separate from theme logic)
+  - Captures success screenshot (theme toggle in action) and failure screenshot (import/export buttons after clicks with theme unchanged)
+
+**Verification:**
+- typecheck: exit 0
+- lint: exit 0
+- tests: 217/217 passed
+- e2e: 1/1 passed (task8-polish-screenshots.spec.ts)
+- Evidence: `.omo/evidence/ui-redesign/task-8-polish.png` (theme toggle clicked, theme cycled)
+- Evidence: `.omo/evidence/ui-redesign/task-8-polish-failure.png` (import/export buttons clicked, theme unchanged)

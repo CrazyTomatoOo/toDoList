@@ -13,7 +13,7 @@ export default function ImportExportButtons({
     <div className="import-export-actions">
       <button
         type="button"
-        className="btn btn-secondary"
+        className="btn btn-ghost"
         onClick={() => void onImport()}
         data-testid="import-button"
       >
@@ -21,7 +21,7 @@ export default function ImportExportButtons({
       </button>
       <button
         type="button"
-        className="btn btn-secondary"
+        className="btn btn-ghost"
         onClick={() => void onExportJson()}
         data-testid="export-json-button"
       >
@@ -29,7 +29,7 @@ export default function ImportExportButtons({
       </button>
       <button
         type="button"
-        className="btn btn-secondary"
+        className="btn btn-ghost"
         onClick={() => void onExportCsv()}
         data-testid="export-csv-button"
       >

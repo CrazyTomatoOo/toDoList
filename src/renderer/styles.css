@@ -568,6 +568,56 @@ select:focus {
   min-height: 28px;
 }
 
+/* ── Theme Toggle (icon-only button) ── */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: none;
+  border-radius: var(--border-radius-md, 6px);
+  color: var(--color-text-secondary, #4e5969);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--transition-fast, 150ms ease), color var(--transition-fast, 150ms ease);
+}
+
+.theme-toggle:hover {
+  background: var(--color-surface-hover, rgba(29, 33, 41, 0.08));
+  color: var(--color-text-primary, #1d2129);
+}
+
+.theme-toggle:active {
+  background: var(--color-surface-active, rgba(29, 33, 41, 0.12));
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--color-accent, #1456f0);
+  outline-offset: 2px;
+}
+
+/* ── Import/Export Actions ── */
+.import-export-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1, 4px);
+}
+
+.import-export-actions .btn {
+  padding: var(--space-1, 4px) var(--space-2, 8px);
+  font-size: var(--font-size-sm, 13px);
+  font-weight: var(--font-weight-medium, 500);
+  border: none;
+  border-radius: var(--border-radius-md, 6px);
+}
+
+.import-export-actions .btn:focus-visible {
+  outline: 2px solid var(--color-accent, #1456f0);
+  outline-offset: 2px;
+}
+
 /* ── View Toggle (segmented control) ── */
 .view-toggle {
   display: inline-flex;
