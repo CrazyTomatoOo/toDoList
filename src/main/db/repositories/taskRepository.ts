@@ -6,6 +6,7 @@ import {
   validateTaskDates,
   validateTitle,
 } from './taskValidation.js'
+import { generateNextRecurringInstance, type RecurringInstanceInput } from './taskRecurrence.js'
 export { getTasksByListId, getTasksByQuadrant, searchTasks } from './taskQueries.js'
 
 function now(): string {
@@ -18,6 +19,37 @@ function getInsertedTask(id: number): TaskRow {
     throw new Error('Task was not created')
   }
   return task
+}
+function insertRecurringInstance(db: ReturnType<typeof getDb>, input: RecurringInstanceInput): void {
+  const maxSort = db
+    .prepare('SELECT COALESCE(MAX(sort_order), -1) AS maxSortOrder FROM tasks WHERE list_id = ?')
+    .get(input.list_id) as { maxSortOrder: number }
+  const timestamp = now()
+
+  db.prepare(
+    `INSERT INTO tasks (
+      list_id, title, description, priority, due_date, reminder_at, completed, sort_order,
+      recurrence, recurrence_end_date, start_date, end_date, is_urgent, is_important,
+      created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(
+    input.list_id,
+    input.title,
+    input.description,
+    input.priority,
+    input.due_date,
+    null,
+    0,
+    maxSort.maxSortOrder + 1,
+    input.recurrence,
+    input.recurrence_end_date,
+    input.start_date,
+    input.end_date,
+    input.is_urgent,
+    input.is_important,
+    timestamp,
+    timestamp,
+  )
 }
 
 export function createTask(input: CreateTaskInput): TaskRow {
@@ -138,13 +170,25 @@ export function updateTask(id: number, input: Partial<UpdateTaskInput>): TaskRow
     throw new Error(`Task does not exist: ${id}`)
   }
 
-  if (fields.length > 0) {
-    getDb()
-      .prepare(`UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`)
-      .run(...params, id)
+  const isCompletingRecurring = existing.completed === 0 && input.completed === true && existing.recurrence !== null
+  const nextInstance = isCompletingRecurring ? generateNextRecurringInstance(existing) : undefined
+
+  if (fields.length === 0 && !nextInstance) {
+    return existing
   }
 
-  return getInsertedTask(id)
+  const db = getDb()
+  const transaction = db.transaction(() => {
+    if (fields.length > 0) {
+      db.prepare(`UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`).run(...params, id)
+    }
+    if (nextInstance) {
+      insertRecurringInstance(db, nextInstance)
+    }
+    return getInsertedTask(id)
+  })
+
+  return transaction()
 }
 
 export function deleteTask(id: number): void {
