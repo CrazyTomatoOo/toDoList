@@ -237,3 +237,27 @@ describe('importExport new fields', () => {
     expect(getAllLists()).toHaveLength(0)
   })
 })
+  it('rejects invalid recurrence values in CSV', () => {
+    const csv =
+      'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder,recurrence,recurrenceEndDate,startDate,endDate,isUrgent,isImportant\n' +
+      'Work,Bad recurrence,,medium,,,false,0,hourly,,,,false,false'
+
+    expect(() => importFromCsv(csv)).toThrow(/invalid recurrence/i)
+  })
+
+  it('rejects malformed date-only fields in CSV', () => {
+    const csv =
+      'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder,recurrence,recurrenceEndDate,startDate,endDate,isUrgent,isImportant\n' +
+      'Work,Bad date,,medium,,,false,0,daily,2024-13-01,,,false,false'
+
+    expect(() => importFromCsv(csv)).toThrow(/must be a valid YYYY-MM-DD date/i)
+  })
+
+  it('rejects startDate after endDate in CSV', () => {
+    const csv =
+      'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder,recurrence,recurrenceEndDate,startDate,endDate,isUrgent,isImportant\n' +
+      'Work,Inverted range,,medium,,,false,0,,,2024-02-01,2024-01-01,false,false'
+
+    expect(() => importFromCsv(csv)).toThrow(/start date must be before or equal to end date/i)
+  })
+

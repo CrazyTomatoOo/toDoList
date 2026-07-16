@@ -202,4 +202,37 @@ describe('task repository new fields', () => {
       is_important: 1,
     })
   })
+  it('rejects invalid recurrence_end_date format', () => {
+    const list = createList('Inbox')
+    expect(() =>
+      createTask({
+        list_id: list.id,
+        title: 'Bad end date',
+        recurrence: 'daily',
+        recurrence_end_date: '2024-13-01',
+      }),
+    ).toThrow(/valid YYYY-MM-DD/i)
+  })
+
+  it('updateTask rejects invalid recurrence values', () => {
+    const list = createList('Inbox')
+    const task = createTask({ list_id: list.id, title: 'Original' })
+    expect(() =>
+      updateTask(task.id, {
+        recurrence: 'hourly' as unknown as Recurrence,
+      }),
+    ).toThrow(/invalid recurrence/i)
+  })
+
+  it('updateTask rejects start_date greater than end_date', () => {
+    const list = createList('Inbox')
+    const task = createTask({ list_id: list.id, title: 'Original' })
+    expect(() =>
+      updateTask(task.id, {
+        start_date: '2024-02-01',
+        end_date: '2024-01-01',
+      }),
+    ).toThrow(/start date must be before or equal to end date/i)
+  })
+
 })

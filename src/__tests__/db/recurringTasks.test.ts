@@ -253,4 +253,19 @@ describe('recurring task next-instance generation', () => {
 
     expect(result).toBeUndefined()
   })
+  it('clamps monthly recurrence from Jan 31 to Feb 28 in a non-leap year', () => {
+    const list = createList('Inbox')
+    const task = createTask({
+      list_id: list.id,
+      title: 'Monthly Jan 31 non-leap',
+      due_date: '2023-01-31',
+      recurrence: 'monthly',
+    })
+
+    updateTask(task.id, { completed: true })
+
+    const nextInstance = getTasksByListId(list.id).find((t) => t.id !== task.id)
+    expect(nextInstance?.due_date).toBe('2023-02-28')
+  })
+
 })

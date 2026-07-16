@@ -1,5 +1,5 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import TaskForm from '../../renderer/components/TaskForm'
@@ -200,6 +200,52 @@ describe('TaskForm', () => {
           is_urgent: true,
           is_important: true
         })
+      })
+    })
+  })
+
+  describe('additional edge cases', () => {
+    beforeEach(() => {
+      vi.clearAllMocks()
+    })
+
+    it('blocks submission when start_date > end_date with recurrence set', async () => {
+      render(<TaskForm {...defaultProps} />)
+
+      fireEvent.change(screen.getByTestId('task-form-title'), { target: { value: 'Test' } })
+      fireEvent.change(screen.getByTestId('task-form-recurrence'), { target: { value: 'daily' } })
+      fireEvent.change(screen.getByTestId('task-form-due-date'), { target: { value: '2026-07-16' } })
+      fireEvent.change(screen.getByTestId('task-form-start-date'), { target: { value: '2026-12-31' } })
+      fireEvent.change(screen.getByTestId('task-form-end-date'), { target: { value: '2026-01-01' } })
+
+      fireEvent.click(screen.getByTestId('task-form-save'))
+
+      await waitFor(() => {
+        expect(screen.getByTestId('task-form-duration-error')).toHaveTextContent(
+          'Start date must be before or equal to end date'
+        )
+      })
+
+      expect(defaultProps.onSubmit).not.toHaveBeenCalled()
+    })
+
+    it('allows submission when recurrence is set with start_date only', async () => {
+      render(<TaskForm {...defaultProps} />)
+
+      fireEvent.change(screen.getByTestId('task-form-title'), { target: { value: 'Test' } })
+      fireEvent.change(screen.getByTestId('task-form-recurrence'), { target: { value: 'daily' } })
+      fireEvent.change(screen.getByTestId('task-form-start-date'), { target: { value: '2026-07-16' } })
+
+      fireEvent.click(screen.getByTestId('task-form-save'))
+
+      await waitFor(() => {
+        expect(defaultProps.onSubmit).toHaveBeenCalledWith(
+          expect.objectContaining({
+            title: 'Test',
+            recurrence: 'daily',
+            start_date: '2026-07-16'
+          })
+        )
       })
     })
   })

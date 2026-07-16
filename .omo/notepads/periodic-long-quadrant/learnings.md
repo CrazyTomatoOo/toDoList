@@ -115,3 +115,29 @@
 - Component test suite (`TaskForm.test.tsx`, 10 tests) covers: rendering all new fields, conditional recurrence end date display, pre-filling from existing task, validation blocking invalid date ranges, validation blocking recurrence without base date, validation allowing recurrence with due_date or start_date, full submission with all fields.
 - All 201 tests pass; `npm run typecheck` and `npm run lint` are clean.
 - Evidence saved to `.omo/evidence/periodic-long-quadrant/task-7-form.txt` and `.omo/evidence/periodic-long-quadrant/task-7-form-error.txt`.
+
+# T11: Sidebar toggle for list view vs quadrant board view
+- Added `viewMode` state (`'list' | 'board'`) to `App.tsx`, defaulting to `'list'` so existing behavior is preserved.
+- Imported `QuadrantBoard` from `./components/QuadrantBoard` and rendered it conditionally alongside `TaskList` using a ternary on `viewMode`.
+- Added a `.view-toggle` button group in `.main-header-actions` with two buttons (`List` / `Board`). Each button uses `aria-pressed` to reflect the active view and swaps between `btn-primary` (active) and `btn-ghost` (inactive) classes.
+- `SearchBar` and `FilterBar` are only rendered when `viewMode === 'list'` and `selectedListId !== null`, matching the requirement that they are list-view-only.
+- The board receives the raw `tasks` array from `useTasks(selectedListId)` (not `filteredTasks`) because the board does its own quadrant grouping; search/filter state is irrelevant in board mode.
+- The selected list is preserved across view switches because `viewMode` and `selectedListId` are independent state; switching views does not touch list selection.
+- When `selectedListId` is null, the view toggle buttons are hidden (they are wrapped in `{selectedListId !== null && ...}`), and `QuadrantBoard` renders its own empty state.
+- Added CSS for `.view-toggle` using existing design tokens (`--space-1`, `--color-surface-secondary`, `--border-radius-md`) to match the established styling pattern.
+- New `src/__tests__/components/App.test.tsx` (5 tests) covers: toggle button rendering, default list view, switching to board view, switching back to list view, and list preservation across view switches. All hooks and `electronAPI` are mocked to isolate the toggle behavior.
+- All 206 tests pass; `npm run typecheck` and `npm run lint` are clean; `lsp_diagnostics` reports zero errors on changed files.
+- Evidence saved to `.omo/evidence/periodic-long-quadrant/task-11-toggle.txt`.
+
+# T12: Unit and integration tests for new features
+
+- Added new edge-case tests across recurrence, repository validation, import/export, quadrant board, App view toggle, and TaskForm.
+- Recurrence clamping: added Jan 31 → Feb 28 non-leap-year test to complement existing leap-year and Feb 29 tests.
+- Repository validation: added invalid recurrence_end_date rejection, updateTask invalid recurrence rejection, and updateTask start_date > end_date rejection.
+- Import/export: extended failure-path coverage to CSV for invalid recurrence, malformed date-only fields, and inverted date ranges.
+- Quadrant board: added explicit all-four-quadrants render test.
+- App view toggle: added header-presence test after switching to board view.
+- TaskForm: added recurrence + duration interaction test and recurrence-with-start_date-only happy path.
+- No product source changes were required; all test failures were test-only issues (ambiguous selectors, un-enterable date input values, missing mock cleanup between tests).
+- Final verification: `npm run lint && npm run typecheck && npm test` all pass with 217 tests (24 test files).
+- Evidence saved to `.omo/evidence/periodic-long-quadrant/task-12-tests.txt`.

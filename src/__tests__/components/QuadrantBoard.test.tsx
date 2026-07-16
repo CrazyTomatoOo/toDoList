@@ -143,4 +143,19 @@ describe('QuadrantBoard', () => {
     expect(window.confirm).toHaveBeenCalled()
     expect(defaultProps.onDeleteTask).toHaveBeenCalledWith(1)
   })
+  it('groups all four quadrant combinations in a single render', () => {
+    const tasks = [
+      makeTask({ id: 10, title: 'Q1', is_urgent: 1, is_important: 1 }),
+      makeTask({ id: 11, title: 'Q2', is_urgent: 0, is_important: 1 }),
+      makeTask({ id: 12, title: 'Q3', is_urgent: 1, is_important: 0 }),
+      makeTask({ id: 13, title: 'Q4', is_urgent: 0, is_important: 0 })
+    ]
+    render(<QuadrantBoard {...defaultProps} tasks={tasks} />)
+
+    expect(screen.getByTestId('quadrant-q1-tasks')).toHaveTextContent('Q1')
+    expect(screen.getByTestId('quadrant-q2-tasks')).toHaveTextContent('Q2')
+    expect(screen.getByTestId('quadrant-q3-tasks')).toHaveTextContent('Q3')
+    expect(screen.getByTestId('quadrant-q4-tasks')).toHaveTextContent('Q4')
+  })
+
 })

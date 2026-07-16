@@ -1,0 +1,36 @@
+T12: Unit and integration tests for new features
+
+Verification commands:
+  npm run lint
+  npm run typecheck
+  npm test
+
+Final results:
+  - ESLint: No issues found
+  - TypeScript: No errors
+  - Vitest: 24 test files passed, 217 tests passed (up from 206)
+
+New / strengthened tests added:
+  - src/__tests__/db/recurringTasks.test.ts
+    - clamps monthly recurrence from Jan 31 to Feb 28 in a non-leap year
+  - src/__tests__/db/taskRepositoryNewFields.test.ts
+    - rejects invalid recurrence_end_date format
+    - updateTask rejects invalid recurrence values
+    - updateTask rejects start_date greater than end_date
+  - src/__tests__/services/importExportNewFields.test.ts
+    - rejects invalid recurrence values in CSV
+    - rejects malformed date-only fields in CSV
+    - rejects startDate after endDate in CSV
+  - src/__tests__/components/QuadrantBoard.test.tsx
+    - groups all four quadrant combinations in a single render
+  - src/__tests__/components/App.test.tsx
+    - shows selected list name in board view after toggling
+  - src/__tests__/components/TaskForm.test.tsx
+    - blocks submission when start_date > end_date with recurrence set
+    - allows submission when recurrence is set with start_date only
+
+Issues found:
+  - No product source changes were required.
+  - Test-only fixes: resolved ambiguous getByText selector in App.test.tsx,
+    replaced un-enterable invalid date input test with an interaction-valid
+    edge case, and added vi.clearAllMocks to the new TaskForm describe block.
