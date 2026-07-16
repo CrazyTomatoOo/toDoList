@@ -611,6 +611,8 @@ select:focus {
 /* ── Task List ── */
 .task-list {
   list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .task-list-empty {
@@ -624,10 +626,35 @@ select:focus {
   margin-bottom: var(--space-2, 8px);
 }
 
+/* Card treatment for empty/loading/error states */
+.tasklist-card {
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border-light, #e5e6eb);
+  border-radius: var(--border-radius-lg, 8px);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(29, 33, 41, 0.06));
+  padding: var(--space-8, 32px) var(--space-6, 24px);
+  margin: var(--space-4, 16px) 0;
+  text-align: center;
+  color: var(--color-text-tertiary, #86909c);
+}
+
+.tasklist-card-text {
+  font-size: var(--font-size-md, 16px);
+  margin-bottom: var(--space-4, 16px);
+}
+
+.tasklist-card-error {
+  background: var(--color-danger-light, #ffece8);
+  border-color: var(--color-danger, #f53f3f);
+  color: var(--color-danger, #f53f3f);
+  text-align: left;
+  font-size: var(--font-size-sm, 13px);
+}
+
 /* ── Task Item ── */
 .task-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--space-3, 12px);
   padding: var(--space-3, 12px) var(--space-4, 16px);
   border-bottom: 1px solid var(--color-border-light, #e5e6eb);
@@ -635,7 +662,7 @@ select:focus {
 }
 
 .task-item:hover {
-  background: var(--color-surface-hover);
+  background: var(--color-surface-hover, rgba(29, 33, 41, 0.08));
 }
 
 .task-item:last-child {
@@ -655,10 +682,16 @@ select:focus {
   transition: all var(--transition-fast, 150ms ease);
   background: transparent;
   padding: 0;
+  margin-top: 2px;
 }
 
 .task-checkbox:hover {
   border-color: var(--color-accent, #1456f0);
+}
+
+.task-checkbox:focus-visible {
+  outline: 2px solid var(--color-accent, #1456f0);
+  outline-offset: 2px;
 }
 
 .task-checkbox.checked {
@@ -682,6 +715,7 @@ select:focus {
   font-size: var(--font-size-base, 14px);
   color: var(--color-text-primary, #1d2129);
   word-break: break-word;
+  line-height: var(--line-height, 1.5);
 }
 
 .task-title.completed {
@@ -694,6 +728,7 @@ select:focus {
   align-items: center;
   gap: var(--space-2, 8px);
   margin-top: var(--space-1, 4px);
+  flex-wrap: wrap;
 }
 
 .task-priority {
@@ -754,6 +789,17 @@ select:focus {
   gap: var(--space-1, 4px);
   opacity: 0;
   transition: opacity var(--transition-fast, 150ms ease);
+  margin-top: 2px;
+}
+
+.task-item:hover .task-actions,
+.task-item:focus-within .task-actions {
+  opacity: 1;
+}
+
+.task-actions .btn-icon:focus-visible {
+  outline: 2px solid var(--color-accent, #1456f0);
+  outline-offset: 2px;
 }
 
 .task-item:hover .task-actions {
@@ -862,6 +908,7 @@ select:focus {
   gap: var(--space-3, 12px);
   padding: var(--space-3, 12px) var(--space-6, 24px);
   border-bottom: 1px solid var(--color-border-light, #e5e6eb);
+  background: var(--color-bg, #ffffff);
 }
 
 .search-bar {
@@ -875,7 +922,21 @@ select:focus {
   padding: var(--space-2, 8px) var(--space-3, 12px);
   padding-right: var(--space-8, 32px);
   font-size: var(--font-size-sm, 13px);
+  border: 1px solid var(--color-border, #c9cdd4);
   border-radius: var(--border-radius-md, 6px);
+  background: var(--color-bg, #ffffff);
+  color: var(--color-text-primary, #1d2129);
+  transition: border-color var(--transition-fast, 150ms ease), box-shadow var(--transition-fast, 150ms ease);
+}
+
+.search-input::placeholder {
+  color: var(--color-text-tertiary, #86909c);
+}
+
+.search-input:focus {
+  border-color: var(--color-accent, #1456f0);
+  box-shadow: 0 0 0 2px var(--color-accent-light, #e8eefd);
+  outline: none;
 }
 
 .search-clear {
@@ -893,24 +954,54 @@ select:focus {
   font-size: var(--font-size-md, 16px);
   line-height: 1;
   transition: color var(--transition-fast, 150ms ease), background var(--transition-fast, 150ms ease);
+  padding: 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
 }
 
 .search-clear:hover {
   color: var(--color-text-primary, #1d2129);
-  background: var(--color-surface-hover);
+  background: var(--color-surface-hover, rgba(29, 33, 41, 0.08));
+}
+
+.search-clear:focus-visible {
+  outline: 2px solid var(--color-accent, #1456f0);
+  outline-offset: 2px;
 }
 
 .filter-bar {
   display: flex;
   gap: var(--space-2, 8px);
   flex-shrink: 0;
+  align-items: center;
 }
 
 .filter-select {
   padding: var(--space-2, 8px) var(--space-3, 12px);
   font-size: var(--font-size-sm, 13px);
+  border: 1px solid var(--color-border, #c9cdd4);
   border-radius: var(--border-radius-md, 6px);
+  background: var(--color-bg, #ffffff);
+  color: var(--color-text-primary, #1d2129);
   min-width: 110px;
+  cursor: pointer;
+  transition: border-color var(--transition-fast, 150ms ease), box-shadow var(--transition-fast, 150ms ease);
+}
+
+.filter-select:hover {
+  border-color: var(--color-accent, #1456f0);
+}
+
+.filter-select:focus {
+  border-color: var(--color-accent, #1456f0);
+  box-shadow: 0 0 0 2px var(--color-accent-light, #e8eefd);
+  outline: none;
+}
+
+.filter-select:focus-visible {
+  outline: 2px solid var(--color-accent, #1456f0);
+  outline-offset: 2px;
 }
 
 /* ── Drag Handle ── */
@@ -927,22 +1018,32 @@ select:focus {
   font-size: var(--font-size-md, 16px);
   line-height: 1;
   touch-action: none;
-  transition: color var(--transition-fast, 150ms ease), background var(--transition-fast, 150ms ease);
+  transition: color var(--transition-fast, 150ms ease), background var(--transition-fast, 150ms ease), opacity var(--transition-fast, 150ms ease);
   opacity: 0;
   padding: 0;
+  margin-top: 2px;
+  background: transparent;
+  border: none;
 }
 
-.task-item:hover .task-drag-handle {
+.task-item:hover .task-drag-handle,
+.task-item:focus-within .task-drag-handle {
   opacity: 1;
 }
 
 .task-drag-handle:hover {
   color: var(--color-text-secondary, #4e5969);
-  background: var(--color-surface-hover);
+  background: var(--color-surface-hover, rgba(29, 33, 41, 0.08));
 }
 
 .task-drag-handle:active {
   cursor: grabbing;
+}
+
+.task-drag-handle:focus-visible {
+  outline: 2px solid var(--color-accent, #1456f0);
+  outline-offset: 2px;
+  opacity: 1;
 }
 
 /* ── Checkbox Group ── */

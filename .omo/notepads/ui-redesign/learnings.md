@@ -123,3 +123,53 @@
 - e2e: 55/56 passed (1 pre-existing packaged-app failure)
 - Evidence: `.omo/evidence/ui-redesign/task-4-header.png` (segmented toggle with List active)
 - Evidence: `.omo/evidence/ui-redesign/task-4-header-failure.png` (no list selected, toggle hidden)
+
+## [2026-07-16 20:00:00] Task: T5 - Task List & Item Redesign
+
+**CSS changes:**
+- Task item: changed `align-items: center` to `align-items: flex-start` for baseline alignment
+- Added `margin-top: 2px` to `.task-checkbox`, `.task-drag-handle`, and `.task-actions` to align with title text baseline
+- Added `.task-item:focus-within .task-actions { opacity: 1 }` for keyboard accessibility
+- Added `.task-item:focus-within .task-drag-handle { opacity: 1 }` for keyboard accessibility
+- Added `:focus-visible` styles for checkbox, drag handle, and action buttons (2px solid accent, 2px offset)
+- Added `line-height: var(--line-height, 1.5)` to `.task-title` for consistent text alignment
+- Added `flex-wrap: wrap` to `.task-meta` to prevent overflow on narrow screens
+
+**Card treatment for empty/loading/error states:**
+- Created `.tasklist-card` class with surface bg, border-light border, radius-lg, shadow-sm, 8px-multiple padding
+- Created `.tasklist-card-text` for centered text with proper spacing
+- Created `.tasklist-card-error` variant with danger-light bg and danger border/color
+- Updated TaskList.tsx to use these classes for empty, loading, and error states
+
+**Search & Filter bar restyling:**
+- Added explicit border, background, color, and transition to `.search-input` and `.filter-select`
+- Added `::placeholder` styling for search input
+- Added `:focus` styles with accent border and accent-light box-shadow ring
+- Added `:hover` style for filter selects (accent border)
+- Added `:focus-visible` styles with outline for keyboard navigation
+- Added explicit button reset styles to `.search-clear` (background, border, cursor)
+
+**Component changes:**
+- TaskItem.tsx: No JSX changes needed — CSS handles all visual improvements
+- TaskList.tsx: Updated empty/loading/error states to use `.tasklist-card` classes
+- SortableTaskItem.tsx: No changes needed — wrapper passes through to TaskItem
+- FilterBar.tsx: No JSX changes needed — CSS handles restyling
+- SearchBar.tsx: No JSX changes needed — CSS handles restyling
+
+**Test changes:**
+- Zero unit test changes required — all 217 tests pass
+- Created new e2e spec: `task5-tasklist-screenshots.spec.ts`
+  - Creates a list and 3 tasks
+  - Verifies task structure (title, meta, actions, drag handle, checkbox)
+  - Hovers over first task to show actions, captures screenshot
+  - Completes first task, verifies strikethrough class and aria-checked
+  - Captures failure screenshot showing completed state
+  - Tests search functionality and clear button
+
+**Verification:**
+- typecheck: exit 0
+- lint: exit 0
+- tests: 217/217 passed
+- e2e: 1/1 passed (task5-tasklist-screenshots.spec.ts)
+- Evidence: `.omo/evidence/ui-redesign/task-5-tasklist.png` (task list with 3 tasks, first hovered showing actions)
+- Evidence: `.omo/evidence/ui-redesign/task-5-tasklist-failure.png` (first task completed with strikethrough)

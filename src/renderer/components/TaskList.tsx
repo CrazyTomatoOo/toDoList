@@ -95,18 +95,18 @@ export default function TaskList({
   return (
     <div className="main-content" data-testid="task-list-container">
       {error && (
-        <div className="error-message" data-testid="task-list-error">
+        <div className="tasklist-card tasklist-card-error" data-testid="task-list-error">
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="loading" data-testid="task-list-loading">
-          Loading tasks...
+        <div className="tasklist-card" data-testid="task-list-loading">
+          <div className="tasklist-card-text">Loading tasks...</div>
         </div>
       ) : tasks.length === 0 ? (
-        <div className="task-list-empty" data-testid="task-list-empty">
-          <div className="task-list-empty-text">{emptyMessage ?? 'No tasks yet'}</div>
+        <div className="tasklist-card" data-testid="task-list-empty">
+          <div className="tasklist-card-text">{emptyMessage ?? 'No tasks yet'}</div>
           {!emptyMessage && (
             <button className="btn btn-primary" onClick={onOpenAddForm}>
               Add your first task
