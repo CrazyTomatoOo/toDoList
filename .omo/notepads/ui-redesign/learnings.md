@@ -20,3 +20,69 @@
 - lint: exit 0
 - tests: 217/217 passed
 - Zero text-icon characters remain in src/renderer (verified via grep)
+# UI Redesign — Learnings
+
+## 2026-07-16T12:00:00Z Task: T1 — Design tokens & CSS system
+
+### Token decisions
+- **Neutral scale (N50–N900)**: Used Feishu/Lark reference palette with subtle blue tint. N50=#f7f8fa through N900=#1d2129 for light mode; inverted for dark mode (N50=#17171a through N900=#f5f5f7).
+- **Brand**: #1456F0 (Feishu blue) with hover=#0e42c7, pressed=#0a35a8, light=#e8eefd. Dark mode uses lighter #3c7eff for contrast.
+- **Typography scale**: 11/12/13/14/16/18/20/24px mapped to --font-size-xxs/xs/sm/base/md/lg/xl/2xl. Added --font-size-xxs (11px) as new token; remapped existing sizes to match Feishu scale.
+- **Spacing**: Kept existing 4px-based scale (space-1=4px through space-12=48px). Primary rhythm is 8px multiples; 4px half-step retained for tight spacing.
+- **Interaction opacities**: Added --interaction-opacity-hover (0.08) and --interaction-opacity-press (0.12). Surface hover/active use N900 at these opacities via rgba().
+- **Shadows**: N900-based rgba for light mode; pure black rgba for dark mode. Three tiers: sm/md/lg.
+- **Radii**: 4/6/8/12px (sm/md/lg/xl). Unchanged from original.
+
+### Surprises / gotchas
+1. **--color-surface-secondary was used but never defined** in the original CSS (line 414, `.view-toggle`). Added it to both :root and [data-theme='dark'].
+2. **Hardcoded colors found**: `#ff950020` (warning-light) at lines 522 and 822, `#34c75920` (success-light) at line 527. Replaced with `var(--color-warning-light)` and `var(--color-success-light)` tokens.
+3. **Dark mode completeness**: Task required EVERY var(--x) to be defined in BOTH :root and [data-theme='dark']. Added full token definitions to dark mode block (typography, spacing, radii, transitions, interaction opacities) even though they don't change — ensures explicit definition and prevents cascade surprises.
+4. **Fallback strategy**: Added fallback values to critical tokens in base element styles (body, input, textarea, select, button) and key semantic colors throughout. Pattern: `var(--token-name, #fallback-hex)`.
+5. **Button :active states**: Original CSS had no :active states for buttons. Added them using --color-accent-pressed, --color-danger-pressed, and --color-surface-active for Feishu-style press feedback.
+6. **N-scale tokens as building blocks**: Defined --color-n50 through --color-n900 explicitly, then used them in semantic token definitions (e.g., `--color-text-primary: var(--color-n900)`). Makes the system more maintainable — change N900 once, all text updates.
+
+### Audit results
+- 62 unique var(--x) references in styles.css
+- All 62 defined in :root ✅
+- All 62 defined in [data-theme='dark'] ✅
+- 15 tokens defined but not directly referenced via var() in stylesheet (used internally by other token definitions or reserved for future tasks): --color-n400, --color-n600, --color-n800, --font-size-2xl, --font-size-xxs, --font-weight-normal, --interaction-opacity-hover, --interaction-opacity-press, --line-height-relaxed, --line-height-tight, --shadow-md, --shadow-sm, --space-10, --space-12, --transition-normal
+
+### Verification
+- `npm run typecheck` → EXIT 0
+- `npm run lint` → EXIT 0
+- `npm run build` → EXIT 0
+- Screenshot evidence: `.omo/evidence/ui-redesign/task-1-tokens.png` (app shell with new tokens)
+- Fallback evidence: `.omo/evidence/ui-redesign/task-1-tokens-failure.png` (app with --color-bg commented out, fallback #ffffff renders)
+
+## [2026-07-16 19:30:00] Task: T3 - Sidebar & Main Shell Redesign
+
+**Semantic HTML improvements:**
+- Changed sidebar items from `<div role="button">` to semantic `<button>` elements
+- Added `aria-current="page"` for active list item (screen readers announce it)
+- Removed manual `tabIndex={0}` and `onKeyDown` handlers (buttons are natively focusable and handle Enter/Space)
+- Added `:focus-visible` ring for keyboard navigation (2px solid accent, 2px offset)
+- Added `:active` state for press feedback using `--color-surface-active` token
+
+**Visual refinements:**
+- Removed sidebar `border-right` (replaced with 1px gap in app-layout)
+- App-layout now has `gap: 1px` and `background: var(--color-border-light)` for subtle separator
+- Empty/loading states use card treatment: `.sidebar-card` class with surface bg, border-light border, radius-lg, shadow-sm, 8px margin
+- Sidebar item button reset: added `width: 100%`, `text-align: left`, `font-family/size/color: inherit`, `border: none`, `background: transparent`
+
+**Token usage:**
+- All interaction states use semantic tokens: hover=`--color-surface-hover`, press=`--color-surface-active`, selected=`--color-accent-light` + `--color-accent`
+- Card treatment uses: `--color-surface`, `--color-border-light`, `--border-radius-lg`, `--shadow-sm`
+- Typography uses existing tokens: `--font-size-base`, `--font-size-sm`, `--font-size-lg`
+
+**Test changes:**
+- Zero test changes required — all 217 tests pass
+- Tests use `data-testid` selectors which were preserved
+- `aria-current` attribute is additive, doesn't break existing assertions
+
+**Verification:**
+- typecheck: exit 0
+- lint: exit 0
+- tests: 217/217 passed
+- E2E screenshot test: passed (created task3-sidebar-screenshots.spec.ts)
+- Evidence: `.omo/evidence/ui-redesign/task-3-sidebar.png` (sidebar with 3 lists, second selected)
+- Evidence: `.omo/evidence/ui-redesign/task-3-sidebar-failure.png` (verifies wrong list NOT active)

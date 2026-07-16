@@ -63,9 +63,11 @@ export default function ListSidebar({
 
       <div className="sidebar-list">
         {loading && lists.length === 0 ? (
-          <div className="sidebar-empty">Loading...</div>
+          <div className="sidebar-empty sidebar-card" data-testid="sidebar-loading">
+            Loading...
+          </div>
         ) : lists.length === 0 ? (
-          <div className="sidebar-empty" data-testid="sidebar-empty">
+          <div className="sidebar-empty sidebar-card" data-testid="sidebar-empty">
             No lists yet.
             <br />
             Click + to create one.
@@ -82,16 +84,13 @@ export default function ListSidebar({
                 />
               </div>
             ) : (
-              <div
+              <button
+                type="button"
                 key={list.id}
                 className={`sidebar-item${list.id === selectedListId ? ' active' : ''}`}
                 onClick={() => onSelectList(list.id)}
                 data-testid="sidebar-item"
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') onSelectList(list.id)
-                }}
+                aria-current={list.id === selectedListId ? 'page' : undefined}
               >
                 <span className="sidebar-item-name" data-testid="sidebar-item-name">
                   {list.name}
@@ -124,7 +123,7 @@ export default function ListSidebar({
                     <Trash2 size={16} />
                   </button>
                 </div>
-              </div>
+              </button>
             ),
           )
         )}

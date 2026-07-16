@@ -291,6 +291,8 @@ select:focus {
   display: flex;
   height: 100%;
   overflow: hidden;
+  gap: 1px;
+  background: var(--color-border-light, #e5e6eb);
 }
 
 /* ── Sidebar ── */
@@ -298,7 +300,6 @@ select:focus {
   width: var(--sidebar-width, 240px);
   min-width: var(--sidebar-width, 240px);
   background: var(--color-bg-secondary, #f7f8fa);
-  border-right: 1px solid var(--color-border-light, #e5e6eb);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -327,15 +328,31 @@ select:focus {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   padding: var(--space-2, 8px) var(--space-3, 12px);
   border-radius: var(--border-radius-md, 6px);
   cursor: pointer;
   transition: background var(--transition-fast, 150ms ease);
   user-select: none;
+  text-align: left;
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  border: none;
+  background: transparent;
+}
+
+.sidebar-item:focus-visible {
+  outline: 2px solid var(--color-accent, #1456f0);
+  outline-offset: 2px;
 }
 
 .sidebar-item:hover {
-  background: var(--color-surface-hover);
+  background: var(--color-surface-hover, rgba(29, 33, 41, 0.08));
+}
+
+.sidebar-item:active {
+  background: var(--color-surface-active, rgba(29, 33, 41, 0.12));
 }
 
 .sidebar-item.active {
@@ -400,6 +417,14 @@ select:focus {
   text-align: center;
   color: var(--color-text-tertiary, #86909c);
   font-size: var(--font-size-sm, 13px);
+}
+
+.sidebar-card {
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border-light, #e5e6eb);
+  border-radius: var(--border-radius-lg, 8px);
+  margin: var(--space-2, 8px);
+  box-shadow: var(--shadow-sm, 0 1px 2px rgba(29, 33, 41, 0.06));
 }
 
 /* ── List Form (inline in sidebar) ── */
