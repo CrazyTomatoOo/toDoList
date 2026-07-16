@@ -1,0 +1,1 @@
+getTasksByQuadrant(listId, quadrant) returns tasks filtered to the requested quadrant by delegating to the existing getTasksByListId query with the quadrant option.

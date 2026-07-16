@@ -6,7 +6,7 @@ import {
   validateTaskDates,
   validateTitle,
 } from './taskValidation.js'
-export { getTasksByListId, searchTasks } from './taskQueries.js'
+export { getTasksByListId, getTasksByQuadrant, searchTasks } from './taskQueries.js'
 
 function now(): string {
   return new Date().toISOString()

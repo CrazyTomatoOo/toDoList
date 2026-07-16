@@ -1,4 +1,5 @@
 import { getDb } from '../connection.js'
+import type { Quadrant } from '../schema.js'
 import type { TaskListOptions, TaskRow, TaskSearchFilters } from '../../../shared/ipc.js'
 import { normalizeBoolean, parseQuadrant } from './taskValidation.js'
 
@@ -29,6 +30,10 @@ export function getTasksByListId(listId: number, options: TaskListOptions = {}):
     .prepare(`SELECT * FROM tasks WHERE ${conditions.join(' AND ')} ORDER BY sort_order ASC, created_at ASC`)
     .all(...params) as TaskRow[]
 }
+export function getTasksByQuadrant(listId: number, quadrant: Quadrant): TaskRow[] {
+  return getTasksByListId(listId, { quadrant })
+}
+
 
 export function searchTasks(query: string, filters: TaskSearchFilters = {}): TaskRow[] {
   const conditions = ['(LOWER(title) LIKE LOWER(?) OR LOWER(COALESCE(description, \'\')) LIKE LOWER(?))']

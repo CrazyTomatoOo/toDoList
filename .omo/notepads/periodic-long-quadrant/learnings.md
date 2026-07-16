@@ -37,3 +37,9 @@
 # T3 refactor note
 - Split the repository to keep each file under the 250 pure-LOC ceiling: `taskValidation.ts` holds validation helpers and `taskQueries.ts` holds `getTasksByListId` / `searchTasks`. `taskRepository.ts` now implements the core CRUD operations and re-exports the query functions so existing imports continue to work.
 - All repository tests (18 total) and `npm run typecheck` / `npm run lint` remain green after the split.
+
+# T6: Quadrant classification and query helpers
+- `parseQuadrant` in `taskValidation.ts` already maps each `Quadrant` string to `{ isUrgent: 0 | 1; isImportant: 0 | 1 }`; no new mapping logic was needed.
+- Added a dedicated `getTasksByQuadrant(listId, quadrant)` in `taskQueries.ts` that delegates to `getTasksByListId(listId, { quadrant })`, reusing the existing SQL filter and bound parameters.
+- Re-exported `getTasksByQuadrant` from `taskRepository.ts` so downstream tasks (T10, T12, T13) can import it from the repository barrel.
+- New `src/__tests__/db/quadrantTasks.test.ts` covers all four quadrants, list-boundary isolation, and invalid quadrant rejection.
