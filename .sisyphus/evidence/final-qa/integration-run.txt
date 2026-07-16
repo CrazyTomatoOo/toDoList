@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 src/__tests__/e2e/integration.spec.ts:150:3 › Packaged macOS app integration › packaged app full user journey (3.8s)
+
+  1 passed (5.3s)
