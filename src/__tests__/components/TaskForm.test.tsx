@@ -2,6 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
+
 import TaskForm from '../../renderer/components/TaskForm'
 import type { TaskRow } from '../../shared/ipc'
 
@@ -249,4 +250,79 @@ describe('TaskForm', () => {
       })
     })
   })
+
+  describe('modal a11y and focus management', () => {
+    it('renders overlay as dialog with aria-modal and aria-labelledby', () => {
+      render(<TaskForm {...defaultProps} />)
+      const overlay = screen.getByTestId('task-form-overlay')
+      expect(overlay).toHaveAttribute('role', 'dialog')
+      expect(overlay).toHaveAttribute('aria-modal', 'true')
+      expect(overlay).toHaveAttribute('aria-labelledby', 'task-form-title-heading')
+      const title = screen.getByRole('heading', { level: 2 })
+      expect(title).toHaveAttribute('id', 'task-form-title-heading')
+    })
+
+    it('closes on Escape', () => {
+      render(<TaskForm {...defaultProps} />)
+      fireEvent.keyDown(document, { key: 'Escape' })
+      expect(defaultProps.onCancel).toHaveBeenCalled()
+    })
+
+    it('focuses the first focusable element on mount', async () => {
+      render(<TaskForm {...defaultProps} />)
+      const closeButton = screen.getByTestId('task-form-close')
+      await waitFor(() => expect(document.activeElement).toBe(closeButton))
+    })
+
+    it('traps focus: Tab from last focusable wraps to first', async () => {
+      render(<TaskForm {...defaultProps} />)
+      const saveButton = screen.getByTestId('task-form-save')
+      saveButton.focus()
+      fireEvent.keyDown(document, { key: 'Tab' })
+      const closeButton = screen.getByTestId('task-form-close')
+      await waitFor(() => expect(document.activeElement).toBe(closeButton))
+    })
+
+    it('traps focus: Shift+Tab from first focusable wraps to last', async () => {
+      render(<TaskForm {...defaultProps} />)
+      const closeButton = screen.getByTestId('task-form-close')
+      closeButton.focus()
+      fireEvent.keyDown(document, { key: 'Tab', shiftKey: true })
+      const saveButton = screen.getByTestId('task-form-save')
+      await waitFor(() => expect(document.activeElement).toBe(saveButton))
+    })
+
+    it('announces title error with role alert and aria-live', async () => {
+      render(<TaskForm {...defaultProps} />)
+      fireEvent.click(screen.getByTestId('task-form-save'))
+      const error = await screen.findByTestId('task-form-error')
+      expect(error).toHaveTextContent('Title is required')
+      expect(error).toHaveAttribute('role', 'alert')
+      expect(error).toHaveAttribute('aria-live', 'polite')
+    })
+
+    it('announces duration error with role alert and aria-live', async () => {
+      render(<TaskForm {...defaultProps} />)
+      fireEvent.change(screen.getByTestId('task-form-title'), { target: { value: 'Test' } })
+      fireEvent.change(screen.getByTestId('task-form-start-date'), { target: { value: '2026-12-31' } })
+      fireEvent.change(screen.getByTestId('task-form-end-date'), { target: { value: '2026-01-01' } })
+      fireEvent.click(screen.getByTestId('task-form-save'))
+      const error = await screen.findByTestId('task-form-duration-error')
+      expect(error).toHaveTextContent('Start date must be before or equal to end date')
+      expect(error).toHaveAttribute('role', 'alert')
+      expect(error).toHaveAttribute('aria-live', 'polite')
+    })
+
+    it('announces recurrence error with role alert and aria-live', async () => {
+      render(<TaskForm {...defaultProps} />)
+      fireEvent.change(screen.getByTestId('task-form-title'), { target: { value: 'Test' } })
+      fireEvent.change(screen.getByTestId('task-form-recurrence'), { target: { value: 'daily' } })
+      fireEvent.click(screen.getByTestId('task-form-save'))
+      const error = await screen.findByTestId('task-form-recurrence-error')
+      expect(error).toHaveTextContent('Recurring tasks require a due date or start date')
+      expect(error).toHaveAttribute('role', 'alert')
+      expect(error).toHaveAttribute('aria-live', 'polite')
+    })
+  })
+
 })

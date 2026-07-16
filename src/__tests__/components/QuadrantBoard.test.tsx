@@ -158,4 +158,31 @@ describe('QuadrantBoard', () => {
     expect(screen.getByTestId('quadrant-q4-tasks')).toHaveTextContent('Q4')
   })
 
+
+  describe('redesigned quadrant board classes', () => {
+    it('renders board with quadrant-board and quadrant-grid classes', () => {
+      render(<QuadrantBoard {...defaultProps} />)
+      const board = screen.getByTestId('quadrant-board')
+      expect(board).toHaveClass('quadrant-board')
+      expect(board.querySelector('.quadrant-grid')).toBeInTheDocument()
+    })
+
+    it('renders each quadrant with header label subtitle and count', () => {
+      render(<QuadrantBoard {...defaultProps} />)
+      const q1 = screen.getByTestId('quadrant-q1')
+      expect(q1).toHaveClass('quadrant', 'quadrant-q1')
+      expect(q1.querySelector('.quadrant-header')).toBeInTheDocument()
+      expect(q1.querySelector('.quadrant-label')).toHaveTextContent('Q1: Do First')
+      expect(q1.querySelector('.quadrant-subtitle')).toHaveTextContent('Urgent & Important')
+      expect(q1.querySelector('.quadrant-count')).toHaveTextContent('1')
+    })
+
+    it('renders empty state with redesigned quadrant-empty class', () => {
+      render(<QuadrantBoard {...defaultProps} tasks={[]} />)
+      const q1Empty = screen.getByTestId('quadrant-q1-empty')
+      expect(q1Empty).toHaveClass('quadrant-empty')
+      expect(q1Empty).toHaveTextContent('No urgent & important tasks')
+    })
+  })
+
 })

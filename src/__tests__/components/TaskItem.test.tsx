@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import TaskItem, { getQuadrantLabel } from '../../renderer/components/TaskItem'
 import type { TaskRow } from '../../shared/ipc'
+// Memoization behavior is covered by src/__tests__/components/TaskItemMemoization.test.tsx
 
 const createMockTask = (overrides: Partial<TaskRow> = {}): TaskRow => ({
   id: 1,
@@ -198,4 +199,54 @@ describe('TaskItem', () => {
       expect(screen.queryByTestId('task-duration')).not.toBeInTheDocument()
     })
   })
+
+  describe('redesigned UI and accessibility', () => {
+    it('renders task item with redesigned class names', () => {
+      render(<TaskItem {...defaultProps} />)
+      const item = screen.getByTestId('task-item')
+      expect(item).toHaveClass('task-item')
+      expect(item.querySelector('.task-actions')).toBeInTheDocument()
+    })
+
+    it('renders checkbox with role="checkbox" and aria-checked', () => {
+      const task = createMockTask({ completed: 0 })
+      render(<TaskItem {...defaultProps} task={task} />)
+      const checkbox = screen.getByTestId('task-checkbox')
+      expect(checkbox).toHaveAttribute('role', 'checkbox')
+      expect(checkbox).toHaveAttribute('aria-checked', 'false')
+    })
+
+    it('updates aria-checked and title when task is completed', () => {
+      const task = createMockTask({ completed: 1 })
+      render(<TaskItem {...defaultProps} task={task} />)
+      const checkbox = screen.getByTestId('task-checkbox')
+      expect(checkbox).toHaveAttribute('aria-checked', 'true')
+      expect(checkbox).toHaveAttribute('title', 'Mark incomplete')
+    })
+
+    it('provides accessible checkbox label with task title', () => {
+      const task = createMockTask({ title: 'Buy milk' })
+      render(<TaskItem {...defaultProps} task={task} />)
+      const checkbox = screen.getByTestId('task-checkbox')
+      expect(checkbox).toHaveAttribute('aria-label', 'Mark Buy milk complete')
+    })
+
+    it('renders action buttons with title tooltips and Lucide icons', () => {
+      render(<TaskItem {...defaultProps} />)
+      const editButton = screen.getByTestId('task-edit-button')
+      const deleteButton = screen.getByTestId('task-delete-button')
+      expect(editButton).toHaveAttribute('title', 'Edit task')
+      expect(deleteButton).toHaveAttribute('title', 'Delete task')
+      expect(editButton.querySelector('svg')).toBeInTheDocument()
+      expect(deleteButton.querySelector('svg')).toBeInTheDocument()
+    })
+
+    it('renders drag handle with aria-label and Lucide icon', () => {
+      render(<TaskItem {...defaultProps} dragHandleProps={{}} />)
+      const dragHandle = screen.getByTestId('task-drag-handle')
+      expect(dragHandle).toHaveAttribute('aria-label', 'Drag to reorder')
+      expect(dragHandle.querySelector('svg')).toBeInTheDocument()
+    })
+  })
+
 })

@@ -189,3 +189,42 @@ describe('App view toggle', () => {
   })
 
 })
+
+
+describe('App redesigned UI classes', () => {
+  it('renders app shell with app-layout class', () => {
+    render(<App />)
+    expect(screen.getByTestId('app-shell')).toHaveClass('app-layout')
+  })
+
+  it('renders main header and actions with redesigned classes', () => {
+    render(<App />)
+    const shell = screen.getByTestId('app-shell')
+    expect(shell.querySelector('.main-area')).toBeInTheDocument()
+    expect(shell.querySelector('.main-header')).toBeInTheDocument()
+    expect(shell.querySelector('.main-header-actions')).toBeInTheDocument()
+  })
+
+  it('renders theme toggle with ghost icon button classes and aria-label', () => {
+    render(<App />)
+    const toggle = screen.getByTestId('theme-toggle')
+    expect(toggle).toHaveClass('btn', 'btn-ghost', 'btn-icon', 'theme-toggle')
+    expect(toggle).toHaveAttribute('aria-label', 'Current theme: light. Click to change.')
+    expect(toggle.querySelector('svg')).toBeInTheDocument()
+  })
+
+  it('renders Add Task button with primary class and Lucide Plus icon', () => {
+    render(<App />)
+    const addButton = screen.getByTestId('add-task-button')
+    expect(addButton).toHaveClass('btn', 'btn-primary')
+    expect(addButton).toHaveTextContent('Add Task')
+    expect(addButton.querySelector('svg')).toBeInTheDocument()
+  })
+
+  it('renders search-filter-bar with redesigned class', () => {
+    render(<App />)
+    const bar = screen.getByTestId('search-filter-bar')
+    expect(bar).toHaveClass('search-filter-bar')
+  })
+})
+

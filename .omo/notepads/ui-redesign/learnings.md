@@ -397,3 +397,40 @@
 - `npm test`: 218/218 passed (217 existing + 1 new memoization test)
 - Evidence: `.omo/evidence/ui-redesign/task-10-perf.txt`
 - Failure evidence: `.omo/evidence/ui-redesign/task-10-perf-failure.txt` (test fails when `React.memo` is removed)
+
+## [2026-07-16 21:30:00] Task: T11 - Component Tests Update
+
+**Test updates:**
+- `TaskItem.test.tsx`: Added redesigned UI/a11y tests for `role="checkbox"`, `aria-checked`, `aria-label` with task title, checkbox `title` toggle, action button `title` tooltips + Lucide SVG icons, and drag handle `aria-label` + icon. Referenced `TaskItemMemoization.test.tsx` with a comment.
+- `TaskList.test.tsx`: Added card-class assertions for empty (`tasklist-card` + `tasklist-card-text`), loading (`tasklist-card` + `role="status"` + `aria-live="polite"`), and error (`tasklist-card` + `tasklist-card-error` + `role="alert"`) states.
+- `TaskForm.test.tsx`: Added modal a11y tests for `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, Escape-to-close, focus trap (Tab wrap and Shift+Tab wrap), and field-level error announcements (`role="alert"` + `aria-live="polite"` for title, duration, recurrence errors).
+- `ListSidebar.test.tsx`: Added tests for semantic `<button>` elements, `aria-current="page"` on selected list, edit/delete `aria-label` with list names, and Lucide Plus icon in add-list button.
+- `App.test.tsx`: Added tests for redesigned `app-layout`, `main-header`, `main-header-actions` classes, theme toggle `btn-ghost btn-icon theme-toggle` classes + aria-label + icon, Add Task button `btn-primary` class + Plus icon, and `search-filter-bar` class.
+- `QuadrantBoard.test.tsx`: Added tests for redesigned `quadrant-board`/`quadrant-grid` classes and quadrant header/label/subtitle/count classes.
+- `FilterBar.test.tsx`: Added tests for `filter-bar` container class and `filter-select` + `aria-label` on each filter select.
+- `TaskItemMemoization.test.tsx`: Preserved intact from T10; not duplicated.
+
+**Verification:**
+- `npm test src/__tests__/components/`: 115/115 passed
+- `npm test`: 249/249 passed
+- `npm run typecheck`: exit 0
+- `npm run lint`: exit 0
+- Failure evidence: `.omo/evidence/ui-redesign/task-11-components-failure.txt` (temporary `role="radio"` assertion)
+- Success evidence: `.omo/evidence/ui-redesign/task-11-components.txt`
+
+**Notes:**
+- Focus restoration on modal close is implemented in `TaskForm.tsx` but is not asserted because jsdom's `autoFocus` on the title input races with the `useEffect` trigger-ref capture, making the assertion unreliable in the test environment. The feature is still exercised by the code; the focus-trap tests cover the active management of focus inside the modal.
+
+## [2026-07-16 21:35:00] T11 Verification Fix: ListSidebar missing onUpdateList prop
+
+**Issue:** LSP diagnostics on `src/__tests__/components/ListSidebar.test.tsx` reported that `defaultProps` was missing the required `onUpdateList` prop, causing TypeScript errors on every `<ListSidebar {...defaultProps} />` usage.
+
+**Fix:** Added `onUpdateList: vi.fn().mockResolvedValue(undefined)` to `defaultProps` in `ListSidebar.test.tsx`.
+
+**Verification:**
+- `lsp_diagnostics` on `src/__tests__/components/ListSidebar.test.tsx` → zero errors
+- `npm test src/__tests__/components/` → 115/115 passed
+- `npm run typecheck` → exit 0
+- `npm run lint` → no issues
+- No production code or other test files modified
+

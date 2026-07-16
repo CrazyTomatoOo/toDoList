@@ -142,4 +142,31 @@ describe('TaskList', () => {
     render(<TaskList {...defaultProps} showAddForm={true} />)
     expect(screen.getByTestId('task-form')).toBeInTheDocument()
   })
+
+  describe('redesigned card classes', () => {
+    it('renders empty state with tasklist-card classes', () => {
+      render(<TaskList {...defaultProps} tasks={[]} />)
+      const empty = screen.getByTestId('task-list-empty')
+      expect(empty).toHaveClass('tasklist-card')
+      expect(empty.querySelector('.tasklist-card-text')).toHaveTextContent('No tasks yet')
+    })
+
+    it('renders loading state with tasklist-card classes and status role', () => {
+      render(<TaskList {...defaultProps} loading={true} />)
+      const loading = screen.getByTestId('task-list-loading')
+      expect(loading).toHaveClass('tasklist-card')
+      expect(loading).toHaveAttribute('role', 'status')
+      expect(loading).toHaveAttribute('aria-live', 'polite')
+      expect(loading.querySelector('.tasklist-card-text')).toHaveTextContent('Loading tasks...')
+    })
+
+    it('renders error state with tasklist-card-error class', () => {
+      render(<TaskList {...defaultProps} error="Failed to load" />)
+      const error = screen.getByTestId('task-list-error')
+      expect(error).toHaveClass('tasklist-card')
+      expect(error).toHaveClass('tasklist-card-error')
+      expect(error).toHaveAttribute('role', 'alert')
+    })
+  })
+
 })

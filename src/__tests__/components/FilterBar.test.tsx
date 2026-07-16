@@ -109,4 +109,28 @@ describe('FilterBar', () => {
     await user.selectOptions(screen.getByTestId('filter-status'), 'completed')
     expect(onStatusChange).toHaveBeenCalledWith('completed')
   })
+
+  describe('redesigned filter bar classes', () => {
+    it('renders filter bar container with filter-bar class', () => {
+      render(<FilterBar {...defaultProps} />)
+      expect(screen.getByTestId('filter-bar')).toHaveClass('filter-bar')
+    })
+
+    it('renders each select with filter-select class and aria-label', () => {
+      render(<FilterBar {...defaultProps} />)
+      const selects = [
+        'filter-priority',
+        'filter-status',
+        'filter-recurrence',
+        'filter-duration',
+        'filter-quadrant'
+      ]
+      for (const testId of selects) {
+        const select = screen.getByTestId(testId)
+        expect(select).toHaveClass('filter-select')
+        expect(select).toHaveAttribute('aria-label')
+      }
+    })
+  })
+
 })

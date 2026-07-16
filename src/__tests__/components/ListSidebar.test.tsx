@@ -17,6 +17,8 @@ describe('ListSidebar', () => {
     onSelectList: vi.fn(),
     onCreateList: vi.fn().mockResolvedValue(undefined),
     onDeleteList: vi.fn().mockResolvedValue(undefined),
+    onUpdateList: vi.fn().mockResolvedValue(undefined),
+
     loading: false
   }
 
@@ -91,4 +93,39 @@ describe('ListSidebar', () => {
     fireEvent.click(deleteButtons[0])
     expect(defaultProps.onDeleteList).not.toHaveBeenCalled()
   })
+
+  describe('semantic buttons and ARIA', () => {
+    it('renders list items as semantic button elements', () => {
+      render(<ListSidebar {...defaultProps} />)
+      const buttons = screen.getAllByRole('button')
+      // add button + 2 list item buttons + 2 edit + 2 delete = 7
+      expect(buttons).toHaveLength(7)
+    })
+
+    it('marks selected list with aria-current="page"', () => {
+      render(<ListSidebar {...defaultProps} />)
+      const selectedButton = screen.getByRole('button', { name: 'Work 3' })
+      expect(selectedButton).toHaveAttribute('aria-current', 'page')
+      const unselectedButton = screen.getByRole('button', { name: 'Personal 0' })
+      expect(unselectedButton).not.toHaveAttribute('aria-current')
+    })
+
+    it('edit and delete buttons have aria-labels with list names', () => {
+      render(<ListSidebar {...defaultProps} />)
+      const editButtons = screen.getAllByTestId('sidebar-item-edit')
+      const deleteButtons = screen.getAllByTestId('sidebar-item-delete')
+      expect(editButtons[0]).toHaveAttribute('aria-label', 'Edit Work')
+      expect(editButtons[1]).toHaveAttribute('aria-label', 'Edit Personal')
+      expect(deleteButtons[0]).toHaveAttribute('aria-label', 'Delete Work')
+      expect(deleteButtons[1]).toHaveAttribute('aria-label', 'Delete Personal')
+    })
+
+    it('add list button contains Lucide Plus icon', () => {
+      render(<ListSidebar {...defaultProps} />)
+      const addButton = screen.getByTestId('add-list-button')
+      expect(addButton.querySelector('svg')).toBeInTheDocument()
+      expect(addButton).toHaveAttribute('title', 'Add list')
+    })
+  })
+
 })

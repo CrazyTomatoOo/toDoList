@@ -1,0 +1,36 @@
+
+> todolist-app@0.0.0 test
+> npm rebuild better-sqlite3 && vitest run src/__tests__/components/TaskItem.test.tsx --run
+
+rebuilt dependencies successfully
+
+ RUN  v4.1.10 /Volumes/work/Project/toDoList
+
+ ❯ src/__tests__/components/TaskItem.test.tsx (28 tests | 1 failed) 50ms
+       × renders checkbox with role="checkbox" and aria-checked 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/__tests__/components/TaskItem.test.tsx > TaskItem > redesigned UI and accessibility > renders checkbox with role="checkbox" and aria-checked
+Error: [2mexpect([22m[31melement[39m[2m).toHaveAttribute([22m[32m[32m"role"[32m[39m[2m, [22m[32m[32m"radio"[32m[39m[2m) // element.getAttribute("role") === "radio"[22m
+
+Expected the element to have attribute:
+[32m  role="radio"[39m
+Received:
+[31m  role="checkbox"[39m
+ ❯ src/__tests__/components/TaskItem.test.tsx:216:24
+    214|       render(<TaskItem {...defaultProps} task={task} />)
+    215|       const checkbox = screen.getByTestId('task-checkbox')
+    216|       expect(checkbox).toHaveAttribute('role', 'radio')
+       |                        ^
+    217|       expect(checkbox).toHaveAttribute('aria-checked', 'false')
+    218|     })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 27 passed (28)
+   Start at  21:28:11
+   Duration  375ms (transform 27ms, setup 0ms, import 110ms, tests 50ms, environment 137ms)
+
