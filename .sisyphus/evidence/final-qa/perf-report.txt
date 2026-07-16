@@ -1,0 +1,9 @@
+[perf-report] Seed method before launch: direct-sqlite
+[perf-report] Executable: /Volumes/work/Project/toDoList/dist/mac-arm64/ToDoList.app/Contents/MacOS/ToDoList
+[perf-report] Renderer load to 1000 tasks: 495ms
+[perf-report] Rendered task items: 1000
+[perf-report] Scroll total: 736.9ms
+[perf-report] Average frame: 8.2ms (122.1 FPS)
+[perf-report] Worst frame: 9.8ms
+[perf-report] Smooth threshold passed: yes
+[perf-report] Virtualization not required by this run.

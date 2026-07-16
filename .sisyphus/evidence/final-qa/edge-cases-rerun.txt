@@ -1,0 +1,9 @@
+
+ RUN  v4.1.10 /Volumes/work/Project/toDoList
+
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  19:33:50
+   Duration  125ms (transform 26ms, setup 0ms, import 36ms, tests 19ms, environment 0ms)
+
