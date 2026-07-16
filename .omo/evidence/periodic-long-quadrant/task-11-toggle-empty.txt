@@ -1,0 +1,6 @@
+Board view with no tasks (empty state):
+ RUN  v4.1.10 /Volumes/work/Project/toDoList
+ Test Files  1 passed (1)
+      Tests  1 passed | 9 skipped (10)
+   Start at  16:16:58
+   Duration  294ms (transform 35ms, setup 0ms, import 85ms, tests 10ms, environment 129ms)

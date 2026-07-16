@@ -10,10 +10,12 @@ import TaskList from './components/TaskList'
 import SearchBar from './components/SearchBar'
 import FilterBar from './components/FilterBar'
 import ImportExportButtons from './components/ImportExportButtons'
+import QuadrantBoard from './components/QuadrantBoard'
 import './styles.css'
 
 export default function App() {
   const [showAddForm, setShowAddForm] = useState(false)
+  const [viewMode, setViewMode] = useState<'list' | 'board'>('list')
   const { mode: themeMode, toggle: toggleTheme } = useTheme()
   const { lists, loading: listsLoading, createList, updateList, deleteList, refresh: refreshLists } = useLists()
   const { selectedListId, selectList, clearSelection } = useSelectedList()
@@ -153,6 +155,26 @@ export default function App() {
         <div className="main-header">
           <h1>{selectedList?.name ?? 'No List Selected'}</h1>
           <div className="main-header-actions">
+            {selectedListId !== null && (
+              <div className="view-toggle" role="group" aria-label="View mode">
+                <button
+                  className={`btn btn-sm ${viewMode === 'list' ? 'btn-primary' : 'btn-ghost'}`}
+                  onClick={() => setViewMode('list')}
+                  data-testid="view-toggle-list"
+                  aria-pressed={viewMode === 'list'}
+                >
+                  List
+                </button>
+                <button
+                  className={`btn btn-sm ${viewMode === 'board' ? 'btn-primary' : 'btn-ghost'}`}
+                  onClick={() => setViewMode('board')}
+                  data-testid="view-toggle-board"
+                  aria-pressed={viewMode === 'board'}
+                >
+                  Board
+                </button>
+              </div>
+            )}
             <button
               className="btn btn-ghost btn-icon"
               onClick={toggleTheme}
@@ -179,7 +201,7 @@ export default function App() {
           </div>
         </div>
 
-        {selectedListId !== null && (
+        {selectedListId !== null && viewMode === 'list' && (
           <div className="search-filter-bar" data-testid="search-filter-bar">
             <SearchBar query={query} onQueryChange={setQuery} />
             <FilterBar
@@ -197,21 +219,31 @@ export default function App() {
           </div>
         )}
 
-        <TaskList
-          tasks={filteredTasks}
-          selectedListId={selectedListId}
-          loading={tasksLoading || searchLoading}
-          error={tasksError}
-          onCreateTask={handleCreateTask}
-          onUpdateTask={handleUpdateTask}
-          onDeleteTask={handleDeleteTask}
-          onToggleComplete={handleToggleComplete}
-          onReorder={handleReorder}
-          showAddForm={showAddForm}
-          onOpenAddForm={() => setShowAddForm(true)}
-          onCloseAddForm={() => setShowAddForm(false)}
-          emptyMessage={isFiltering ? 'No tasks match your search' : undefined}
-        />
+        {viewMode === 'list' ? (
+          <TaskList
+            tasks={filteredTasks}
+            selectedListId={selectedListId}
+            loading={tasksLoading || searchLoading}
+            error={tasksError}
+            onCreateTask={handleCreateTask}
+            onUpdateTask={handleUpdateTask}
+            onDeleteTask={handleDeleteTask}
+            onToggleComplete={handleToggleComplete}
+            onReorder={handleReorder}
+            showAddForm={showAddForm}
+            onOpenAddForm={() => setShowAddForm(true)}
+            onCloseAddForm={() => setShowAddForm(false)}
+            emptyMessage={isFiltering ? 'No tasks match your search' : undefined}
+          />
+        ) : (
+          <QuadrantBoard
+            tasks={tasks}
+            selectedListId={selectedListId}
+            onUpdateTask={handleUpdateTask}
+            onDeleteTask={handleDeleteTask}
+            onToggleComplete={handleToggleComplete}
+          />
+        )}
       </main>
     </div>
   )

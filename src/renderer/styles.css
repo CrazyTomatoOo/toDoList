@@ -406,6 +406,15 @@ select:focus {
   min-height: 28px;
 }
 
+/* ── View Toggle ── */
+.view-toggle {
+  display: inline-flex;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--color-surface-secondary);
+  border-radius: var(--border-radius-md);
+}
+
 /* ── Task List ── */
 .task-list {
   list-style: none;
