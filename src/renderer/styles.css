@@ -407,8 +407,6 @@ select:focus {
 .sidebar-item:focus-within .sidebar-item-actions {
   opacity: 1;
 }
-  opacity: 1;
-}
 
 .sidebar-item-action {
   padding: var(--space-1, 4px);

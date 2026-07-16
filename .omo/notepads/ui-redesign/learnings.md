@@ -359,3 +359,19 @@
 - e2e: task9-a11y 2/2 passed, quadrant 3/3 passed, list-management 6/6 passed
 - Evidence: `.omo/evidence/ui-redesign/task-9-a11y.txt`
 - Evidence: `.omo/evidence/ui-redesign/task-9-a11y-failure.txt`
+
+## [2026-07-16 20:42:00] Task: T9 Hotfix - CSS Syntax Error
+
+**Issue:**
+- Stray `opacity: 1; }` at lines 410-411 in styles.css after T9 commit
+- Caused by duplicate rule block during sidebar-item-actions focus-within edit
+
+**Fix:**
+- Removed lines 410-411 (stray opacity and closing brace)
+- Rule at 406-409 (`.sidebar-item:hover .sidebar-item-actions, .sidebar-item:focus-within .sidebar-item-actions { opacity: 1; }`) now clean
+
+**Verification:**
+- typecheck: exit 0
+- lint: exit 0
+- e2e task9-a11y: 2/2 passed
+- unit tests: 217/217 passed
