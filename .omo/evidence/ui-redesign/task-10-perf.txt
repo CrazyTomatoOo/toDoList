@@ -1,0 +1,6 @@
+ RUN  v4.1.10 /Volumes/work/Project/toDoList
+ ✓ src/__tests__/components/TaskItemMemoization.test.tsx > TaskItem memoization > re-renders only the toggled task; siblings do not re-render 19ms
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  21:05:19
+   Duration  365ms (transform 49ms, setup 0ms, import 145ms, tests 20ms, environment 130ms)

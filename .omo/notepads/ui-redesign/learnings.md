@@ -375,3 +375,25 @@
 - lint: exit 0
 - e2e task9-a11y: 2/2 passed
 - unit tests: 217/217 passed
+## [2026-07-16 21:05:00] Task: T10 - Performance Memoization
+
+**Component memoization:**
+- `TaskItem.tsx`: wrapped default export in `React.memo`; added optional `renderCounter` test hook prop counted via `useEffect`
+- `SortableTaskItem.tsx`: wrapped default export in `React.memo`; stabilized `dragHandleProps` pass-through with `useMemo`
+- `TaskList.tsx`: wrapped `handleEditClick` in `useCallback` so row callbacks are stable across parent renders
+
+**Hook stabilization:**
+- `useSortableTasks.tsx`: memoized `taskIds` with `useMemo` so `SortableContext` items don't change identity unnecessarily
+- `useSearchAndFilter.ts`: replaced mirrored `filteredTasks` state with a derived value (`isFiltering ? searchResults : tasks`); kept `searchResults` for actual search results and reset it on list change / when entering filtering
+
+**Test:**
+- Added `src/__tests__/components/TaskItemMemoization.test.tsx` with a transparent module mock that injects a `renderCounter` into the real `TaskItem`
+- Asserts that toggling one task re-renders only that row (sibling render counts stay undefined)
+
+**Verification:**
+- typecheck: exit 0
+- lint: exit 0
+- `npm run test:e2e -- src/__tests__/e2e/drag-sort.spec.ts`: 3/3 passed
+- `npm test`: 218/218 passed (217 existing + 1 new memoization test)
+- Evidence: `.omo/evidence/ui-redesign/task-10-perf.txt`
+- Failure evidence: `.omo/evidence/ui-redesign/task-10-perf-failure.txt` (test fails when `React.memo` is removed)

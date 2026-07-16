@@ -1,3 +1,4 @@
+import { memo, useEffect } from 'react'
 import type { TaskRow, Recurrence } from '../../shared/ipc'
 import { Edit2, Trash2, GripVertical } from 'lucide-react'
 
@@ -7,6 +8,7 @@ interface TaskItemProps {
   onEdit: (task: TaskRow) => void
   onDelete: (id: number) => Promise<void>
   dragHandleProps?: Record<string, unknown>
+  renderCounter?: (task: TaskRow) => void
 }
 
 /**
@@ -28,7 +30,11 @@ const RECURRENCE_LABELS: Record<Recurrence, string> = {
   yearly: 'Yearly'
 }
 
-export default function TaskItem({ task, onToggleComplete, onEdit, onDelete, dragHandleProps }: TaskItemProps) {
+function TaskItem({ task, onToggleComplete, onEdit, onDelete, dragHandleProps, renderCounter }: TaskItemProps) {
+  useEffect(() => {
+    renderCounter?.(task)
+  })
+
   const isCompleted = task.completed === 1
 
   const handleDelete = async () => {
@@ -126,3 +132,5 @@ export default function TaskItem({ task, onToggleComplete, onEdit, onDelete, dra
     </li>
   )
 }
+
+export default memo(TaskItem)

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import type { TaskRow, CreateTaskInput, UpdateTaskInput } from '../../shared/ipc'
 import TaskItem from './TaskItem'
 import SortableTaskItem from './SortableTaskItem'
@@ -80,9 +80,9 @@ export default function TaskList({
     setEditingTask(null)
   }
 
-  const handleEditClick = (task: TaskRow) => {
+  const handleEditClick = useCallback((task: TaskRow) => {
     setEditingTask(task)
-  }
+  }, [])
 
   if (selectedListId === null) {
     return (

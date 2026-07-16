@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import type { TaskRow } from '../../shared/ipc'
@@ -10,7 +11,7 @@ interface SortableTaskItemProps {
   onDelete: (id: number) => Promise<void>
 }
 
-export default function SortableTaskItem({
+function SortableTaskItem({
   task,
   onToggleComplete,
   onEdit,
@@ -27,6 +28,8 @@ export default function SortableTaskItem({
     zIndex: isDragging ? 10 : undefined
   }
 
+  const dragHandleProps = useMemo(() => listeners, [listeners])
+
   return (
     <div ref={setNodeRef} style={style} {...attributes}>
       <TaskItem
@@ -34,8 +37,10 @@ export default function SortableTaskItem({
         onToggleComplete={onToggleComplete}
         onEdit={onEdit}
         onDelete={onDelete}
-        dragHandleProps={listeners}
+        dragHandleProps={dragHandleProps}
       />
     </div>
   )
 }
+
+export default memo(SortableTaskItem)

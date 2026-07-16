@@ -36,9 +36,10 @@ export function useSearchAndFilter(
   const [recurrenceFilter, setRecurrenceFilter] = useState<Recurrence | ''>('')
   const [durationFilter, setDurationFilter] = useState<DurationFilter>('all')
   const [quadrantFilter, setQuadrantFilter] = useState<Quadrant | ''>('')
-  const [filteredTasks, setFilteredTasks] = useState<TaskRow[]>(tasks)
+  const [searchResults, setSearchResults] = useState<TaskRow[]>(tasks)
   const [loading, setLoading] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const wasFilteringRef = useRef(false)
 
   const isFiltering =
     query.trim().length > 0 ||
@@ -48,7 +49,9 @@ export function useSearchAndFilter(
     durationFilter !== 'all' ||
     quadrantFilter !== ''
 
-  // Reset filters when list changes
+  const filteredTasks = isFiltering ? searchResults : tasks
+
+  // Reset filters and search results when list changes
   useEffect(() => {
     setQuery('')
     setPriorityFilter('')
@@ -56,15 +59,16 @@ export function useSearchAndFilter(
     setRecurrenceFilter('')
     setDurationFilter('all')
     setQuadrantFilter('')
+    setSearchResults(tasks)
   }, [selectedListId])
 
-  // Sync filtered tasks when not filtering
+  // Reset search results when entering filtering so stale results don't show during debounce
   useEffect(() => {
-    if (!isFiltering) {
-      setFilteredTasks(tasks)
-      setLoading(false)
+    if (!wasFilteringRef.current && isFiltering) {
+      setSearchResults(tasks)
     }
-  }, [tasks, isFiltering])
+    wasFilteringRef.current = isFiltering
+  }, [isFiltering, tasks])
 
   // Debounced search when query/filters change
   useEffect(() => {
@@ -99,10 +103,10 @@ export function useSearchAndFilter(
         }
 
         const results = await window.electronAPI.tasks.search(query.trim(), filters)
-        setFilteredTasks(results)
+        setSearchResults(results)
       } catch {
         // On error, fall back to unfiltered tasks
-        setFilteredTasks(tasks)
+        setSearchResults(tasks)
       } finally {
         setLoading(false)
       }

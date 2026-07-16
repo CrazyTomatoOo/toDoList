@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import type { TaskRow } from '../../shared/ipc'
 import {
   DndContext,
@@ -69,7 +69,7 @@ export function useSortableTasks(
     setActiveId(null)
   }, [])
 
-  const taskIds = tasks.map((t) => String(t.id))
+  const taskIds = useMemo(() => tasks.map((t) => String(t.id)), [tasks])
 
   const DndProvider = useCallback(
     ({ children }: { children: React.ReactNode }) => (

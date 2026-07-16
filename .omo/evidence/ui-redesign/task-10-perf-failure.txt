@@ -1,0 +1,22 @@
+ RUN  v4.1.10 /Volumes/work/Project/toDoList
+ × src/__tests__/components/TaskItemMemoization.test.tsx > TaskItem memoization > re-renders only the toggled task; siblings do not re-render 21ms
+   → expected 1 to be undefined
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  21:04:51
+   Duration  363ms (transform 47ms, setup 0ms, import 142ms, tests 22ms, environment 128ms)
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+ FAIL  src/__tests__/components/TaskItemMemoization.test.tsx > TaskItem memoization > re-renders only the toggled task; siblings do not re-render
+AssertionError: expected 1 to be undefined
+- Expected:
+undefined
++ Received:
+1
+ ❯ src/__tests__/components/TaskItemMemoization.test.tsx:174:41
+    172|     expect(renderCountsByTaskId.get(1)).toBe(1)
+    173|     // Siblings should not have re-rendered
+    174|     expect(renderCountsByTaskId.get(2)).toBeUndefined()
+       |                                         ^
+    175|     expect(renderCountsByTaskId.get(3)).toBeUndefined()
+    176|   })
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
