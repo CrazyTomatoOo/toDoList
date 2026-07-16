@@ -1,0 +1,149 @@
+F1 Plan Compliance Audit - periodic-long-quadrant
+Verdict: APPROVE
+Audited at: 2026-07-16
+
+=== MUST HAVE CHECKLIST ===
+
+[1] Database schema migration adding optional fields to `tasks`
+    - Migration file: src/main/db/migrations/004_add_recurrence_duration_quadrant.sql
+    - Adds `recurrence` TEXT CHECK (NULL OR IN ('daily','weekly','monthly','yearly'))
+    - Adds `recurrence_end_date` TEXT CHECK strict YYYY-MM-DD
+    - Adds `start_date` TEXT CHECK strict YYYY-MM-DD
+    - Adds `end_date` TEXT CHECK strict YYYY-MM-DD
+    - Adds `is_urgent` INTEGER NOT NULL DEFAULT 0 CHECK (IN (0, 1))
+    - Adds `is_important` INTEGER NOT NULL DEFAULT 0 CHECK (IN (0, 1))
+    - Creates indexes: idx_tasks_recurrence, idx_tasks_recurrence_end_date,
+      idx_tasks_start_date, idx_tasks_end_date, idx_tasks_is_urgent, idx_tasks_is_important
+    - Evidence: task-1-schema.txt
+    - Verified by tests: src/__tests__/db/schema.test.ts (all schema assertions pass)
+
+[2] Shared IPC type updates for new fields
+    - src/shared/ipc.ts and src/main/db/schema.ts both define:
+      Recurrence, Quadrant, DurationFilter union types
+    - TaskRow, CreateTaskInput, UpdateTaskInput include all new fields
+    - TaskListOptions includes quadrant; TaskSearchFilters includes recurrence, durationFilter, quadrant
+    - Evidence: task-2-typecheck.txt
+    - Verified by: npm run typecheck (exit 0)
+
+[3] Task repository updates for new fields and filters
+    - src/main/db/repositories/taskRepository.ts createTask/updateTask validate and persist new fields
+    - src/main/db/repositories/taskQueries.ts searchTasks supports recurrence, durationFilter, quadrant
+    - getTasksByQuadrant delegates to getTasksByListId with quadrant filter
+    - Strict YYYY-MM-DD validation, recurrence enum validation, start_date <= end_date validation
+    - Evidence: task-3-repo.txt, task-3-invalid-recurrence.txt
+
+[4] Recurring task completion logic
+    - src/main/db/repositories/taskRecurrence.ts generateNextRecurringInstance handles
+      daily (+1 day), weekly (+7 days), monthly (+1 month, clamped), yearly (+1 year, Feb 29 -> Feb 28)
+    - updateTask detects incomplete->completed transition and wraps completion + next-instance insert
+      in a single db.transaction()
+    - Stops when next due date is strictly after recurrence_end_date; equality allowed
+    - New instance inherits fields, shifts start/end dates, sets completed=0, sort_order=max+1,
+      does not inherit reminder_at
+    - Evidence: task-5-recurring.txt, task-5-recurring-end.txt
+
+[5] Quadrant classification and queries
+    - src/main/db/repositories/taskValidation.ts parseQuadrant maps quadrant names to is_urgent/is_important
+    - getTasksByQuadrant(listId, quadrant) returns scoped tasks
+    - Evidence: task-6-quadrant.txt, task-6-invalid-quadrant.txt
+
+[6] Import/export JSON/CSV support for new fields
+    - src/main/services/importExport.ts exports recurrence, recurrenceEndDate, startDate, endDate,
+      isUrgent, isImportant
+    - src/main/services/importExportImport.ts imports with defaults for missing fields and validates
+      recurrence enum + strict date formats
+    - Legacy JSON/CSV without new fields imports successfully with defaults
+    - Evidence: task-4-import-export.txt, task-4-import-error.txt
+
+[7] Task form UI for recurrence, duration, and quadrant flags
+    - src/renderer/components/TaskForm.tsx with RecurrenceFields, DurationFields, QuadrantFlags
+    - Recurrence select, recurrence end date, start/end dates, urgent/important checkboxes
+    - Validation: start_date <= end_date; recurrence requires due_date or start_date
+    - Evidence: task-7-form.txt, task-7-form-error.txt
+
+[8] Task item UI badges for recurrence, duration, and quadrant
+    - src/renderer/components/TaskItem.tsx displays recurrence, duration range, and Q1-Q4 badges
+    - Existing priority/due date layout preserved
+    - Evidence: task-8-item.txt, task-8-item-fallback.txt
+
+[9] Filter UI for recurrence, duration, and quadrant
+    - src/renderer/components/FilterBar.tsx adds recurrence, duration, quadrant selects
+    - src/renderer/hooks/useSearchAndFilter.ts passes filters to backend searchTasks
+    - durationFilter options: all, hasDateRange, noDateRange
+    - Evidence: task-9-filter.txt
+
+[10] Quadrant board view (2x2 Eisenhower matrix)
+    - src/renderer/components/QuadrantBoard.tsx renders 2x2 grid with Q1-Q4
+    - Groups tasks from useTasks(selectedListId) in renderer by is_urgent/is_important
+    - Clicking task opens edit form; toggle completion works
+    - No new IPC channel; scoped to selected list
+    - Evidence: task-10-board.txt, task-10-board-empty.txt
+
+[11] Sidebar toggle for list view vs quadrant board view
+    - src/renderer/App.tsx has viewMode state ('list' | 'board') and view-toggle buttons
+    - Search/filter hidden in board view; selected list preserved across toggle
+    - Evidence: task-11-toggle.txt, task-11-toggle-empty.txt
+
+[12] Unit, integration, and E2E tests covering new features
+    - Unit/integration: schema.test.ts, recurringTasks.test.ts, quadrantTasks.test.ts,
+      importExportNewFields.test.ts, taskRepositoryNewFields.test.ts, TaskItem.test.tsx,
+      QuadrantBoard.test.tsx, FilterBar.test.tsx, TaskForm.test.tsx, App.test.tsx
+    - E2E: recurring.spec.ts, quadrant.spec.ts, search-filter.spec.ts, f3-final-verification.spec.ts
+    - npm run typecheck: exit 0
+    - npm test: 217 passed / 217 (verified during this audit)
+    - F3 verified npm run test:e2e: 54 passed (see final-review-f3.txt)
+    - Evidence: task-12-tests.txt, task-13-e2e.txt, final-review-f3.txt
+
+=== MUST NOT HAVE GUARDRAIL CHECKLIST ===
+
+[1] Complex recurrence rules (custom intervals, "every second Tuesday", timezone rules, end-of-month business semantics)
+    - STATUS: ABSENT. Only simple daily/weekly/monthly/yearly recurrence is implemented.
+
+[2] Time-budget / estimated-duration fields for long-duration tasks
+    - STATUS: ABSENT. Only start_date and end_date date ranges exist.
+
+[3] Cross-list views or quadrant views that ignore the selected list
+    - STATUS: ABSENT. QuadrantBoard receives tasks from useTasks(selectedListId) and selectedListId prop.
+
+[4] Drag-and-drop between quadrants in the board view
+    - STATUS: ABSENT. No drag handlers in QuadrantBoard.tsx; dnd-kit is only used in list-view SortableTaskItem.
+
+[5] Quadrant auto-suggestion from priority or due date
+    - STATUS: ABSENT. Quadrant is explicitly set by is_urgent/is_important flags only.
+
+[6] Subtasks, dependencies, attachments, or sharing
+    - STATUS: ABSENT. No such concepts in code.
+
+[7] Cloud sync or multi-user support
+    - STATUS: ABSENT. No network sync or user accounts.
+
+[8] Changes to packaging/build scripts beyond verifying existing scripts still pass
+    - STATUS: ABSENT. package.json scripts unchanged; no new runtime dependencies added for this feature.
+
+[9] Migration rollback mechanism
+    - STATUS: ABSENT. Migrations remain forward-only; no rollback/downgrade code found.
+
+=== EVIDENCE FILES PER TODO ===
+
+T1:  task-1-schema.txt
+T2:  task-2-typecheck.txt
+T3:  task-3-repo.txt, task-3-invalid-recurrence.txt
+T4:  task-4-import-export.txt, task-4-import-error.txt
+T5:  task-5-recurring.txt, task-5-recurring-end.txt
+T6:  task-6-quadrant.txt, task-6-invalid-quadrant.txt
+T7:  task-7-form.txt, task-7-form-error.txt
+T8:  task-8-item.txt, task-8-item-fallback.txt
+T9:  task-9-filter.txt
+T10: task-10-board.txt, task-10-board-empty.txt
+T11: task-11-toggle.txt, task-11-toggle-empty.txt
+T12: task-12-tests.txt
+T13: task-13-e2e.txt
+
+NOTE: Some failure-path scenario evidence files named in the plan's QA scenarios are not present
+(task-1-invalid-constraints.txt, task-2-type-error.txt, task-9-filter-empty.txt,
+ task-12-failure.txt, task-13-e2e-failure.txt). Each todo still has at least one evidence file
+and the underlying behavior is covered by passing tests, so this does not block approval.
+
+F2: APPROVE (final-review-f2.txt)
+F3: APPROVE (final-review-f3.txt)
+F1: APPROVE

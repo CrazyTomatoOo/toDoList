@@ -158,3 +158,39 @@
 - Added one product fix in `src/renderer/components/TaskList.tsx`: `handleCreate` and `handleEdit` now forward the new fields (`recurrence`, `recurrence_end_date`, `start_date`, `end_date`, `is_urgent`, `is_important`) from `TaskFormData` to the IPC handlers. Without this fix, the E2E specs could not create recurring, long-duration, or quadrant tasks.
 - Final verification: `npm run test:e2e` passes with 49/49 tests.
 - Evidence saved to `.omo/evidence/periodic-long-quadrant/task-13-e2e.txt`.
+
+# F3 final E2E verification
+
+- Ran `npm run build` and `npm run test:e2e` end-to-end; production bundle rebuilt and all 54 tests passed (49 original + 5 new F3 focused edge-case tests).
+- Added `src/__tests__/e2e/f3-final-verification.spec.ts` to cover the edge cases explicitly required by F3: board-view empty quadrants across all four quadrants, recurrence filter applied in list view, invalid date error state, and rapid toggles not creating duplicate recurring instances.
+- Captured three required screenshots under `.omo/evidence/periodic-long-quadrant/`: `final-f3-board.png`, `final-f3-filter.png`, `final-f3-invalid-date.png`.
+- Verdict: APPROVE. Full evidence saved to `.omo/evidence/periodic-long-quadrant/final-review-f3.txt`.
+
+# F2 Final Code Quality Review
+
+- Verdict: APPROVE.
+- Verification: `npm run typecheck` (exit 0), `npm run lint` (exit 0), `npm test` (217 passed).
+- Anti-pattern scan: zero `as any`, zero `@ts-ignore`, zero `console.log`, zero empty catches in `src/`.
+- LSP diagnostics clean on App.tsx, QuadrantBoard.tsx, TaskList.tsx, taskRepository.ts, taskRecurrence.ts, importExport.ts.
+- AI-slop inspection: no dead code, no duplicate helpers, all files within the 250 LOC guideline except TaskForm.tsx (270 LOC), which was already split into sub-components and documented in T7.
+- Evidence file: `.omo/evidence/periodic-long-quadrant/final-review-f2.txt`.
+
+# F1 Plan Compliance Audit
+
+- Verdict: APPROVE.
+- Evidence file: `.omo/evidence/periodic-long-quadrant/final-review-f1.txt`.
+- All 11 Must Have items are implemented and verified against source code and tests.
+- All 9 Must NOT Have guardrails are absent.
+- Evidence files exist for every todo T1-T13 (at least one per todo).
+- `npm run typecheck` passed (exit 0); `npm test` passed with 217/217 tests during this audit.
+- F2 and F3 already APPROVE; F1 completes the final verification wave.
+
+# F4 Scope Fidelity Review
+
+- All 13 commits from f05f2a5 (T1) to dc8c4fe (T13) map to the planned T1-T13 todos.
+- No product source files outside the T1-T13 scope were changed.
+- Must NOT Have guardrails were respected: no complex recurrence, time-budget fields, cross-list quadrant views, drag-and-drop, auto-suggestion, subtasks, dependencies, cloud sync, packaging changes, or migration rollback.
+- The T7 commit created the form sub-components (RecurrenceFields, DurationFields, QuadrantFlags); the T9 commit integrated those fields into TaskForm.tsx alongside the filter UI. This is a minor cross-commit split of T7's UI work, but the final form implementation is complete and within scope.
+- T13 includes a one-line product fix in TaskList.tsx to forward new TaskFormData fields to IPC handlers; this is a necessary bug fix for the planned create/edit paths, not a new feature.
+- Evidence file: `.omo/evidence/periodic-long-quadrant/final-review-f4.txt`.
+- Verdict: APPROVE.

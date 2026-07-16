@@ -1,0 +1,101 @@
+> npm run build && npx electron-rebuild --force
+> electron-vite build
+vite v5.4.21 building SSR bundle for production...
+transforming...
+✓ 21 modules transformed.
+rendering chunks...
+out/main/chunks/migrations-BHBUj5up.js   1.95 kB
+out/main/main.js                        39.01 kB
+✓ built in 107ms
+vite v5.4.21 building SSR bundle for production...
+transforming...
+✓ 2 modules transformed.
+rendering chunks...
+out/preload/preload.js  3.50 kB
+✓ built in 7ms
+vite v5.4.21 building for production...
+transforming...
+✓ 55 modules transformed.
+rendering chunks...
+out/renderer/index.html                   0.53 kB
+out/renderer/assets/index-Dh7vSzFb.css   17.34 kB
+out/renderer/assets/index-BWkoGGcI.js   387.77 kB
+✓ built in 324ms
+> playwright test
+Running 54 tests using 1 worker
+  ✓   1 src/__tests__/e2e/drag-sort.spec.ts:60:3 › Drag-and-Drop Sort › creates tasks and shows drag handles (299ms)
+  ✓   2 src/__tests__/e2e/drag-sort.spec.ts:78:3 › Drag-and-Drop Sort › reorders tasks via updateSortOrder IPC (4ms)
+  ✓   3 src/__tests__/e2e/drag-sort.spec.ts:98:3 › Drag-and-Drop Sort › sort order persists across app restart (653ms)
+  ✓   4 src/__tests__/e2e/example.spec.ts:5:1 › main window title should eventually be ToDoList (428ms)
+  ✓   5 src/__tests__/e2e/f3-final-verification.spec.ts:110:3 › F3 final verification edge cases › board view shows empty quadrants for a new list (216ms)
+  ✓   6 src/__tests__/e2e/f3-final-verification.spec.ts:121:3 › F3 final verification edge cases › quadrant board with tasks screenshot (521ms)
+  ✓   7 src/__tests__/e2e/f3-final-verification.spec.ts:138:3 › F3 final verification edge cases › recurrence filter applied screenshot (963ms)
+  ✓   8 src/__tests__/e2e/f3-final-verification.spec.ts:157:3 › F3 final verification edge cases › invalid date error state screenshot (534ms)
+  ✓   9 src/__tests__/e2e/f3-final-verification.spec.ts:178:3 › F3 final verification edge cases › rapid toggles do not create duplicate recurring instances (1.3s)
+  ✓  10 src/__tests__/e2e/import-export.spec.ts:48:3 › Import and Export › exports and imports JSON roundtrip (2.3s)
+  ✓  11 src/__tests__/e2e/import-export.spec.ts:101:3 › Import and Export › exports and imports CSV roundtrip (2.3s)
+  ✓  12 src/__tests__/e2e/import-export.spec.ts:152:3 › Import and Export › import is additive for existing data (890ms)
+  ✓  13 src/__tests__/e2e/integration.spec.ts:150:3 › Packaged macOS app integration › packaged app full user journey (3.9s)
+  ✓  14 src/__tests__/e2e/ipc.spec.ts:28:3 › IPC bridge security › renderer cannot access window.require (134ms)
+  ✓  15 src/__tests__/e2e/ipc.spec.ts:34:3 › IPC bridge security › renderer can call window.electronAPI.ping (75ms)
+  ✓  16 src/__tests__/e2e/list-management.spec.ts:43:3 › List management › shows empty sidebar state initially (232ms)
+  ✓  17 src/__tests__/e2e/list-management.spec.ts:50:3 › List management › can create a new list (132ms)
+  ✓  18 src/__tests__/e2e/list-management.spec.ts:67:3 › List management › can create a second list (64ms)
+  ✓  19 src/__tests__/e2e/list-management.spec.ts:79:3 › List management › can edit a list name and rejects duplicate names while editing (134ms)
+  ✓  20 src/__tests__/e2e/list-management.spec.ts:99:3 › List management › selecting a list updates the header (38ms)
+  ✓  21 src/__tests__/e2e/list-management.spec.ts:110:3 › List management › can delete a list with confirmation (422ms)
+  ✓  22 src/__tests__/e2e/quadrant.spec.ts:94:3 › Quadrant Board View › creates tasks in each quadrant and places them correctly on the board (550ms)
+  ✓  23 src/__tests__/e2e/quadrant.spec.ts:118:3 › Quadrant Board View › switching lists while in board view hides tasks from the previously selected list (744ms)
+  ✓  24 src/__tests__/e2e/quadrant.spec.ts:147:3 › Quadrant Board View › toggling a task complete from the board reflects in list view (617ms)
+  ✓  25 src/__tests__/e2e/recurring.spec.ts:103:3 › Recurring and Long-Duration Tasks › creates a recurring task with fixed due and end dates (337ms)
+  ✓  26 src/__tests__/e2e/recurring.spec.ts:111:3 › Recurring and Long-Duration Tasks › completing a daily recurring task advances the due date by one day (383ms)
+  ✓  27 src/__tests__/e2e/recurring.spec.ts:124:3 › Recurring and Long-Duration Tasks › completing a weekly recurring task advances the due date by seven days (339ms)
+  ✓  28 src/__tests__/e2e/recurring.spec.ts:135:3 › Recurring and Long-Duration Tasks › completing a monthly recurring task from Jan 31 clamps to Feb 28 (346ms)
+  ✓  29 src/__tests__/e2e/recurring.spec.ts:146:3 › Recurring and Long-Duration Tasks › creates a long-duration task with start and end dates (346ms)
+  ✓  30 src/__tests__/e2e/recurring.spec.ts:161:3 › Recurring and Long-Duration Tasks › blocks saving a task when end date is before start date (171ms)
+  ✓  31 src/__tests__/e2e/reminder.spec.ts:61:3 › Reminder notifications › fires a notification when a task reminder elapses (1.1s)
+  ✓  32 src/__tests__/e2e/search-filter.spec.ts:102:3 › Search and Filter › shows search and filter controls (94ms)
+  ✓  33 src/__tests__/e2e/search-filter.spec.ts:110:3 › Search and Filter › search filters tasks by title (1.0s)
+  ✓  34 src/__tests__/e2e/search-filter.spec.ts:128:3 › Search and Filter › search filters tasks by description (1.0s)
+  ✓  35 src/__tests__/e2e/search-filter.spec.ts:141:3 › Search and Filter › filter by priority (1.0s)
+  ✓  36 src/__tests__/e2e/search-filter.spec.ts:154:3 › Search and Filter › filter by completed status (1.5s)
+  ✓  37 src/__tests__/e2e/search-filter.spec.ts:172:3 › Search and Filter › combine search and filter (1.0s)
+  ✓  38 src/__tests__/e2e/search-filter.spec.ts:187:3 › Search and Filter › shows empty state when no results match (1.0s)
+  ✓  39 src/__tests__/e2e/search-filter.spec.ts:200:3 › Search and Filter › clear search button works (1.0s)
+  ✓  40 src/__tests__/e2e/search-filter.spec.ts:243:3 › Recurrence and Quadrant Filters › filters by recurrence in list view (1.4s)
+  ✓  41 src/__tests__/e2e/search-filter.spec.ts:268:3 › Recurrence and Quadrant Filters › filters by quadrant in list view (1.4s)
+  ✓  42 src/__tests__/e2e/task-crud.spec.ts:51:3 › Task CRUD › shows empty task state (2ms)
+  ✓  43 src/__tests__/e2e/task-crud.spec.ts:56:3 › Task CRUD › can create a task via header button (96ms)
+  ✓  44 src/__tests__/e2e/task-crud.spec.ts:74:3 › Task CRUD › can create a second task (84ms)
+  ✓  45 src/__tests__/e2e/task-crud.spec.ts:86:3 › Task CRUD › can toggle task completion (37ms)
+  ✓  46 src/__tests__/e2e/task-crud.spec.ts:98:3 › Task CRUD › can edit a task (189ms)
+  ✓  47 src/__tests__/e2e/task-crud.spec.ts:122:3 › Task CRUD › can delete a task (345ms)
+  ✓  48 src/__tests__/e2e/task-crud.spec.ts:137:3 › Task CRUD › task form validates required title (49ms)
+  ✓  49 src/__tests__/e2e/task-crud.spec.ts:153:3 › Task CRUD › can cancel task form (48ms)
+  ✓  50 src/__tests__/e2e/task-crud.spec.ts:166:3 › Task CRUD › sidebar shows updated task count (2ms)
+  ✓  51 src/__tests__/e2e/theme.spec.ts:65:3 › Theme toggle and persistence › applies the native system theme on startup when mode is system (213ms)
+  ✓  52 src/__tests__/e2e/theme.spec.ts:74:3 › Theme toggle and persistence › theme toggle button is visible (1ms)
+  ✓  53 src/__tests__/e2e/theme.spec.ts:79:3 › Theme toggle and persistence › clicking toggle changes the saved mode through IPC (329ms)
+  ✓  54 src/__tests__/e2e/theme.spec.ts:92:3 › Theme toggle and persistence › theme persists across app restarts via SQLite-backed IPC (879ms)
+  54 passed (42.0s)
+[plugin:vite:reporter] [plugin vite:reporter] 
+(!) /Volumes/work/Project/toDoList/src/main/db/connection.ts is dynamically imported by /Volumes/work/Project/toDoList/src/main/main.ts but also statically imported by /Volumes/work/Project/toDoList/src/main/db/migrations.ts, /Volumes/work/Project/toDoList/src/main/db/repositories/listRepository.ts, /Volumes/work/Project/toDoList/src/main/db/repositories/taskQueries.ts, /Volumes/work/Project/toDoList/src/main/db/repositories/taskRepository.ts, /Volumes/work/Project/toDoList/src/main/services/importExport.ts, /Volumes/work/Project/toDoList/src/main/services/importExportImport.ts, /Volumes/work/Project/toDoList/src/main/services/theme.ts, dynamic import will not move module into another chunk.
+Searching dependency tree
+Building modules: better-sqlite3
+✔ Rebuild Complete
+
+VERDICT: APPROVE
+All 54 E2E scenarios passed (49 original + 5 new F3 focused edge-case tests).
+
+Edge-case coverage verified:
+- Empty state: list view `task-list-empty` covered in task-crud and filter specs; board view empty quadrants covered by new F3 test for all four quadrants.
+- Invalid dates: form rejects `end_date < start_date` in recurring.spec.ts and new F3 screenshot test; repository malformed-date rejection covered by unit tests (taskValidation, import/export).
+- Rapid toggles: new F3 E2E test double-clicks a recurring task checkbox and asserts exactly one new instance (2 tasks total) with no duplicates.
+
+Captured screenshots:
+- /Volumes/work/Project/toDoList/.omo/evidence/periodic-long-quadrant/final-f3-board.png
+- /Volumes/work/Project/toDoList/.omo/evidence/periodic-long-quadrant/final-f3-filter.png
+- /Volumes/work/Project/toDoList/.omo/evidence/periodic-long-quadrant/final-f3-invalid-date.png
+
+New F3 evidence spec: src/__tests__/e2e/f3-final-verification.spec.ts
+Evidence file: /Volumes/work/Project/toDoList/.omo/evidence/periodic-long-quadrant/final-review-f3.txt

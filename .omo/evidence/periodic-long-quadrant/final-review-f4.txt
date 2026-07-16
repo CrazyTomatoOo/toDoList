@@ -1,0 +1,138 @@
+F4 Scope Fidelity Review - periodic-long-quadrant
+=================================================
+
+Review date: 2026-07-16
+Baseline: f05f2a5 (T1 - feat(db): add recurrence, duration, and quadrant fields to tasks schema)
+Current HEAD: dc8c4fe (T13 - test(e2e): add end-to-end tests for periodic, long-duration, and quadrant tasks)
+Range: f05f2a5^..HEAD
+
+Scope assessment: All 13 commits in the range map to the planned T1-T13 todos. No unaccounted product source changes. No scope creep detected.
+
+Guardrails verification (Must NOT Have):
+- No complex recurrence rules (only daily/weekly/monthly/yearly with standard calendar clamping)
+- No time-budget / estimated-duration fields (only start/end date ranges)
+- No cross-list views or quadrant views that ignore the selected list (board uses the same selected-list tasks)
+- No drag-and-drop between quadrants in the board view
+- No quadrant auto-suggestion from priority or due date
+- No subtasks, dependencies, attachments, or sharing
+- No cloud sync or multi-user support
+- No packaging/build script changes (package.json, playwright.config.ts, vite configs, etc. unchanged)
+- No migration rollback mechanism (migrations remain forward-only)
+
+Commit-by-commit mapping and files changed:
+
+1. f05f2a5 - T1 - feat(db): add recurrence, duration, and quadrant fields to tasks schema
+   - .omo/evidence/periodic-long-quadrant/task-1-schema.txt
+   - .omo/notepads/periodic-long-quadrant/learnings.md
+   - src/__tests__/db/migrations.test.ts
+   - src/__tests__/db/schema.test.ts
+   - src/main/db/migrations/004_add_recurrence_duration_quadrant.sql
+
+2. bdd0477 - T2 - feat(types): add recurrence, duration, and quadrant fields to IPC contracts
+   - .omo/evidence/periodic-long-quadrant/task-2-typecheck.txt
+   - .omo/notepads/periodic-long-quadrant/learnings.md
+   - src/__tests__/types/taskContracts.test.ts
+   - src/main/db/schema.ts
+   - src/shared/ipc.ts
+
+3. 0a237e8 - T3 - feat(db): support task recurrence, duration, and quadrant in repository
+   - .omo/evidence/periodic-long-quadrant/task-3-invalid-recurrence.txt
+   - .omo/evidence/periodic-long-quadrant/task-3-repo.txt
+   - .omo/notepads/periodic-long-quadrant/learnings.md
+   - src/__tests__/db/taskRepositoryNewFields.test.ts
+   - src/__tests__/types/taskContracts.test.ts
+   - src/main/db/repositories/taskQueries.ts
+   - src/main/db/repositories/taskRepository.ts
+   - src/main/db/repositories/taskValidation.ts
+   - src/shared/utils/dateValidator.ts
+
+4. 82a0af2 - T4 - feat(io): include recurrence, duration, and quadrant in import/export
+   - .omo/evidence/periodic-long-quadrant/task-4-import-error.txt
+   - .omo/evidence/periodic-long-quadrant/task-4-import-export.txt
+   - src/__tests__/services/importExport.test.ts
+   - src/__tests__/services/importExportNewFields.test.ts
+   - src/main/services/importExport.ts
+   - src/main/services/importExportHelpers.ts
+   - src/main/services/importExportImport.ts
+
+5. 41cb157 - T5 - feat(tasks): generate next instance when completing a recurring task
+   - .omo/notepads/periodic-long-quadrant/learnings.md
+   - src/__tests__/db/recurringTasks.test.ts
+   - src/main/db/repositories/taskRecurrence.ts
+   - src/main/db/repositories/taskRepository.ts
+
+6. e363aa1 - T6 - feat(db): add quadrant task queries
+   - .omo/evidence/periodic-long-quadrant/task-6-invalid-quadrant.txt
+   - .omo/evidence/periodic-long-quadrant/task-6-quadrant.txt
+   - .omo/notepads/periodic-long-quadrant/learnings.md
+   - src/__tests__/db/quadrantTasks.test.ts
+   - src/main/db/repositories/taskQueries.ts
+   - src/main/db/repositories/taskRepository.ts
+
+7. 75f23b5 - T7 - feat(ui): add recurrence, duration, and quadrant fields to task form
+   - .omo/evidence/periodic-long-quadrant/task-7-form-error.txt
+   - .omo/evidence/periodic-long-quadrant/task-7-form.txt
+   - .omo/notepads/periodic-long-quadrant/learnings.md
+   - src/__tests__/components/TaskForm.test.tsx
+   - src/renderer/components/DurationFields.tsx
+   - src/renderer/components/QuadrantFlags.tsx
+   - src/renderer/components/RecurrenceFields.tsx
+
+8. 762d416 - T9 - feat(ui): filter tasks by recurrence, duration, and quadrant
+   - .omo/evidence/periodic-long-quadrant/task-9-filter.txt
+   - .omo/notepads/periodic-long-quadrant/learnings.md
+   - src/__tests__/components/FilterBar.test.tsx
+   - src/renderer/App.tsx
+   - src/renderer/components/FilterBar.tsx
+   - src/renderer/components/TaskForm.tsx
+   - src/renderer/hooks/useSearchAndFilter.ts
+
+9. a17e719 - T10 - feat(ui): add Eisenhower quadrant board view
+   - .omo/evidence/periodic-long-quadrant/task-10-board-empty.txt
+   - .omo/evidence/periodic-long-quadrant/task-10-board.txt
+   - .omo/notepads/periodic-long-quadrant/learnings.md
+   - src/__tests__/components/QuadrantBoard.test.tsx
+   - src/renderer/components/QuadrantBoard.tsx
+   - src/renderer/styles.css
+
+10. a81f7fe - T8 - feat(ui): display recurrence, duration, and quadrant on task items
+    - .omo/evidence/periodic-long-quadrant/task-8-item-fallback.txt
+    - .omo/evidence/periodic-long-quadrant/task-8-item.txt
+    - src/__tests__/components/TaskItem.test.tsx
+    - src/__tests__/components/TaskList.test.tsx
+    - src/renderer/components/TaskItem.tsx
+
+11. 6749455 - T11 - feat(ui): add list/quadrant view toggle
+    - .omo/evidence/periodic-long-quadrant/task-11-toggle-empty.txt
+    - .omo/evidence/periodic-long-quadrant/task-11-toggle.txt
+    - src/__tests__/components/App.test.tsx
+    - src/renderer/App.tsx
+    - src/renderer/styles.css
+
+12. 8b423cc - T12 - test: add unit and integration tests for new task features
+    - .omo/evidence/periodic-long-quadrant/task-12-tests.txt
+    - .omo/notepads/periodic-long-quadrant/issues.md
+    - .omo/notepads/periodic-long-quadrant/learnings.md
+    - src/__tests__/components/QuadrantBoard.test.tsx
+    - src/__tests__/components/TaskForm.test.tsx
+    - src/__tests__/db/recurringTasks.test.ts
+    - src/__tests__/db/taskRepositoryNewFields.test.ts
+    - src/__tests__/services/importExportNewFields.test.ts
+
+13. dc8c4fe - T13 - test(e2e): add end-to-end tests for periodic, long-duration, and quadrant tasks
+    - .omo/evidence/periodic-long-quadrant/task-13-e2e.txt
+    - .omo/notepads/periodic-long-quadrant/issues.md
+    - .omo/notepads/periodic-long-quadrant/learnings.md
+    - src/__tests__/e2e/quadrant.spec.ts
+    - src/__tests__/e2e/recurring.spec.ts
+    - src/__tests__/e2e/search-filter.spec.ts
+    - src/renderer/components/TaskList.tsx (minimal bug fix to forward new TaskFormData fields to IPC handlers; required for E2E coverage)
+
+Scope observations:
+- Every product source change is in src/ and maps directly to a T1-T13 todo.
+- No new runtime dependencies, build scripts, or Electron configuration were changed.
+- The TaskForm.tsx integration with the new recurrence/duration/quadrant fields appears in the T9 commit, while the dedicated sub-components (RecurrenceFields, DurationFields, QuadrantFlags) were created in the T7 commit. This is a minor cross-commit split of T7's UI work, but the final result is complete and within the planned T7/T9 scope.
+- T13 includes a small fix in TaskList.tsx to forward new fields from TaskFormData to IPC handlers; this is a necessary bug fix to make the planned create/edit paths work, not a new feature.
+
+VERDICT: APPROVE
+All changes align with the periodic-long-quadrant plan scope. No unaccounted changes or scope creep.
