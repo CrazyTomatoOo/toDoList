@@ -1,3 +1,5 @@
+import { X } from 'lucide-react'
+
 interface SearchBarProps {
   query: string
   onQueryChange: (query: string) => void
@@ -23,7 +25,7 @@ export default function SearchBar({ query, onQueryChange }: SearchBarProps) {
           aria-label="Clear search"
           title="Clear search"
         >
-          ×
+          <X size={16} />
         </button>
       )}
     </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Moon, Sun, Monitor } from 'lucide-react'
 import type { TaskRow, CreateTaskInput, UpdateTaskInput } from '../shared/ipc'
 import { useLists } from './hooks/useLists'
 import { useTasks } from './hooks/useTasks'
@@ -182,7 +183,7 @@ export default function App() {
               title={`Theme: ${themeMode}`}
               aria-label={`Current theme: ${themeMode}. Click to change.`}
             >
-              {themeMode === 'dark' ? '☾' : themeMode === 'light' ? '☀' : '◐'}
+              {themeMode === 'dark' ? <Moon size={20} /> : themeMode === 'light' ? <Sun size={20} /> : <Monitor size={20} />}
             </button>
             {selectedListId !== null && (
               <button

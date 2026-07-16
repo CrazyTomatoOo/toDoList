@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Plus, Edit2, Trash2 } from 'lucide-react'
 import type { ListWithTaskCount } from '../../shared/ipc'
 import ListForm from './ListForm'
 
@@ -56,7 +57,7 @@ export default function ListSidebar({
           data-testid="add-list-button"
           title="Add list"
         >
-          +
+          <Plus size={20} />
         </button>
       </div>
 
@@ -109,7 +110,7 @@ export default function ListSidebar({
                     data-testid="sidebar-item-edit"
                     title="Edit list"
                   >
-                    ✎
+                    <Edit2 size={16} />
                   </button>
                   <button
                     className="sidebar-item-action sidebar-item-delete"
@@ -120,7 +121,7 @@ export default function ListSidebar({
                     data-testid="sidebar-item-delete"
                     title="Delete list"
                   >
-                    ×
+                    <Trash2 size={16} />
                   </button>
                 </div>
               </div>

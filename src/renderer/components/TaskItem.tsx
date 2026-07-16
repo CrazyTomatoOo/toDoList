@@ -1,4 +1,5 @@
 import type { TaskRow, Recurrence } from '../../shared/ipc'
+import { Edit2, Trash2, GripVertical } from 'lucide-react'
 
 interface TaskItemProps {
   task: TaskRow
@@ -57,7 +58,7 @@ export default function TaskItem({ task, onToggleComplete, onEdit, onDelete, dra
           aria-label="Drag to reorder"
           {...dragHandleProps}
         >
-          ⠿
+          <GripVertical size={16} />
         </button>
       )}
       <button
@@ -110,7 +111,7 @@ export default function TaskItem({ task, onToggleComplete, onEdit, onDelete, dra
           data-testid="task-edit-button"
           title="Edit task"
         >
-          ✎
+          <Edit2 size={16} />
         </button>
         <button
           className="btn btn-ghost btn-icon btn-sm"
@@ -118,7 +119,7 @@ export default function TaskItem({ task, onToggleComplete, onEdit, onDelete, dra
           data-testid="task-delete-button"
           title="Delete task"
         >
-          ×
+          <Trash2 size={16} />
         </button>
       </div>
     </li>

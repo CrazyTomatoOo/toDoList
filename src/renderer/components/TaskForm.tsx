@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { X } from 'lucide-react'
 import type { TaskRow, Priority, Recurrence } from '../../shared/ipc'
 import { validateDateOnly } from '../../shared/utils/dateValidator'
 import RecurrenceFields from './RecurrenceFields'
@@ -126,7 +127,7 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
         <div className="modal-header">
           <h2>{isEdit ? 'Edit Task' : 'New Task'}</h2>
           <button className="btn btn-ghost btn-icon" onClick={onCancel} data-testid="task-form-close">
-            ×
+            <X size={20} />
           </button>
         </div>
         <form onSubmit={handleSubmit} data-testid="task-form">

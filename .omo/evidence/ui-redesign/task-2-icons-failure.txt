@@ -1,0 +1,4 @@
+> tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit
+src/renderer/App.tsx(186,40): error TS2304: Cannot find name 'Moon'.
+src/renderer/App.tsx(186,85): error TS2304: Cannot find name 'Sun'.
+src/renderer/App.tsx(186,105): error TS2304: Cannot find name 'Monitor'.
