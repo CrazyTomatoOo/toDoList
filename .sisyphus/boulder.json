@@ -1,0 +1,115 @@
+{
+  "active_plan": "/Volumes/work/Project/toDoList/.sisyphus/plans/todolist-app.md",
+  "started_at": "2026-07-15T04:55:09.176Z",
+  "session_ids": [
+    "ses_09c7c0ea2ffeF7xN5CgTXi35TV"
+  ],
+  "session_origins": {
+    "ses_09c7c0ea2ffeF7xN5CgTXi35TV": "direct"
+  },
+  "plan_name": "todolist-app",
+  "agent": "atlas",
+  "task_sessions": {
+    "todo:1": {
+      "task_key": "todo:1",
+      "task_label": "1",
+      "task_title": "Electron + Vite + React + TypeScript 工程初始化",
+      "session_id": "ses_09bdaac19ffecCQWR1t40OQ9Jf",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-07-15T05:29:56.679Z"
+    },
+    "todo:6": {
+      "task_key": "todo:6",
+      "task_label": "6",
+      "task_title": "数据库 Schema 设计与版本化迁移（tasks, lists）",
+      "session_id": "ses_09b71c249ffeThcbx8pvM3qqJT",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-07-15T06:57:48.757Z"
+    },
+    "todo:7": {
+      "task_key": "todo:7",
+      "task_label": "7",
+      "task_title": "任务 Repository（CRUD、搜索、筛选、排序）",
+      "session_id": "ses_09b6baafcffek7tc3UhQyUG2eh",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-07-15T07:06:46.656Z"
+    },
+    "todo:12": {
+      "task_key": "todo:12",
+      "task_label": "12",
+      "task_title": "清单内拖拽排序",
+      "session_id": "ses_09af71366ffe5CLxXHzii1sZ52",
+      "agent": "Sisyphus-Junior",
+      "category": "visual-engineering",
+      "updated_at": "2026-07-15T09:19:39.857Z"
+    },
+    "todo:15": {
+      "task_key": "todo:15",
+      "task_label": "15",
+      "task_title": "JSON / CSV 导入导出",
+      "session_id": "ses_09aea1bf4ffecLzBMuTsNJykdR",
+      "updated_at": "2026-07-15T09:46:02.505Z"
+    },
+    "todo:16": {
+      "task_key": "todo:16",
+      "task_label": "16",
+      "task_title": "macOS DMG 打包与安装验证",
+      "session_id": "ses_09acfb45bffeCa0vb3AHxFhwKW",
+      "updated_at": "2026-07-15T10:08:00.544Z"
+    },
+    "todo:18": {
+      "task_key": "todo:18",
+      "task_label": "18",
+      "task_title": "跨平台集成测试与安装包冒烟测试",
+      "session_id": "ses_09aaa3ec3ffezQib8SgTQ31222",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-07-15T10:46:40.886Z"
+    },
+    "todo:19": {
+      "task_key": "todo:19",
+      "task_label": "19",
+      "task_title": "性能与边界情况检查",
+      "session_id": "ses_09a97b389ffeKqwU9IPDyQjn0k",
+      "agent": "Sisyphus-Junior",
+      "category": "deep",
+      "updated_at": "2026-07-15T10:58:38.397Z"
+    },
+    "final-wave:f1": {
+      "task_key": "final-wave:f1",
+      "task_label": "F1",
+      "task_title": "**Plan Compliance Audit** — `oracle`",
+      "session_id": "ses_09a8be758ffe7Up6J18y6N9KIm",
+      "agent": "Sisyphus-Junior",
+      "category": "unspecified-high",
+      "updated_at": "2026-07-15T11:10:50.037Z"
+    },
+    "final-wave:f2": {
+      "task_key": "final-wave:f2",
+      "task_label": "F2",
+      "task_title": "**Code Quality Review** — `unspecified-high`",
+      "session_id": "ses_09a800362ffecmkPnbL6thjEQh",
+      "agent": "oracle",
+      "updated_at": "2026-07-15T11:23:26.958Z"
+    },
+    "final-wave:f3": {
+      "task_key": "final-wave:f3",
+      "task_label": "F3",
+      "task_title": "**Real Manual QA** — `unspecified-high` (+ `playwright` skill if UI)",
+      "session_id": "ses_09a76f776ffeiD4o3p1bs2iPTK",
+      "agent": "oracle",
+      "updated_at": "2026-07-15T11:35:13.445Z"
+    },
+    "final-wave:f4": {
+      "task_key": "final-wave:f4",
+      "task_label": "F4",
+      "task_title": "**Scope Fidelity Check** — `deep`",
+      "session_id": "ses_09a5ad4c0ffee7aMMLc1p7L5Gp",
+      "agent": "oracle",
+      "updated_at": "2026-07-15T12:01:11.921Z"
+    }
+  }
+}
