@@ -35,6 +35,12 @@ export default function App() {
     setPriorityFilter,
     statusFilter,
     setStatusFilter,
+    recurrenceFilter,
+    setRecurrenceFilter,
+    durationFilter,
+    setDurationFilter,
+    quadrantFilter,
+    setQuadrantFilter,
     filteredTasks,
     isFiltering,
     loading: searchLoading
@@ -181,6 +187,12 @@ export default function App() {
               onPriorityChange={setPriorityFilter}
               statusFilter={statusFilter}
               onStatusChange={setStatusFilter}
+              recurrenceFilter={recurrenceFilter}
+              onRecurrenceChange={setRecurrenceFilter}
+              durationFilter={durationFilter}
+              onDurationChange={setDurationFilter}
+              quadrantFilter={quadrantFilter}
+              onQuadrantChange={setQuadrantFilter}
             />
           </div>
         )}

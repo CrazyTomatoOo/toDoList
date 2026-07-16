@@ -1,0 +1,59 @@
+# T9: Filter UI for recurrence, duration, and quadrant - Evidence
+
+## Test Results (FilterBar component tests)
+
+```
+ ✓ src/__tests__/components/FilterBar.test.tsx > FilterBar > renders all five filter selects
+ ✓ src/__tests__/components/FilterBar.test.tsx > FilterBar > renders recurrence options
+ ✓ src/__tests__/components/FilterBar.test.tsx > FilterBar > renders duration options
+ ✓ src/__tests__/components/FilterBar.test.tsx > FilterBar > renders quadrant options
+ ✓ src/__tests__/components/FilterBar.test.tsx > FilterBar > calls onRecurrenceChange when recurrence select changes
+ ✓ src/__tests__/components/FilterBar.test.tsx > FilterBar > calls onDurationChange when duration select changes
+ ✓ src/__tests__/components/FilterBar.test.tsx > FilterBar > calls onQuadrantChange when quadrant select changes
+ ✓ src/__tests__/components/FilterBar.test.tsx > FilterBar > reflects controlled values for new filters
+ ✓ src/__tests__/components/FilterBar.test.tsx > FilterBar > preserves existing priority and status filter behavior
+
+Test Files  22 passed (22)
+     Tests  191 passed (191)
+```
+
+## Typecheck
+
+```
+> tsc -p tsconfig.main.json --noEmit && tsc -p tsconfig.renderer.json --noEmit
+(no errors)
+```
+
+## Lint
+
+```
+> eslint .
+(no errors)
+```
+
+## FilterBar Select Options
+
+### Recurrence
+- `""` → All Recurrences
+- `"daily"` → Daily
+- `"weekly"` → Weekly
+- `"monthly"` → Monthly
+- `"yearly"` → Yearly
+
+### Duration
+- `"all"` → All Durations
+- `"hasDateRange"` → Has Date Range
+- `"noDateRange"` → No Date Range
+
+### Quadrant
+- `""` → All Quadrants
+- `"q1-urgent-important"` → Q1: Urgent & Important
+- `"q2-not-urgent-important"` → Q2: Not Urgent & Important
+- `"q3-urgent-not-important"` → Q3: Urgent & Not Important
+- `"q4-not-urgent-not-important"` → Q4: Not Urgent & Not Important
+
+## Files Modified
+- `src/renderer/components/FilterBar.tsx` — Added 3 new select controls
+- `src/renderer/hooks/useSearchAndFilter.ts` — Added state + search filter passthrough
+- `src/renderer/App.tsx` — Wired new props through to FilterBar
+- `src/__tests__/components/FilterBar.test.tsx` — New component test (9 tests)

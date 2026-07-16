@@ -69,3 +69,13 @@
 - After adding the new fields, `src/main/services/importExport.ts` grew past the 250 pure-LOC ceiling. Split the service into three focused files to keep each under the limit: `importExport.ts` (public types + export functions), `importExportHelpers.ts` (parsers, validators, CSV escape/parse), and `importExportImport.ts` (importFromJson, importFromCsv, importData).
 - `importExport.ts` re-exports `importFromJson` and `importFromCsv` from `importExportImport.ts` so existing consumers continue to import from the original module.
 - All import/export tests (20 total) and `npm run typecheck` / `npm run lint` remain green after the split.
+
+# T9: Filter UI for recurrence, duration, and quadrant
+- Extended `FilterBar.tsx` with three new `<select>` controls (recurrence, duration, quadrant) following the exact same pattern as the existing priority/status selects: same `filter-select` class, same `data-testid` naming convention, same `aria-label` pattern.
+- `useSearchAndFilter.ts` gained three new state variables (`recurrenceFilter`, `durationFilter`, `quadrantFilter`) with setters exposed in the return type. The `isFiltering` flag now includes all six filter dimensions so the search API is only called when at least one filter is active.
+- The hook passes `recurrence`, `durationFilter`, and `quadrant` through to `TaskSearchFilters` only when they differ from their default values (`''` for recurrence/quadrant, `'all'` for duration), matching the existing priority/status pattern.
+- All filters reset to defaults when `selectedListId` changes, keeping the UX consistent.
+- `App.tsx` destructures the new state/setters and passes them as props to `FilterBar`.
+- New `FilterBar.test.tsx` (9 tests) covers: rendering all five selects, correct option values for each new select, controlled value reflection, callback firing on change, and backward compatibility with existing priority/status filters.
+- All 191 tests pass; `npm run typecheck` and `npm run lint` are clean.
+- Note: `TaskForm.tsx` had a pre-existing syntax error (unclosed `<textarea>`) from a parallel task that was fixed during this task's verification step.
