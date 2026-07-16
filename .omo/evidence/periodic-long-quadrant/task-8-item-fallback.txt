@@ -1,0 +1,65 @@
+# T8: Task Item UI Badges - Fallback Behavior Evidence
+
+## Fallback Test Case
+
+### Test: "handles task with all null/zero values gracefully"
+
+```typescript
+const task = createMockTask({
+  recurrence: null,
+  start_date: null,
+  end_date: null,
+  is_urgent: 0,
+  is_important: 0
+})
+render(<TaskItem {...defaultProps} task={task} />)
+
+// Should still render quadrant badge (Q4)
+expect(screen.getByTestId('task-quadrant')).toHaveTextContent('Q4')
+// Should not render recurrence or duration badges
+expect(screen.queryByTestId('task-recurrence')).not.toBeInTheDocument()
+expect(screen.queryByTestId('task-duration')).not.toBeInTheDocument()
+```
+
+### Result: ✓ PASS
+
+The component handles edge cases gracefully:
+- When `recurrence` is null, no recurrence badge is rendered
+- When both `start_date` and `end_date` are null, no duration badge is rendered
+- When both `is_urgent` and `is_important` are 0, quadrant defaults to "Q4"
+- The quadrant badge is always rendered (never hidden)
+
+## Additional Fallback Scenarios Tested
+
+### Partial Date Range
+```typescript
+// Only start_date set
+const task1 = createMockTask({ start_date: '2024-01-01', end_date: null })
+// Renders: "Jan 1 → …"
+
+// Only end_date set
+const task2 = createMockTask({ start_date: null, end_date: '2024-01-07' })
+// Renders: "… → Jan 7"
+```
+
+Both scenarios render the duration badge with "…" as placeholder for missing dates.
+
+### All Quadrant Combinations
+```typescript
+getQuadrantLabel(1, 1) → 'Q1'  // urgent & important
+getQuadrantLabel(0, 1) → 'Q2'  // not urgent & important
+getQuadrantLabel(1, 0) → 'Q3'  // urgent & not important
+getQuadrantLabel(0, 0) → 'Q4'  // not urgent & not important (default)
+```
+
+All four combinations are handled correctly with no undefined behavior.
+
+## Conclusion
+
+The component is robust against:
+- Missing optional fields (recurrence, dates)
+- Zero-value boolean flags (is_urgent, is_important)
+- Partial date ranges (only start or only end)
+- Default quadrant classification (Q4)
+
+No crashes, no undefined behavior, no visual breakage.

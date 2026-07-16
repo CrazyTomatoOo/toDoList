@@ -16,6 +16,12 @@ const mockTasks: TaskRow[] = [
     reminder_at: null,
     completed: 0,
     sort_order: 0,
+    recurrence: null,
+    recurrence_end_date: null,
+    start_date: null,
+    end_date: null,
+    is_urgent: 0,
+    is_important: 0,
     created_at: '',
     updated_at: ''
   },
@@ -29,6 +35,12 @@ const mockTasks: TaskRow[] = [
     reminder_at: null,
     completed: 1,
     sort_order: 1,
+    recurrence: null,
+    recurrence_end_date: null,
+    start_date: null,
+    end_date: null,
+    is_urgent: 0,
+    is_important: 0,
     created_at: '',
     updated_at: ''
   }

@@ -1,4 +1,4 @@
-import type { TaskRow } from '../../shared/ipc'
+import type { TaskRow, Recurrence } from '../../shared/ipc'
 
 interface TaskItemProps {
   task: TaskRow
@@ -6,6 +6,25 @@ interface TaskItemProps {
   onEdit: (task: TaskRow) => void
   onDelete: (id: number) => Promise<void>
   dragHandleProps?: Record<string, unknown>
+}
+
+/**
+ * Maps is_urgent and is_important flags to Eisenhower quadrant labels.
+ * Q1 = urgent & important, Q2 = not urgent & important,
+ * Q3 = urgent & not important, Q4 = not urgent & not important.
+ */
+export function getQuadrantLabel(isUrgent: 0 | 1, isImportant: 0 | 1): string {
+  if (isUrgent === 1 && isImportant === 1) return 'Q1'
+  if (isUrgent === 0 && isImportant === 1) return 'Q2'
+  if (isUrgent === 1 && isImportant === 0) return 'Q3'
+  return 'Q4'
+}
+
+const RECURRENCE_LABELS: Record<Recurrence, string> = {
+  daily: 'Daily',
+  weekly: 'Weekly',
+  monthly: 'Monthly',
+  yearly: 'Yearly'
 }
 
 export default function TaskItem({ task, onToggleComplete, onEdit, onDelete, dragHandleProps }: TaskItemProps) {
@@ -66,6 +85,21 @@ export default function TaskItem({ task, onToggleComplete, onEdit, onDelete, dra
               {formatDate(task.due_date)}
             </span>
           )}
+          {task.recurrence && (
+            <span className="task-badge task-badge-recurrence" data-testid="task-recurrence">
+              {RECURRENCE_LABELS[task.recurrence]}
+            </span>
+          )}
+          {(task.start_date || task.end_date) && (
+            <span className="task-badge task-badge-duration" data-testid="task-duration">
+              {task.start_date ? formatDate(task.start_date) : '…'}
+              {' → '}
+              {task.end_date ? formatDate(task.end_date) : '…'}
+            </span>
+          )}
+          <span className="task-badge task-badge-quadrant" data-testid="task-quadrant">
+            {getQuadrantLabel(task.is_urgent, task.is_important)}
+          </span>
         </div>
       </div>
 

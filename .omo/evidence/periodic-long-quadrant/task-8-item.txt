@@ -1,0 +1,135 @@
+# T8: Task Item UI Badges - Test Evidence
+
+## Test Execution Results
+
+### TaskItem.test.tsx - All Tests Pass
+```
+✓ getQuadrantLabel helper
+  ✓ returns Q1 for urgent and important
+  ✓ returns Q2 for not urgent and important
+  ✓ returns Q3 for urgent and not important
+  ✓ returns Q4 for not urgent and not important
+
+✓ recurrence badge
+  ✓ displays recurrence badge when recurrence is set
+  ✓ displays weekly recurrence
+  ✓ displays monthly recurrence
+  ✓ displays yearly recurrence
+  ✓ does not display recurrence badge when recurrence is null
+
+✓ duration badge
+  ✓ displays date range when both start and end dates are set
+  ✓ displays duration badge when only start_date is set
+  ✓ displays duration badge when only end_date is set
+  ✓ does not display duration badge when neither date is set
+
+✓ quadrant badge
+  ✓ displays Q1 for urgent and important task
+  ✓ displays Q2 for not urgent and important task
+  ✓ displays Q3 for urgent and not important task
+  ✓ displays Q4 for not urgent and not important task
+  ✓ always displays quadrant badge
+
+✓ existing functionality
+  ✓ still displays priority badge
+  ✓ still displays due date when set
+  ✓ displays all badges together
+
+✓ fallback behavior
+  ✓ handles task with all null/zero values gracefully
+
+Test Files  1 passed (1)
+Tests       22 passed (22)
+```
+
+### TaskList.test.tsx - Existing Tests Still Pass
+```
+Test Files  1 passed (1)
+Tests       13 passed (13)
+```
+
+## Implementation Summary
+
+### Files Modified
+1. `src/renderer/components/TaskItem.tsx`
+   - Added `getQuadrantLabel()` helper function (exported for reuse)
+   - Added `RECURRENCE_LABELS` constant for mapping recurrence types
+   - Added three new badges in task-meta section:
+     - Recurrence badge (conditional, shows when recurrence is set)
+     - Duration badge (conditional, shows when start_date or end_date is set)
+     - Quadrant badge (always shown, defaults to Q4)
+
+2. `src/renderer/styles.css`
+   - Added `.task-badge` base styles
+   - Added `.task-badge-recurrence` (accent color)
+   - Added `.task-badge-duration` (secondary color)
+   - Added `.task-badge-quadrant` (secondary color, semibold)
+
+3. `src/__tests__/components/TaskItem.test.tsx` (NEW)
+   - 22 comprehensive tests covering all badge scenarios
+   - Tests for helper function, each badge type, existing functionality, and fallback behavior
+
+4. `src/__tests__/components/TaskList.test.tsx`
+   - Updated mock tasks to include new TaskRow fields (recurrence, dates, quadrant flags)
+
+5. `src/renderer/components/TaskForm.tsx`
+   - Fixed pre-existing JSX syntax errors (missing closing tags)
+
+## Verification
+
+### Type Check
+```
+npm run typecheck
+✓ No errors
+```
+
+### Lint
+```
+npm run lint
+✓ ESLint: No issues found
+```
+
+### Test Coverage
+- Recurrence badge: 5 tests (all recurrence types + null case)
+- Duration badge: 4 tests (both dates, start only, end only, neither)
+- Quadrant badge: 5 tests (all 4 quadrants + always-shown behavior)
+- Helper function: 4 tests (all quadrant combinations)
+- Existing functionality: 3 tests (priority, due date, all badges together)
+- Fallback behavior: 1 test (graceful handling of null/zero values)
+
+Total: 22 tests, all passing
+
+## Badge Display Logic
+
+### Recurrence Badge
+- Shows: "Daily", "Weekly", "Monthly", or "Yearly"
+- Condition: `task.recurrence !== null`
+- Style: Accent color (blue) with light background
+
+### Duration Badge
+- Shows: "start_date → end_date" (formatted as "Jan 1 → Jan 7")
+- Condition: `task.start_date !== null || task.end_date !== null`
+- Handles partial dates with "…" placeholder
+- Style: Secondary color (gray) with tertiary background
+
+### Quadrant Badge
+- Shows: "Q1", "Q2", "Q3", or "Q4"
+- Condition: Always shown (defaults to Q4 if both flags are 0)
+- Mapping:
+  - Q1: urgent=1, important=1
+  - Q2: urgent=0, important=1
+  - Q3: urgent=1, important=0
+  - Q4: urgent=0, important=0
+- Style: Secondary color (gray) with tertiary background, semibold weight
+
+## Design Decisions
+
+1. **Quadrant badge always visible**: Unlike recurrence and duration, quadrant is always shown because every task has a quadrant classification (defaults to Q4).
+
+2. **Helper function exported**: `getQuadrantLabel()` is exported for potential reuse in T10 (QuadrantBoard) and other components.
+
+3. **Consistent styling**: All badges follow the existing priority badge pattern (small font, padding, border-radius) for visual consistency.
+
+4. **Date formatting**: Reuses existing `formatDate()` helper for consistency with due_date display.
+
+5. **Fallback behavior**: Invalid or missing data renders gracefully - quadrant defaults to Q4, partial dates show "…", missing recurrence hides the badge.
