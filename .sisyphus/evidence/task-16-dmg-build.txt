@@ -1,0 +1,28 @@
+Task 16 - macOS DMG packaging evidence
+=====================================
+Date: 2026-07-15
+Command: npm run build:mac
+Status: success
+
+DMG output:
+- dist/ToDoList-0.0.0-arm64.dmg (108 MB)
+- dist/ToDoList-0.0.0-arm64.dmg.blockmap
+
+Electron Builder version: 26.15.3
+Electron version packaged: 37.10.3
+Architecture: arm64
+
+Native dependency handling:
+- @electron/rebuild executed for better-sqlite3
+- Module better-sqlite3 rebuilt for Electron ABI
+
+Verification (scripts/verify-mac-dmg.sh):
+- DMG mounted successfully at /Volumes/ToDoList 0.0.0-arm64
+- ToDoList.app copied to temp directory
+- App launched and process remained running
+- better-sqlite3 loaded correctly: userData/todo.db created
+- Screenshot captured: .sisyphus/evidence/task-16-dmg-launch.png
+
+Notes:
+- macOS code signing skipped (no Developer ID identity; v1.0 independent DMG only)
+- Proxy environment variables needed explicit protocol prefix for electron-builder downloads
