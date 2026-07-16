@@ -86,3 +86,40 @@
 - E2E screenshot test: passed (created task3-sidebar-screenshots.spec.ts)
 - Evidence: `.omo/evidence/ui-redesign/task-3-sidebar.png` (sidebar with 3 lists, second selected)
 - Evidence: `.omo/evidence/ui-redesign/task-3-sidebar-failure.png` (verifies wrong list NOT active)
+
+## [2026-07-16 19:45:00] Task: T4 - View Toggle & Header Redesign
+
+**Segmented control design:**
+- View toggle container: `border: 1px solid var(--color-border)`, `border-radius: var(--border-radius-md)`, `padding: 2px`, transparent background
+- Segment buttons: `.view-toggle-btn` class (replaced `btn btn-sm btn-primary/btn-ghost`)
+- Active segment: `[aria-pressed="true"]` selector drives `background: var(--color-accent-light)`, `color: var(--color-accent)`, `font-weight: var(--font-weight-semibold)`
+- Inactive segment: transparent bg, `color: var(--color-text-secondary)`
+- Hover: `var(--color-surface-hover)`, Press: `var(--color-surface-active)` — consistent with sidebar and button patterns
+
+**Header typography:**
+- `.main-header h1` changed from `--font-size-xl` (20px) to `--font-size-lg` (18px) per Feishu spec
+- Kept `--font-weight-semibold` (600)
+
+**Add Task button:**
+- Imported `Plus` from lucide-react
+- Replaced text `+` glyph with `<Plus size={16} />`
+- Kept `btn btn-primary` class (brand-colored solid button)
+
+**No-list-selected behavior (failure evidence):**
+- View toggle is conditionally rendered only when `selectedListId !== null`
+- When no list is selected: toggle is hidden, Add Task button is hidden, header shows "No List Selected"
+- This is existing behavior — no new disabled state was invented
+
+**Test changes:**
+- Zero test changes required — all 217 unit tests pass
+- All existing e2e tests pass (55/56; 1 pre-existing failure in integration.spec.ts unrelated to this task)
+- Tests use `data-testid` selectors which were preserved
+- `aria-pressed` attribute was already present and continues to work
+
+**Verification:**
+- typecheck: exit 0
+- lint: exit 0
+- tests: 217/217 passed
+- e2e: 55/56 passed (1 pre-existing packaged-app failure)
+- Evidence: `.omo/evidence/ui-redesign/task-4-header.png` (segmented toggle with List active)
+- Evidence: `.omo/evidence/ui-redesign/task-4-header-failure.png` (no list selected, toggle hidden)

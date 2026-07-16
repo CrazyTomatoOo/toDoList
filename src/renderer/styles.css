@@ -463,7 +463,7 @@ select:focus {
 }
 
 .main-header h1 {
-  font-size: var(--font-size-xl, 20px);
+  font-size: var(--font-size-lg, 18px);
   font-weight: var(--font-weight-semibold, 600);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -568,13 +568,44 @@ select:focus {
   min-height: 28px;
 }
 
-/* ── View Toggle ── */
+/* ── View Toggle (segmented control) ── */
 .view-toggle {
   display: inline-flex;
-  gap: var(--space-1, 4px);
-  padding: var(--space-1, 4px);
-  background: var(--color-surface-secondary, #f7f8fa);
+  align-items: center;
+  gap: 0;
+  padding: 2px;
+  border: 1px solid var(--color-border, #c9cdd4);
   border-radius: var(--border-radius-md, 6px);
+  background: transparent;
+}
+
+.view-toggle-btn {
+  padding: var(--space-1, 4px) var(--space-3, 12px);
+  font-size: var(--font-size-sm, 13px);
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--color-text-secondary, #4e5969);
+  background: transparent;
+  border-radius: calc(var(--border-radius-md, 6px) - 2px);
+  transition: background var(--transition-fast, 150ms ease), color var(--transition-fast, 150ms ease);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1, 4px);
+}
+
+.view-toggle-btn:hover {
+  background: var(--color-surface-hover, rgba(29, 33, 41, 0.08));
+  color: var(--color-text-primary, #1d2129);
+}
+
+.view-toggle-btn:active {
+  background: var(--color-surface-active, rgba(29, 33, 41, 0.12));
+}
+
+.view-toggle-btn[aria-pressed="true"] {
+  background: var(--color-accent-light, #e8eefd);
+  color: var(--color-accent, #1456f0);
+  font-weight: var(--font-weight-semibold, 600);
 }
 
 /* ── Task List ── */

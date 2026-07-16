@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Moon, Sun, Monitor } from 'lucide-react'
+import { Moon, Sun, Monitor, Plus } from 'lucide-react'
 import type { TaskRow, CreateTaskInput, UpdateTaskInput } from '../shared/ipc'
 import { useLists } from './hooks/useLists'
 import { useTasks } from './hooks/useTasks'
@@ -159,7 +159,7 @@ export default function App() {
             {selectedListId !== null && (
               <div className="view-toggle" role="group" aria-label="View mode">
                 <button
-                  className={`btn btn-sm ${viewMode === 'list' ? 'btn-primary' : 'btn-ghost'}`}
+                  className="view-toggle-btn"
                   onClick={() => setViewMode('list')}
                   data-testid="view-toggle-list"
                   aria-pressed={viewMode === 'list'}
@@ -167,7 +167,7 @@ export default function App() {
                   List
                 </button>
                 <button
-                  className={`btn btn-sm ${viewMode === 'board' ? 'btn-primary' : 'btn-ghost'}`}
+                  className="view-toggle-btn"
                   onClick={() => setViewMode('board')}
                   data-testid="view-toggle-board"
                   aria-pressed={viewMode === 'board'}
@@ -191,7 +191,8 @@ export default function App() {
                 onClick={() => setShowAddForm(true)}
                 data-testid="add-task-button"
               >
-                + Add Task
+                <Plus size={16} />
+                Add Task
               </button>
             )}
             <ImportExportButtons
