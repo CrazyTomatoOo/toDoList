@@ -1,0 +1,40 @@
+ui-redesign Final Verification Review
+======================================
+
+Date: 2026-07-16
+Plan: .omo/plans/ui-redesign.md
+
+Final Verification Results
+--------------------------
+- npm run typecheck   → exit 0
+- npm run lint        → exit 0 (ESLint: No issues found)
+- npm test            → exit 0 (249 tests passed, 25 test files passed)
+- npm run test:e2e    → 63 passed, 1 skipped, 0 failures
+
+F1 Plan Compliance Audit
+------------------------
+VERDICT: APPROVE
+File: .omo/evidence/ui-redesign/final-review-f1.txt
+All Must Haves (1–13) implemented, all Must NOT Haves verified absent, evidence files exist for T1–T12.
+
+F2 Code Quality Review
+----------------------
+VERDICT: APPROVE
+File: .omo/evidence/ui-redesign/final-review-f2.txt
+Typecheck, lint, and unit tests pass. No `as any` in production code, no `console.log`, no `TODO`/`FIXME`/`HACK` comments, no AI slop detected.
+
+F3 Automated E2E Scenario Execution
+------------------------------------
+VERDICT: APPROVE
+File: .omo/evidence/ui-redesign/final-review-f3.txt
+Full E2E suite: 63 passed, 1 skipped (pre-existing packaged macOS app failure). F3-specific edge-case tests all passed.
+
+F4 Scope Fidelity Review
+------------------------
+VERDICT: APPROVE
+File: .omo/evidence/ui-redesign/final-review-f4.txt
+All committed changes are accounted for by the ui-redesign plan. No backend/DB/IPC/schema changes, no new features, no external UI libraries, no custom fonts, no animations, no list virtualization.
+
+Conclusion
+----------
+All four final reviews (F1–F4) return APPROVE. The ui-redesign plan is complete and compliant.

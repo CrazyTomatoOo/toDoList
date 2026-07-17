@@ -1,0 +1,136 @@
+F4 Scope Fidelity Review — ui-redesign
+========================================
+
+Date: 2026-07-16
+Reviewer: F4 (Scope Fidelity)
+Plan: .omo/plans/ui-redesign.md
+Commit range reviewed: 5c1d4b8..HEAD (equivalent to HEAD~15..HEAD)
+  - This range captures all redesign commits from T1 (replace CSS tokens) through
+    T12 (E2E tests), including the T9 CSS hotfix and the search-filter selector fix.
+
+VERDICT: APPROVE
+----------------
+All committed changes are accounted for by the ui-redesign plan (T1–T12). No
+backend/DB/IPC/schema changes were introduced. No new features, external UI
+libraries, custom fonts, animations, or list virtualization were added. The
+only new dependencies are the two explicitly allowed ones.
+
+Diff summary
+------------
+34 files changed, +2,827 / -493 lines (excluding .omo/evidence and .omo/notepads).
+
+Allowed new dependencies
+------------------------
+- lucide-react (runtime dependency) — allowed by plan T2
+- @axe-core/playwright (dev dependency) — allowed by plan T9
+No other dependency changes were made.
+
+Backend / DB / IPC / schema check
+---------------------------------
+No files under src/main/, src/db/, src/preload/, or src/shared/ were changed in
+the reviewed commit range. The diff is confined to the renderer and test suites.
+
+Scope accounting — file by file
+-------------------------------
+
+package-lock.json
+package.json
+  → In scope: add lucide-react and @axe-core/playwright only.
+
+src/renderer/styles.css
+  → In scope: T1 design tokens, T5 task-list styling, T6 quadrant styling, T7 form
+     styling, T8 theme/import-export styling, T9 contrast/accessibility fixes.
+
+src/renderer/App.tsx
+  → In scope: T2 Lucide icons (theme toggle, Add Task), T3 main shell, T4 view
+     toggle/header, T8 theme toggle class.
+
+src/renderer/components/ListSidebar.tsx
+  → In scope: T3 sidebar redesign, T9 semantic button/accessibility restructuring.
+
+src/renderer/components/SearchBar.tsx
+  → In scope: T2 Lucide X icon. The 4-line diff is icon-only.
+
+src/renderer/components/TaskItem.tsx
+  → In scope: T2 Lucide icons, T5 redesign, T9 checkbox aria-label + body onClick
+     removal, T10 React.memo + renderCounter test hook.
+
+src/renderer/components/TaskList.tsx
+  → In scope: T5 empty/loading/error card treatment, T9 role/aria-live additions.
+
+src/renderer/components/SortableTaskItem.tsx
+  → In scope: T5 redesign, T10 React.memo + dragHandleProps stabilization.
+
+src/renderer/components/TaskForm.tsx
+  → In scope: T7 form redesign + modal a11y (role/aria-modal/aria-labelledby,
+     focus trap, Escape-to-close, focus restoration).
+
+src/renderer/components/ListForm.tsx
+  → In scope: T7/9 field-level error announcements (role="alert" aria-live).
+
+src/renderer/components/DurationFields.tsx
+  → In scope: T7/9 field-level error announcements (role="alert" aria-live).
+
+src/renderer/components/ImportExportButtons.tsx
+  → In scope: T8 import/export polish (btn-ghost styling).
+
+src/renderer/hooks/useSortableTasks.tsx
+  → In scope: T10 taskIds useMemo.
+
+src/renderer/hooks/useSearchAndFilter.ts
+  → In scope: T10 remove filteredTasks mirror / derived-state churn fix.
+
+Component tests (src/__tests__/components/)
+  → In scope: T11. Modified: App.test.tsx, FilterBar.test.tsx, ListSidebar.test.tsx,
+     QuadrantBoard.test.tsx, TaskForm.test.tsx, TaskItem.test.tsx, TaskList.test.tsx.
+     Added: TaskItemMemoization.test.tsx (T10/T11 re-render count test).
+
+E2E tests (src/__tests__/e2e/)
+  → In scope: T12. Modified: integration.spec.ts, quadrant.spec.ts, search-filter.spec.ts.
+     Added: task3-sidebar-screenshots.spec.ts, task4-header-screenshots.spec.ts,
+     task5-tasklist-screenshots.spec.ts, task6-quadrant-screenshots.spec.ts,
+     task7-form-screenshots.spec.ts, task8-polish-screenshots.spec.ts,
+     task9-a11y.spec.ts, task12-e2e-regression.spec.ts.
+
+Expected files that did NOT change
+----------------------------------
+The following plan-referenced files were redesigned entirely via CSS or required
+no diff because their JSX structure was already adequate:
+  - src/renderer/components/QuadrantBoard.tsx (T6 — CSS-only visual changes)
+  - src/renderer/components/FilterBar.tsx (T5 — CSS-only restyling)
+  - src/renderer/components/RecurrenceFields.tsx (T7 reference, no JSX change)
+This is not scope creep; it is an implementation choice consistent with the plan.
+
+Must NOT Have guardrails
+------------------------
+- No backend/DB/IPC changes: PASS
+- No new features (views, animations, undo, toasts): PASS
+- No custom font files: PASS
+- No external UI component libraries (shadcn, Material, Ant Design): PASS
+- No business-logic/data-flow changes beyond UI presentation: PASS
+- No list virtualization: PASS
+- data-testid attributes preserved (no broad removals observed): PASS
+
+Scope creep finding
+-------------------
+None.
+
+Notes on uncommitted working-tree changes
+-------------------------------------------
+The following are present in the working tree but are NOT part of the reviewed
+commit range and therefore are not counted in this F4 verdict:
+  - Modified: src/__tests__/e2e/f3-final-verification.spec.ts (belongs to the
+    periodic-long-quadrant feature, not ui-redesign).
+  - Modified evidence files under .omo/evidence/ui-redesign/ and
+    .omo/evidence/periodic-long-quadrant/ (likely regenerated by parallel F3
+    verification; evidence artifacts, not code scope).
+  - Untracked .omo/ metadata, plans, and additional evidence files.
+These are outside the committed redesign diff and do not affect the F4 APPROVE
+verdict for the ui-redesign plan.
+
+Receipts
+--------
+- git diff --stat 5c1d4b8..HEAD (full redesign range)
+- git diff --name-status 5c1d4b8..HEAD (verified file list)
+- package.json diff (verified dependencies)
+- No backend/DB/IPC/schema diff detected

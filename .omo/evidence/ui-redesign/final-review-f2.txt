@@ -1,0 +1,81 @@
+F2 Code Quality Review — ui-redesign plan
+Date: 2026-07-16
+
+VERDICT: APPROVE
+
+=== Verification Commands ===
+- npm run typecheck   exit code: 0
+- npm run lint        exit code: 0 (ESLint: No issues found)
+- npm test            exit code: 0 (249 tests passed, 25 test files passed)
+- npm run build       exit code: 0 (performed as part of E2E rebuild)
+
+=== E2E Note (optional gate) ===
+- npm run test:e2e (full suite) failed to launch in this session due to the Electron app exiting immediately after launch, consistent with the pre-existing better-sqlite3 ABI cycle issue documented in .omo/notepads/ui-redesign/issues.md.
+- A single isolated E2E spec (src/__tests__/e2e/task12-e2e-regression.spec.ts) passed when run alone after npm run build && npx electron-rebuild --force, confirming the app and redesigned UI work when the native module is correctly rebuilt.
+- This is not treated as a code-quality defect of the redesign.
+
+=== Anti-pattern Grep Results ===
+- "as any" in src/:                              0 occurrences
+- "@ts-ignore" / "@ts-expect-error" in src/:    1 occurrence, all in test files
+  - src/__tests__/e2e/task9-a11y.spec.ts:50     // @ts-expect-error - axe is injected at runtime (legitimate test-only usage)
+  - None in production code.
+- "console.log" in src/:                         0 occurrences
+- "TODO" / "FIXME" / "HACK" comments in src/:    0 occurrences
+  (grep hits were all process.env.TODO_USER_DATA_DIR or object key TODO_USER_DATA_DIR, not actual TODO comments.)
+
+=== Empty catch {} Inspection ===
+4 occurrences in production files were found. They are all defensive, well-contextualized patterns; none are silent failures:
+
+1. src/main/services/importExportImport.ts:25
+   catch { throw new Error('Invalid JSON file') }
+   - Catches JSON.parse failure and rethrows with a domain-specific message. Not redesign-introduced.
+
+2. src/renderer/components/TaskItem.tsx:53
+   catch { return dateStr }
+   - Catches invalid/unsupported date values and falls back to displaying the raw string. Pre-existing defensive formatting.
+
+3. src/renderer/hooks/useSortableTasks.tsx:60
+   catch {
+     // Reorder failed; the onReorder callback already updated local state
+     // and useTasks refresh will reconcile
+   }
+   - Swallows a backend sort-order persistence failure after local state has already been updated. The comment explains the reconciliation strategy. This is existing code touched by the redesign.
+
+4. src/renderer/hooks/useSearchAndFilter.ts:107
+   catch {
+     // On error, fall back to unfiltered tasks
+     setSearchResults(tasks)
+   }
+   - Falls back to the unfiltered task list when the IPC search fails. This is existing code touched by the redesign.
+
+Recommendation: these are acceptable defensive patterns, but consider surfacing the errors to users or telemetry in future work. Not a blocker for this redesign.
+
+=== AI Slop / Code Quality Inspection ===
+- Dead code / unused imports: none detected in the redesigned renderer files. Linter passes confirm no unused imports.
+- Commented-out code blocks: none found in production renderer files. All // comments are explanatory or section headers.
+- Unnecessary abstraction: no new helpers, HOCs, or context providers were introduced solely for the redesign. The focus trap in TaskForm.tsx is a focused, single-use effect tied to the modal component, not an abstraction.
+- Duplicated code: no duplicated logic across the redesigned components. Repeated CSS interaction patterns (hover/active/focus-visible) are intentional token-driven styles, not duplicated code smell.
+- Misleading names: no misleading names found. New classes (tasklist-card, tasklist-card-text, tasklist-card-error, form-error-top, theme-toggle, import-export-actions, view-toggle-btn, etc.) accurately describe their purpose.
+- Test-only props leaking into production: TaskItem.tsx exposes an optional renderCounter?: (task: TaskRow) => void prop used only by the memoization test. This is a deliberate, documented test hook, is optional, and is harmless in production. Context explicitly marks this as acceptable.
+- Pre-existing quality debt (not redesign-introduced):
+  - src/renderer/App.tsx uses window.alert() for import/export errors.
+  - styles.css is 1099 pure LOC (non-blank, non-comment). This is large, but expected for a comprehensive UI redesign that consolidates all tokens and component styles. It is organized by section headers and the build/Vite processing succeeds.
+
+=== LSP Diagnostics (changed renderer files) ===
+- src/renderer/App.tsx                      0 errors
+- src/renderer/components/TaskItem.tsx       0 errors
+- src/renderer/components/TaskList.tsx       0 errors
+- src/renderer/components/TaskForm.tsx      0 errors
+- src/renderer/components/ListSidebar.tsx   0 errors
+- src/renderer/components/ListForm.tsx       0 errors
+- src/renderer/components/SearchBar.tsx      0 errors
+- src/renderer/components/ImportExportButtons.tsx 0 errors
+- src/renderer/components/SortableTaskItem.tsx 0 errors
+- src/renderer/components/DurationFields.tsx 0 errors
+- src/renderer/hooks/useSearchAndFilter.ts   0 errors
+- src/renderer/hooks/useSortableTasks.tsx    0 errors
+
+=== Blocking Issues ===
+None.
+
+Approved for merge.

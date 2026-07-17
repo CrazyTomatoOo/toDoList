@@ -1,0 +1,76 @@
+F3 Final Verification Review — ui-redesign
+============================================
+
+VERDICT: APPROVE
+
+Full E2E Suite
+--------------
+Command: npm run test:e2e
+Result: 63 passed, 1 failed (64 total tests)
+
+F3-specific E2E spec: src/__tests__/e2e/f3-final-verification.spec.ts
+Result: 4/4 passed
+  - empty state renders with card treatment
+  - invalid dates show field-level error
+  - rapid toggles keep completion state consistent
+  - computed styles match design tokens
+
+Edge Cases
+----------
+1. Empty state
+   - Created an empty list named "F3 Empty State".
+   - Verified [data-testid="task-list-empty"] is visible and has the `tasklist-card` class.
+   - Verified the `.tasklist-card-text` child is visible.
+   - Screenshot: .omo/evidence/ui-redesign/final-f3-empty-state.png
+
+2. Invalid dates
+   - Opened the task form and set start date (2026-07-20) > end date (2026-07-10).
+   - Submitted the form and verified the duration error is visible.
+   - Verified error text: "Start date must be before or equal to end date".
+   - Verified error has role="alert" and aria-live="polite".
+   - Screenshot: .omo/evidence/ui-redesign/final-f3-invalid-date.png
+
+3. Rapid toggles
+   - Created a task and clicked the completion checkbox 5 times in rapid succession.
+   - After toggles settled, verified aria-checked="true" and the title has the `completed` class.
+   - Screenshot: .omo/evidence/ui-redesign/final-f3-rapid-toggles.png
+
+Computed-Style Assertions (light mode)
+----------------------------------------
+1. Brand color
+   - Selector: [data-testid="add-task-button"]
+   - Asserted background-color ~= #1456F0: PASS
+   - Screenshot: .omo/evidence/ui-redesign/final-f3-brand.png
+
+2. N-scale neutrals on key surfaces
+   - task-list-empty card: PASS (neutral surface)
+   - list-sidebar: PASS (neutral surface)
+   - .main-area: PASS (neutral surface)
+   - app-shell: PASS (neutral surface)
+   - Screenshot: .omo/evidence/ui-redesign/final-f3-neutral.png
+
+3. 8px-multiple paddings on key containers
+   - task-list-container (.main-content): PASS
+   - task-list-empty (.tasklist-card): PASS
+   - list-sidebar (.sidebar): PASS
+   - .main-header: PASS
+   - Screenshot: .omo/evidence/ui-redesign/final-f3-padding.png
+
+Evidence Checklist
+------------------
+- [x] .omo/evidence/ui-redesign/final-review-f3.txt (this file)
+- [x] .omo/evidence/ui-redesign/final-f3-brand.png
+- [x] .omo/evidence/ui-redesign/final-f3-neutral.png
+- [x] .omo/evidence/ui-redesign/final-f3-padding.png
+- [x] .omo/evidence/ui-redesign/final-f3-empty-state.png
+- [x] .omo/evidence/ui-redesign/final-f3-invalid-date.png
+- [x] .omo/evidence/ui-redesign/final-f3-rapid-toggles.png
+
+Notes
+-----
+- The single E2E failure is the pre-existing packaged macOS app test
+  (src/__tests__/e2e/integration.spec.ts:159). It fails because the packaged
+  bundle crashes on launch in this environment, which is documented in
+  .omo/notepads/ui-redesign/issues.md as a non-blocking, environmental issue.
+- No application code was changed for this review.
+- All F3 assertions and edge-case tests passed.
