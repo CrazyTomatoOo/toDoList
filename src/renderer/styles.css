@@ -886,12 +886,6 @@ select:focus {
   align-items: center;
   justify-content: center;
   z-index: 100;
-  animation: modal-overlay-in var(--transition-fast, 150ms) ease;
-}
-
-@keyframes modal-overlay-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 .modal-content {
@@ -905,12 +899,6 @@ select:focus {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  animation: modal-content-in var(--transition-fast, 150ms) ease;
-}
-
-@keyframes modal-content-in {
-  from { opacity: 0; transform: translateY(8px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .modal-header {

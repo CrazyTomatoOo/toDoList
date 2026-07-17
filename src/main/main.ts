@@ -99,22 +99,26 @@ function createApplicationMenu(): Menu {
 /**
  * Initialize the Electron application.
  *
- * Enforces a single application instance. When a second instance is launched,
- * the existing window is focused instead of opening a new one. On macOS the
- * window is recreated when the user clicks the Dock icon after closing all
- * windows.
+ * Enforces a single application instance unless running under E2E tests. When a
+ * second instance is launched, the existing window is focused instead of opening a
+ * new one. On macOS the window is recreated when the user clicks the Dock icon
+ * after closing all windows.
  */
 export function initializeApp(): void {
-  const gotTheLock = app.requestSingleInstanceLock()
+  const isE2E = process.env.E2E_TEST === '1'
 
-  if (!gotTheLock) {
-    app.quit()
-    return
+  if (!isE2E) {
+    const gotTheLock = app.requestSingleInstanceLock()
+
+    if (!gotTheLock) {
+      app.quit()
+      return
+    }
+
+    app.on('second-instance', () => {
+      focusMainWindow()
+    })
   }
-
-  app.on('second-instance', () => {
-    focusMainWindow()
-  })
 
   app.whenReady().then(() => {
     // Initialize the database lazily. If the native module is not yet rebuilt
