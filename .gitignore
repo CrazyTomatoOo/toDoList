@@ -6,3 +6,11 @@ test-results/
 .sisyphus/test-results/
 ._*
 .DS_Store
+
+# Agent/session metadata
+.omo/boulder.json
+.omo/drafts/
+.omo/run-continuation/
+
+# TypeScript incremental build info
+*.tsbuildinfo
