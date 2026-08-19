@@ -52,8 +52,8 @@ jobs:
 
       - name: Package ${{ matrix.platform }}
         env:
-          ELECTRON_BUILDER_ARGS: ${{ matrix.electron_builder_args }}
           # macOS signing: base64-encoded Developer ID Application cert
+          # (跳过签名: electron-builder.yml mac.identity: null)
           CSC_LINK: ${{ secrets.CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           # macOS notarization (optional)
@@ -63,7 +63,9 @@ jobs:
           # Windows signing: base64-encoded code-signing cert
           WIN_CSC_LINK: ${{ secrets.WIN_CSC_LINK }}
           WIN_CSC_KEY_PASSWORD: ${{ secrets.WIN_CSC_KEY_PASSWORD }}
-        run: npx electron-builder $ELECTRON_BUILDER_ARGS --publish never
+        # 直接在 run 里插值矩阵参数: Windows runner 默认 pwsh, $VAR 会被当
+        # PowerShell 变量跳过(空)导致 electron-builder 无参运行
+        run: npx electron-builder ${{ matrix.electron_builder_args }} --publish never
 
       - name: Upload ${{ matrix.platform }} artifacts
         uses: actions/upload-artifact@v4

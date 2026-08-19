@@ -14,6 +14,9 @@ files:
   - node_modules/bindings/**/*
   - node_modules/file-uri-to-path/**/*
 mac:
+  # 未配置 CSC_LINK 证书时跳过签名（electron-builder 对空串 CSC_LINK 会崩溃：
+  # 配置签名后删除 identity: null 并设置仓库 secrets）
+  identity: null
   category: public.app-category.productivity
   target:
     - dmg
