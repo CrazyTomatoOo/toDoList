@@ -37,7 +37,9 @@
   /* Text */
   --color-text-primary: var(--color-n900);
   --color-text-secondary: var(--color-n700);
-  --color-text-tertiary: var(--color-n600); /* Darkened from N500 for WCAG AA 4.5:1 contrast */
+  --color-text-tertiary: var(
+    --color-n600
+  ); /* Darkened from N500 for WCAG AA 4.5:1 contrast */
   --color-text-inverse: #ffffff;
 
   /* Accent (mapped to brand) */
@@ -64,7 +66,8 @@
   --color-priority-low: #008020; /* Darkened for WCAG AA contrast on success-light bg */
 
   /* Typography — Feishu scale: 11/12/13/14/16/18/20/24 */
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+  --font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
     'Microsoft YaHei', Roboto, 'Helvetica Neue', Arial, 'Noto Sans CJK SC',
     sans-serif;
   --font-size-xxs: 11px;
@@ -113,6 +116,11 @@
 
   /* Transitions */
   --transition-fast: 150ms ease;
+
+  /* Select arrow glyphs (inline SVG; color baked per theme — drawn over the
+     box fill's second background layer) */
+  --select-arrow-down: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.7 6 8.2 9.5 4.7' fill='none' stroke='%236b7785' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --select-arrow-up: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M9.5 7.3 6 3.8 2.5 7.3' fill='none' stroke='%231456f0' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 /* ── Dark mode tokens (activated via data attribute) ── */
@@ -154,7 +162,9 @@
   /* Text */
   --color-text-primary: var(--color-n900);
   --color-text-secondary: var(--color-n700);
-  --color-text-tertiary: var(--color-n600); /* N600 restores secondary/tertiary tiering; AA ≥ 4.5:1 on N100 surfaces */
+  --color-text-tertiary: var(
+    --color-n600
+  ); /* N600 restores secondary/tertiary tiering; AA ≥ 4.5:1 on N100 surfaces */
   --color-text-inverse: #1d2129;
 
   /* Accent (mapped to brand) */
@@ -186,7 +196,8 @@
   --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.4);
 
   /* Typography (same as light mode) */
-  --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+  --font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
     'Microsoft YaHei', Roboto, 'Helvetica Neue', Arial, 'Noto Sans CJK SC',
     sans-serif;
   --font-size-xxs: 11px;
@@ -226,6 +237,10 @@
 
   /* Transitions (same as light mode) */
   --transition-fast: 150ms ease;
+
+  /* Select arrow glyphs (same URLs, theme colors baked in) */
+  --select-arrow-down: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 4.7 6 8.2 9.5 4.7' fill='none' stroke='%2386868f' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  --select-arrow-up: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M9.5 7.3 6 3.8 2.5 7.3' fill='none' stroke='%236ba1ff' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
 
 /* ── Reset & Base ── */
@@ -531,7 +546,9 @@ select:focus {
   border-radius: var(--border-radius-md, 6px);
   font-size: var(--font-size-sm, 13px);
   font-weight: var(--font-weight-medium, 500);
-  transition: background var(--transition-fast, 150ms ease), color var(--transition-fast, 150ms ease);
+  transition:
+    background var(--transition-fast, 150ms ease),
+    color var(--transition-fast, 150ms ease);
   white-space: nowrap;
 }
 
@@ -611,7 +628,9 @@ select:focus {
   color: var(--color-text-secondary, #4e5969);
   background: transparent;
   cursor: pointer;
-  transition: background var(--transition-fast, 150ms ease), color var(--transition-fast, 150ms ease);
+  transition:
+    background var(--transition-fast, 150ms ease),
+    color var(--transition-fast, 150ms ease);
 }
 
 .theme-toggle:hover {
@@ -658,7 +677,9 @@ select:focus {
   color: var(--color-text-secondary, #4e5969);
   background: transparent;
   border-radius: calc(var(--border-radius-md, 6px) - 2px);
-  transition: background var(--transition-fast, 150ms ease), color var(--transition-fast, 150ms ease);
+  transition:
+    background var(--transition-fast, 150ms ease),
+    color var(--transition-fast, 150ms ease);
   white-space: nowrap;
   display: inline-flex;
   align-items: center;
@@ -674,7 +695,7 @@ select:focus {
   background: var(--color-surface-active, rgba(29, 33, 41, 0.12));
 }
 
-.view-toggle-btn[aria-pressed="true"] {
+.view-toggle-btn[aria-pressed='true'] {
   background: var(--color-accent-light, #e8eefd);
   color: var(--color-accent, #1456f0);
   font-weight: var(--font-weight-semibold, 600);
@@ -718,7 +739,10 @@ select:focus {
 .tasklist-card-error {
   background: var(--color-danger-light, #ffece8);
   border-color: var(--color-danger, #f53f3f);
-  color: var(--color-danger-hover, #cb2634); /* Darkened for WCAG AA contrast on danger-light bg */
+  color: var(
+    --color-danger-hover,
+    #cb2634
+  ); /* Darkened for WCAG AA contrast on danger-light bg */
   text-align: left;
   font-size: var(--font-size-sm, 13px);
 }
@@ -949,7 +973,8 @@ select:focus {
   border: 1px solid var(--color-border, #c9cdd4);
   border-radius: var(--border-radius-md, 6px);
   outline: none;
-  transition: border-color var(--transition-fast, 150ms) ease,
+  transition:
+    border-color var(--transition-fast, 150ms) ease,
     box-shadow var(--transition-fast, 150ms) ease;
 }
 
@@ -972,9 +997,34 @@ select:focus {
   cursor: not-allowed;
 }
 
+/* Native select restyle — custom chevron arrow pinned right, color via tokens */
+select.form-input {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: var(--space-2, 8px) var(--space-8, 32px) var(--space-2, 8px)
+    var(--space-3, 12px);
+  background-color: var(--color-bg, #ffffff);
+  background-image:
+    var(--select-arrow-down, none),
+    linear-gradient(var(--color-bg, #ffffff), var(--color-bg, #ffffff));
+  background-repeat: no-repeat, repeat;
+  background-position:
+    right 12px center,
+    0 0;
+  background-size:
+    12px 12px,
+    auto;
+}
+
+select.form-input:focus {
+  background-image:
+    var(--select-arrow-up, none),
+    linear-gradient(var(--color-bg, #ffffff), var(--color-bg, #ffffff));
+}
+
 /* datetime-local and date restyle — match Feishu input look */
-input[type="datetime-local"].form-input,
-input[type="date"].form-input {
+input[type='datetime-local'].form-input,
+input[type='date'].form-input {
   appearance: none;
   -webkit-appearance: none;
 }
@@ -1009,7 +1059,10 @@ input[type="date"].form-input {
   background: var(--color-danger-light, #ffece8);
   border: 1px solid var(--color-danger, #f53f3f);
   border-radius: var(--border-radius-md, 6px);
-  color: var(--color-danger-hover, #cb2634); /* Darkened for WCAG AA contrast on danger-light bg */
+  color: var(
+    --color-danger-hover,
+    #cb2634
+  ); /* Darkened for WCAG AA contrast on danger-light bg */
   font-size: var(--font-size-sm, 13px);
   margin-bottom: var(--space-4, 16px);
 }
@@ -1080,7 +1133,9 @@ input[type="date"].form-input {
   border-radius: var(--border-radius-md, 6px);
   background: var(--color-bg, #ffffff);
   color: var(--color-text-primary, #1d2129);
-  transition: border-color var(--transition-fast, 150ms ease), box-shadow var(--transition-fast, 150ms ease);
+  transition:
+    border-color var(--transition-fast, 150ms ease),
+    box-shadow var(--transition-fast, 150ms ease);
 }
 
 .search-input::placeholder {
@@ -1107,7 +1162,9 @@ input[type="date"].form-input {
   color: var(--color-text-tertiary, #6b7785);
   font-size: var(--font-size-md, 16px);
   line-height: 1;
-  transition: color var(--transition-fast, 150ms ease), background var(--transition-fast, 150ms ease);
+  transition:
+    color var(--transition-fast, 150ms ease),
+    background var(--transition-fast, 150ms ease);
   padding: 0;
   background: transparent;
   border: none;
@@ -1132,15 +1189,30 @@ input[type="date"].form-input {
 }
 
 .filter-select {
-  padding: var(--space-2, 8px) var(--space-3, 12px);
+  padding: var(--space-2, 8px) var(--space-8, 32px) var(--space-2, 8px)
+    var(--space-3, 12px);
   font-size: var(--font-size-sm, 13px);
   border: 1px solid var(--color-border, #c9cdd4);
   border-radius: var(--border-radius-md, 6px);
-  background: var(--color-bg, #ffffff);
+  background-color: var(--color-bg, #ffffff);
+  background-image:
+    var(--select-arrow-down, none),
+    linear-gradient(var(--color-bg, #ffffff), var(--color-bg, #ffffff));
+  background-repeat: no-repeat, repeat;
+  background-position:
+    right 12px center,
+    0 0;
+  background-size:
+    12px 12px,
+    auto;
+  appearance: none;
+  -webkit-appearance: none;
   color: var(--color-text-primary, #1d2129);
   min-width: 110px;
   cursor: pointer;
-  transition: border-color var(--transition-fast, 150ms ease), box-shadow var(--transition-fast, 150ms ease);
+  transition:
+    border-color var(--transition-fast, 150ms ease),
+    box-shadow var(--transition-fast, 150ms ease);
 }
 
 .filter-select:hover {
@@ -1150,6 +1222,9 @@ input[type="date"].form-input {
 .filter-select:focus {
   border-color: var(--color-accent, #1456f0);
   box-shadow: 0 0 0 2px var(--color-accent-light, #e8eefd);
+  background-image:
+    var(--select-arrow-up, none),
+    linear-gradient(var(--color-bg, #ffffff), var(--color-bg, #ffffff));
   outline: none;
 }
 
@@ -1172,7 +1247,10 @@ input[type="date"].form-input {
   font-size: var(--font-size-md, 16px);
   line-height: 1;
   touch-action: none;
-  transition: color var(--transition-fast, 150ms ease), background var(--transition-fast, 150ms ease), opacity var(--transition-fast, 150ms ease);
+  transition:
+    color var(--transition-fast, 150ms ease),
+    background var(--transition-fast, 150ms ease),
+    opacity var(--transition-fast, 150ms ease);
   opacity: 0;
   padding: 0;
   margin-top: 2px;

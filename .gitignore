@@ -11,6 +11,7 @@ test-results/
 .omo/boulder.json
 .omo/drafts/
 .omo/run-continuation/
+.omo/evidence/
 
 # TypeScript incremental build info
 *.tsbuildinfo
