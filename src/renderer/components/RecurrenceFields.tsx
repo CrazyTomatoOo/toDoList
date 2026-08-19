@@ -1,4 +1,5 @@
 import type { Recurrence } from '../../shared/ipc'
+import DatePicker from './DatePicker'
 
 interface RecurrenceFieldsProps {
   recurrence: Recurrence | ''
@@ -13,7 +14,7 @@ const RECURRENCE_OPTIONS: { value: Recurrence | ''; label: string }[] = [
   { value: 'daily', label: '每天' },
   { value: 'weekly', label: '每周' },
   { value: 'monthly', label: '每月' },
-  { value: 'yearly', label: '每年' }
+  { value: 'yearly', label: '每年' },
 ]
 
 export default function RecurrenceFields({
@@ -21,7 +22,7 @@ export default function RecurrenceFields({
   recurrenceEndDate,
   disabled,
   onRecurrenceChange,
-  onRecurrenceEndDateChange
+  onRecurrenceEndDateChange,
 }: RecurrenceFieldsProps) {
   return (
     <div className="form-row">
@@ -33,7 +34,9 @@ export default function RecurrenceFields({
           id="task-recurrence"
           className="form-input"
           value={recurrence}
-          onChange={(e) => onRecurrenceChange(e.target.value as Recurrence | '')}
+          onChange={(e) =>
+            onRecurrenceChange(e.target.value as Recurrence | '')
+          }
           disabled={disabled}
           data-testid="task-form-recurrence"
         >
@@ -50,14 +53,13 @@ export default function RecurrenceFields({
           <label className="form-label" htmlFor="task-recurrence-end-date">
             重复结束日期
           </label>
-          <input
-            id="task-recurrence-end-date"
-            className="form-input"
-            type="date"
-            value={recurrenceEndDate}
-            onChange={(e) => onRecurrenceEndDateChange(e.target.value)}
+          <DatePicker
+            value={recurrenceEndDate || null}
+            onChange={onRecurrenceEndDateChange}
             disabled={disabled}
-            data-testid="task-form-recurrence-end-date"
+            id="task-recurrence-end-date"
+            testid="task-form-recurrence-end-date"
+            placeholder="年/月/日"
           />
         </div>
       )}

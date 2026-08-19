@@ -2,8 +2,15 @@ import { app, BrowserWindow, Menu } from 'electron'
 import { createMainWindow, focusMainWindow, getMainWindow } from './window.js'
 import { registerIpcHandlers } from './ipc/handlers/index.js'
 import { ReminderScheduler } from './services/reminderScheduler.js'
-import { getTasksWithPendingReminders, updateTask } from './db/repositories/taskRepository.js'
-import { REMINDER_FIRED_CHANNEL, type ReminderClickedPayload } from '../shared/ipc.js'
+import { initThemeSource } from './services/theme.js'
+import {
+  getTasksWithPendingReminders,
+  updateTask,
+} from './db/repositories/taskRepository.js'
+import {
+  REMINDER_FIRED_CHANNEL,
+  type ReminderClickedPayload,
+} from '../shared/ipc.js'
 
 const isMac = process.platform === 'darwin'
 
@@ -28,9 +35,9 @@ function createApplicationMenu(): Menu {
             { label: '隐藏其他', role: 'hideOthers' },
             { label: '全部显示', role: 'unhide' },
             { type: 'separator' },
-            { label: '退出', role: 'quit' }
-          ]
-        }
+            { label: '退出', role: 'quit' },
+          ],
+        },
       ]
     : []
 
@@ -38,7 +45,9 @@ function createApplicationMenu(): Menu {
     ...macAppMenu,
     {
       label: '文件',
-      submenu: [{ label: isMac ? '关闭窗口' : '退出', role: isMac ? 'close' : 'quit' }]
+      submenu: [
+        { label: isMac ? '关闭窗口' : '退出', role: isMac ? 'close' : 'quit' },
+      ],
     },
     {
       label: '编辑',
@@ -53,14 +62,14 @@ function createApplicationMenu(): Menu {
           ? [
               { label: '粘贴并匹配样式', role: 'pasteAndMatchStyle' },
               { label: '删除', role: 'delete' },
-              { label: '全选', role: 'selectAll' }
+              { label: '全选', role: 'selectAll' },
             ]
           : [
               { label: '删除', role: 'delete' },
               { type: 'separator' },
-              { label: '全选', role: 'selectAll' }
-            ])
-      ] as Electron.MenuItemConstructorOptions[]
+              { label: '全选', role: 'selectAll' },
+            ]),
+      ] as Electron.MenuItemConstructorOptions[],
     },
     {
       label: '视图',
@@ -73,8 +82,8 @@ function createApplicationMenu(): Menu {
         { label: '放大', role: 'zoomIn' },
         { label: '缩小', role: 'zoomOut' },
         { type: 'separator' },
-        { label: '切换全屏', role: 'togglefullscreen' }
-      ] as Electron.MenuItemConstructorOptions[]
+        { label: '切换全屏', role: 'togglefullscreen' },
+      ] as Electron.MenuItemConstructorOptions[],
     },
     {
       label: '窗口',
@@ -86,11 +95,11 @@ function createApplicationMenu(): Menu {
               { type: 'separator' },
               { label: '前置全部窗口', role: 'front' },
               { type: 'separator' },
-              { label: '窗口', role: 'window' }
+              { label: '窗口', role: 'window' },
             ]
-          : [])
-      ] as Electron.MenuItemConstructorOptions[]
-    }
+          : []),
+      ] as Electron.MenuItemConstructorOptions[],
+    },
   ]
 
   return Menu.buildFromTemplate(template)
@@ -149,6 +158,10 @@ export function initializeApp(): void {
           })
           scheduler.start()
           app.on('before-quit', () => scheduler.stop())
+
+          // Native chrome (date picker, menus, dialogs) follows the saved mode,
+          // not the OS — see initThemeSource().
+          initThemeSource()
         })
       })
       .catch(() => {

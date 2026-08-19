@@ -27,3 +27,7 @@ _Avoid_: switching hue, un-derived hover/pressed variants
 **Eisenhower quadrant**:
 The board view's four cells Q1–Q4 (`Q1：重要且紧急` … `Q4：不重要不紧急`), derived from the task's urgent/important flags. A task belongs to exactly one quadrant.
 _Avoid_: Freeform priority quadrants, extra cells
+
+**Date picker (日期选择器)**:
+The app's custom calendar popup (`DatePicker` component) used by all date-only fields. It replaces the native `<input type="date">` popup, which renders with a light-only palette in Electron regardless of theme; a visually hidden native input keeps value semantics, form a11y and the e2e `fill()` path.
+_Avoid_: Reintroducing the native date popup as the visible control, datetime-local pickers (still native light popup — known limitation)

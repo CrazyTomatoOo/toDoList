@@ -5,6 +5,7 @@ import { validateDateOnly } from '../../shared/utils/dateValidator'
 import RecurrenceFields from './RecurrenceFields'
 import DurationFields from './DurationFields'
 import QuadrantFlags from './QuadrantFlags'
+import DatePicker from './DatePicker'
 
 interface TaskFormProps {
   listId: number
@@ -27,14 +28,23 @@ export interface TaskFormData {
   is_important: boolean
 }
 
-export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormProps) {
+export default function TaskForm({
+  listId,
+  task,
+  onSubmit,
+  onCancel,
+}: TaskFormProps) {
   const [title, setTitle] = useState(task?.title ?? '')
   const [description, setDescription] = useState(task?.description ?? '')
   const [priority, setPriority] = useState<Priority>(task?.priority ?? 'medium')
   const [dueDate, setDueDate] = useState(task?.due_date ?? '')
   const [reminderAt, setReminderAt] = useState(task?.reminder_at ?? '')
-  const [recurrence, setRecurrence] = useState<Recurrence | ''>(task?.recurrence ?? '')
-  const [recurrenceEndDate, setRecurrenceEndDate] = useState(task?.recurrence_end_date ?? '')
+  const [recurrence, setRecurrence] = useState<Recurrence | ''>(
+    task?.recurrence ?? '',
+  )
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState(
+    task?.recurrence_end_date ?? '',
+  )
   const [startDate, setStartDate] = useState(task?.start_date ?? '')
   const [endDate, setEndDate] = useState(task?.end_date ?? '')
   const [isUrgent, setIsUrgent] = useState(task?.is_urgent === 1)
@@ -59,7 +69,7 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
       const modal = modalRef.current
       if (!modal) return
       const focusable = modal.querySelector<HTMLElement>(
-        'button, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        'button, [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
       )
       focusable?.focus()
     })
@@ -75,7 +85,7 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
         const modal = modalRef.current
         if (!modal) return
         const focusableEls = modal.querySelectorAll<HTMLElement>(
-          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
         )
         if (focusableEls.length === 0) return
         const firstEl = focusableEls[0]
@@ -111,7 +121,7 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
     (e: React.MouseEvent) => {
       if (e.target === e.currentTarget) onCancel()
     },
-    [onCancel]
+    [onCancel],
   )
 
   const validate = (): boolean => {
@@ -175,7 +185,7 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
         start_date: startDate || null,
         end_date: endDate || null,
         is_urgent: isUrgent,
-        is_important: isImportant
+        is_important: isImportant,
       })
     } catch (err) {
       setError(err instanceof Error ? err.message : '保存任务失败')
@@ -198,13 +208,23 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
       <div className="modal-content" ref={modalRef}>
         <div className="modal-header">
           <h2 id={titleId}>{isEdit ? '编辑任务' : '新建任务'}</h2>
-          <button className="btn btn-ghost btn-icon" onClick={onCancel} data-testid="task-form-close" aria-label="关闭">
+          <button
+            className="btn btn-ghost btn-icon"
+            onClick={onCancel}
+            data-testid="task-form-close"
+            aria-label="关闭"
+          >
             <X size={20} />
           </button>
         </div>
         <div className="modal-body">
           {error && (
-            <div className="form-error-top" role="alert" aria-live="polite" data-testid="task-form-error">
+            <div
+              className="form-error-top"
+              role="alert"
+              aria-live="polite"
+              data-testid="task-form-error"
+            >
               {error}
             </div>
           )}
@@ -227,7 +247,11 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
                 disabled={submitting}
                 maxLength={200}
                 data-testid="task-form-title"
-                aria-invalid={!!error && (error === '请输入标题' || error === '标题不能超过 200 个字符')}
+                aria-invalid={
+                  !!error &&
+                  (error === '请输入标题' ||
+                    error === '标题不能超过 200 个字符')
+                }
                 aria-describedby={error ? 'task-form-error-msg' : undefined}
               />
             </div>
@@ -268,14 +292,13 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
                 <label className="form-label" htmlFor="task-due-date">
                   截止日期
                 </label>
-                <input
-                  id="task-due-date"
-                  className="form-input"
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
+                <DatePicker
+                  value={dueDate || null}
+                  onChange={setDueDate}
                   disabled={submitting}
-                  data-testid="task-form-due-date"
+                  id="task-due-date"
+                  testid="task-form-due-date"
+                  placeholder="年/月/日"
                 />
               </div>
             </div>
@@ -287,7 +310,12 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
               onRecurrenceEndDateChange={setRecurrenceEndDate}
             />
             {recurrenceError && (
-              <div className="form-error" role="alert" aria-live="polite" data-testid="task-form-recurrence-error">
+              <div
+                className="form-error"
+                role="alert"
+                aria-live="polite"
+                data-testid="task-form-recurrence-error"
+              >
                 {recurrenceError}
               </div>
             )}

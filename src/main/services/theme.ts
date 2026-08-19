@@ -10,18 +10,29 @@ function isThemeMode(value: string | undefined): value is ThemeMode {
 }
 
 function ensureSettingsTable(): void {
-  getDb().exec('CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);')
+  getDb().exec(
+    'CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT);',
+  )
 }
 
 export function getSystemTheme(): ResolvedTheme {
   return nativeTheme.shouldUseDarkColors ? 'dark' : 'light'
 }
 
+/**
+ * Align native UI chrome (menus, dialogs, and — crucially — the Chromium
+ * date/time picker, which renders from `prefers-color-scheme`) with the
+ * saved theme mode. `ThemeSource` and `ThemeMode` share the same values.
+ */
+export function initThemeSource(): void {
+  nativeTheme.themeSource = getSavedMode()
+}
+
 export function getSavedMode(): ThemeMode {
   ensureSettingsTable()
-  const row = getDb().prepare('SELECT value FROM settings WHERE key = ?').get(THEME_KEY) as
-    | { value: string }
-    | undefined
+  const row = getDb()
+    .prepare('SELECT value FROM settings WHERE key = ?')
+    .get(THEME_KEY) as { value: string } | undefined
 
   return isThemeMode(row?.value) ? row.value : 'system'
 }
@@ -30,6 +41,8 @@ export function saveMode(mode: ThemeMode): void {
   if (!isThemeMode(mode)) {
     throw new Error(`Invalid theme mode: ${mode}`)
   }
+
+  nativeTheme.themeSource = mode
 
   ensureSettingsTable()
   getDb()

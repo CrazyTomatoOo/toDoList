@@ -1,3 +1,5 @@
+import DatePicker from './DatePicker'
+
 interface DurationFieldsProps {
   startDate: string
   endDate: string
@@ -13,7 +15,7 @@ export default function DurationFields({
   disabled,
   onStartDateChange,
   onEndDateChange,
-  error
+  error,
 }: DurationFieldsProps) {
   return (
     <div className="form-group">
@@ -22,14 +24,13 @@ export default function DurationFields({
           <label className="form-label" htmlFor="task-start-date">
             开始日期
           </label>
-          <input
-            id="task-start-date"
-            className="form-input"
-            type="date"
-            value={startDate}
-            onChange={(e) => onStartDateChange(e.target.value)}
+          <DatePicker
+            value={startDate || null}
+            onChange={onStartDateChange}
             disabled={disabled}
-            data-testid="task-form-start-date"
+            id="task-start-date"
+            testid="task-form-start-date"
+            placeholder="年/月/日"
           />
         </div>
 
@@ -37,19 +38,23 @@ export default function DurationFields({
           <label className="form-label" htmlFor="task-end-date">
             结束日期
           </label>
-          <input
-            id="task-end-date"
-            className="form-input"
-            type="date"
-            value={endDate}
-            onChange={(e) => onEndDateChange(e.target.value)}
+          <DatePicker
+            value={endDate || null}
+            onChange={onEndDateChange}
             disabled={disabled}
-            data-testid="task-form-end-date"
+            id="task-end-date"
+            testid="task-form-end-date"
+            placeholder="年/月/日"
           />
         </div>
       </div>
       {error && (
-        <div className="form-error" role="alert" aria-live="polite" data-testid="task-form-duration-error">
+        <div
+          className="form-error"
+          role="alert"
+          aria-live="polite"
+          data-testid="task-form-duration-error"
+        >
           {error}
         </div>
       )}
