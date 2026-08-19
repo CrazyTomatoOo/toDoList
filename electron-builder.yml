@@ -18,14 +18,14 @@ mac:
   target:
     - dmg
   minimumSystemVersion: '11.0'
-  hardenedRuntime: false
+  hardenedRuntime: true
   gatekeeperAssess: false
 win:
   icon: build/icon.ico
   target:
     - target: nsis
       arch: x64
-  signExecutable: false
+  signExecutable: true
   artifactName: '${productName}-${version}-${arch}.${ext}'
   verifyUpdateCodeSignature: false
   requestedExecutionLevel: asInvoker
