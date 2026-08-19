@@ -189,7 +189,7 @@ describe('importExport new fields', () => {
       ],
     })
 
-    expect(() => importFromJson(json)).toThrow(/invalid recurrence/i)
+    expect(() => importFromJson(json)).toThrow(/无效的重复类型/)
   })
 
   it('rejects malformed date-only fields', () => {
@@ -206,7 +206,7 @@ describe('importExport new fields', () => {
       ],
     })
 
-    expect(() => importFromJson(json)).toThrow(/must be a valid YYYY-MM-DD date/i)
+    expect(() => importFromJson(json)).toThrow(/必须为有效的 YYYY-MM-DD/)
   })
 
   it('rejects startDate after endDate', () => {
@@ -224,7 +224,7 @@ describe('importExport new fields', () => {
       ],
     })
 
-    expect(() => importFromJson(json)).toThrow(/start date must be before or equal to end date/i)
+    expect(() => importFromJson(json)).toThrow(/开始日期不能晚于结束日期/)
   })
 
   it('rolls back the entire import when a new field is invalid', () => {
@@ -233,7 +233,7 @@ describe('importExport new fields', () => {
       'Work,Valid,,medium,,,false,0,daily,2024-12-31,,,false,false\n' +
       'Work,Invalid,,medium,,,false,0,weekly,not-a-date,,,false,false'
 
-    expect(() => importFromCsv(csv)).toThrow(/must be a valid YYYY-MM-DD date/i)
+    expect(() => importFromCsv(csv)).toThrow(/必须为有效的 YYYY-MM-DD/)
     expect(getAllLists()).toHaveLength(0)
   })
 })
@@ -242,7 +242,7 @@ describe('importExport new fields', () => {
       'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder,recurrence,recurrenceEndDate,startDate,endDate,isUrgent,isImportant\n' +
       'Work,Bad recurrence,,medium,,,false,0,hourly,,,,false,false'
 
-    expect(() => importFromCsv(csv)).toThrow(/invalid recurrence/i)
+    expect(() => importFromCsv(csv)).toThrow(/无效的重复类型/)
   })
 
   it('rejects malformed date-only fields in CSV', () => {
@@ -250,7 +250,7 @@ describe('importExport new fields', () => {
       'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder,recurrence,recurrenceEndDate,startDate,endDate,isUrgent,isImportant\n' +
       'Work,Bad date,,medium,,,false,0,daily,2024-13-01,,,false,false'
 
-    expect(() => importFromCsv(csv)).toThrow(/must be a valid YYYY-MM-DD date/i)
+    expect(() => importFromCsv(csv)).toThrow(/必须为有效的 YYYY-MM-DD/)
   })
 
   it('rejects startDate after endDate in CSV', () => {
@@ -258,6 +258,6 @@ describe('importExport new fields', () => {
       'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder,recurrence,recurrenceEndDate,startDate,endDate,isUrgent,isImportant\n' +
       'Work,Inverted range,,medium,,,false,0,,,2024-02-01,2024-01-01,false,false'
 
-    expect(() => importFromCsv(csv)).toThrow(/start date must be before or equal to end date/i)
+    expect(() => importFromCsv(csv)).toThrow(/开始日期不能晚于结束日期/)
   })
 

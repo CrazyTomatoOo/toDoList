@@ -15,7 +15,7 @@ export default function QuadrantFlags({
 }: QuadrantFlagsProps) {
   return (
     <div className="form-group">
-      <label className="form-label">Quadrant</label>
+      <label className="form-label">象限</label>
       <div className="form-checkbox-group">
         <label className="form-checkbox-label" data-testid="task-form-urgent-label">
           <input
@@ -26,7 +26,7 @@ export default function QuadrantFlags({
             disabled={disabled}
             data-testid="task-form-urgent"
           />
-          <span>Urgent</span>
+          <span>紧急</span>
         </label>
         <label className="form-checkbox-label" data-testid="task-form-important-label">
           <input
@@ -37,7 +37,7 @@ export default function QuadrantFlags({
             disabled={disabled}
             data-testid="task-form-important"
           />
-          <span>Important</span>
+          <span>重要</span>
         </label>
       </div>
     </div>

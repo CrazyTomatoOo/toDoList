@@ -61,7 +61,7 @@ export function createTask(input: CreateTaskInput): TaskRow {
   const db = getDb()
   const list = db.prepare('SELECT id FROM lists WHERE id = ?').get(input.list_id)
   if (!list) {
-    throw new Error(`List does not exist: ${input.list_id}`)
+    throw new Error(`列表不存在：${input.list_id}`)
   }
 
   const maxSort = db
@@ -167,7 +167,7 @@ export function updateTask(id: number, input: Partial<UpdateTaskInput>): TaskRow
 
   const existing = getTaskById(id)
   if (!existing) {
-    throw new Error(`Task does not exist: ${id}`)
+    throw new Error(`任务不存在：${id}`)
   }
 
   const isCompletingRecurring = existing.completed === 0 && input.completed === true && existing.recurrence !== null

@@ -28,7 +28,7 @@ export function useTasks(selectedListId: number | null): UseTasksReturn {
       const result = await window.electronAPI.tasks.getByListId(selectedListId)
       setTasks(result)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load tasks')
+      setError(err instanceof Error ? err.message : '加载任务失败')
     } finally {
       setLoading(false)
     }

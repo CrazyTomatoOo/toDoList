@@ -80,7 +80,7 @@ describe('task repository new fields', () => {
         title: 'Bad recurrence',
         recurrence: 'hourly' as unknown as Recurrence,
       }),
-    ).toThrow(/invalid recurrence/i)
+    ).toThrow(/无效的重复类型/)
   })
 
   it('rejects invalid date format', () => {
@@ -91,7 +91,7 @@ describe('task repository new fields', () => {
         title: 'Bad start date',
         start_date: '2024-13-01',
       }),
-    ).toThrow(/valid YYYY-MM-DD/i)
+    ).toThrow(/必须为有效的 YYYY-MM-DD/)
 
     expect(() =>
       createTask({
@@ -99,7 +99,7 @@ describe('task repository new fields', () => {
         title: 'Bad end date',
         end_date: '2024-01-32',
       }),
-    ).toThrow(/valid YYYY-MM-DD/i)
+    ).toThrow(/必须为有效的 YYYY-MM-DD/)
 
     expect(() =>
       createTask({
@@ -108,7 +108,7 @@ describe('task repository new fields', () => {
         recurrence: 'daily',
         due_date: '2024-01-01T00:00:00.000Z',
       }),
-    ).toThrow(/valid YYYY-MM-DD/i)
+    ).toThrow(/必须为有效的 YYYY-MM-DD/)
   })
 
   it('rejects start_date greater than end_date', () => {
@@ -120,7 +120,7 @@ describe('task repository new fields', () => {
         start_date: '2024-02-01',
         end_date: '2024-01-01',
       }),
-    ).toThrow(/start date must be before or equal to end date/i)
+    ).toThrow(/开始日期不能晚于结束日期/)
   })
 
   it('searches by recurrence', () => {
@@ -211,7 +211,7 @@ describe('task repository new fields', () => {
         recurrence: 'daily',
         recurrence_end_date: '2024-13-01',
       }),
-    ).toThrow(/valid YYYY-MM-DD/i)
+    ).toThrow(/必须为有效的 YYYY-MM-DD/)
   })
 
   it('updateTask rejects invalid recurrence values', () => {
@@ -221,7 +221,7 @@ describe('task repository new fields', () => {
       updateTask(task.id, {
         recurrence: 'hourly' as unknown as Recurrence,
       }),
-    ).toThrow(/invalid recurrence/i)
+    ).toThrow(/无效的重复类型/)
   })
 
   it('updateTask rejects start_date greater than end_date', () => {
@@ -232,7 +232,7 @@ describe('task repository new fields', () => {
         start_date: '2024-02-01',
         end_date: '2024-01-01',
       }),
-    ).toThrow(/start date must be before or equal to end date/i)
+    ).toThrow(/开始日期不能晚于结束日期/)
   })
 
 })

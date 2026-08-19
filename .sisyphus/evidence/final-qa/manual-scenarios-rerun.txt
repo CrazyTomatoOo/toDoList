@@ -1,5 +1,0 @@
-PASS cross-task integration
-PASS empty state
-PASS invalid input
-PASS rapid actions
-Manual scenarios: 4/4 pass

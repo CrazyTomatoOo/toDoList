@@ -105,7 +105,7 @@ test.describe('Recurring and Long-Duration Tasks', () => {
     await createRecurringTask(page, 'Daily recurring', '2026-07-16', 'daily', '2026-07-31')
     await expect(page.locator('[data-testid="task-item"]')).toHaveCount(1, { timeout: 10000 })
     await expect(page.locator('[data-testid="task-title"]').first()).toHaveText('Daily recurring')
-    await expect(page.locator('[data-testid="task-recurrence"]').first()).toHaveText('Daily')
+    await expect(page.locator('[data-testid="task-recurrence"]').first()).toHaveText('每天')
   })
 
   test('completing a daily recurring task advances the due date by one day', async () => {
@@ -167,7 +167,7 @@ test.describe('Recurring and Long-Duration Tasks', () => {
     await page.click('[data-testid="task-form-save"]')
     await expect(page.locator('[data-testid="task-form-duration-error"]')).toBeVisible()
     await expect(page.locator('[data-testid="task-form-duration-error"]')).toHaveText(
-      'Start date must be before or equal to end date'
+      '开始日期不能晚于结束日期'
     )
     await page.click('[data-testid="task-form-cancel"]')
   })

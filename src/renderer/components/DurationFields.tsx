@@ -20,7 +20,7 @@ export default function DurationFields({
       <div className="form-row">
         <div className="form-group">
           <label className="form-label" htmlFor="task-start-date">
-            Start Date
+            开始日期
           </label>
           <input
             id="task-start-date"
@@ -35,7 +35,7 @@ export default function DurationFields({
 
         <div className="form-group">
           <label className="form-label" htmlFor="task-end-date">
-            End Date
+            结束日期
           </label>
           <input
             id="task-end-date"

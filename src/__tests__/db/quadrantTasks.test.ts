@@ -52,6 +52,6 @@ describe('getTasksByQuadrant', () => {
     const list = createList('Inbox')
     createTask({ list_id: list.id, title: 'Some task' })
 
-    expect(() => getTasksByQuadrant(list.id, 'invalid-quadrant' as unknown as Parameters<typeof getTasksByQuadrant>[1])).toThrow(/invalid quadrant/i)
+    expect(() => getTasksByQuadrant(list.id, 'invalid-quadrant' as unknown as Parameters<typeof getTasksByQuadrant>[1])).toThrow(/无效的象限/)
   })
 })

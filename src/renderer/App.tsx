@@ -118,7 +118,7 @@ export default function App() {
       await refreshLists()
       await refreshTasks()
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : 'Import failed')
+      window.alert(err instanceof Error ? err.message : '导入失败')
     }
   }, [refreshLists, refreshTasks])
 
@@ -126,7 +126,7 @@ export default function App() {
     try {
       await window.electronAPI.importExport.exportJson()
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : 'Export failed')
+      window.alert(err instanceof Error ? err.message : '导出失败')
     }
   }, [])
 
@@ -134,7 +134,7 @@ export default function App() {
     try {
       await window.electronAPI.importExport.exportCsv()
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : 'Export failed')
+      window.alert(err instanceof Error ? err.message : '导出失败')
     }
   }, [])
 
@@ -154,17 +154,17 @@ export default function App() {
 
       <main className="main-area">
         <div className="main-header">
-          <h1>{selectedList?.name ?? 'No List Selected'}</h1>
+          <h1>{selectedList?.name ?? '未选择列表'}</h1>
           <div className="main-header-actions">
             {selectedListId !== null && (
-              <div className="view-toggle" role="group" aria-label="View mode">
+              <div className="view-toggle" role="group" aria-label="视图模式">
                 <button
                   className="view-toggle-btn"
                   onClick={() => setViewMode('list')}
                   data-testid="view-toggle-list"
                   aria-pressed={viewMode === 'list'}
                 >
-                  List
+                  列表
                 </button>
                 <button
                   className="view-toggle-btn"
@@ -172,7 +172,7 @@ export default function App() {
                   data-testid="view-toggle-board"
                   aria-pressed={viewMode === 'board'}
                 >
-                  Board
+                  看板
                 </button>
               </div>
             )}
@@ -180,8 +180,8 @@ export default function App() {
               className="btn btn-ghost btn-icon theme-toggle"
               onClick={toggleTheme}
               data-testid="theme-toggle"
-              title={`Theme: ${themeMode}`}
-              aria-label={`Current theme: ${themeMode}. Click to change.`}
+              title={`主题：${themeMode}`}
+              aria-label={`当前主题：${themeMode}。点击切换。`}
             >
               {themeMode === 'dark' ? <Moon size={20} /> : themeMode === 'light' ? <Sun size={20} /> : <Monitor size={20} />}
             </button>
@@ -192,7 +192,7 @@ export default function App() {
                 data-testid="add-task-button"
               >
                 <Plus size={16} />
-                Add Task
+                添加任务
               </button>
             )}
             <ImportExportButtons
@@ -235,7 +235,7 @@ export default function App() {
             showAddForm={showAddForm}
             onOpenAddForm={() => setShowAddForm(true)}
             onCloseAddForm={() => setShowAddForm(false)}
-            emptyMessage={isFiltering ? 'No tasks match your search' : undefined}
+            emptyMessage={isFiltering ? '没有符合搜索条件的任务' : undefined}
           />
         ) : (
           <QuadrantBoard

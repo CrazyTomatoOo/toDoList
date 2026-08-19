@@ -209,7 +209,7 @@ describe('App redesigned UI classes', () => {
     render(<App />)
     const toggle = screen.getByTestId('theme-toggle')
     expect(toggle).toHaveClass('btn', 'btn-ghost', 'btn-icon', 'theme-toggle')
-    expect(toggle).toHaveAttribute('aria-label', 'Current theme: light. Click to change.')
+    expect(toggle).toHaveAttribute('aria-label', '当前主题：light。点击切换。')
     expect(toggle.querySelector('svg')).toBeInTheDocument()
   })
 
@@ -217,7 +217,7 @@ describe('App redesigned UI classes', () => {
     render(<App />)
     const addButton = screen.getByTestId('add-task-button')
     expect(addButton).toHaveClass('btn', 'btn-primary')
-    expect(addButton).toHaveTextContent('Add Task')
+    expect(addButton).toHaveTextContent('添加任务')
     expect(addButton.querySelector('svg')).toBeInTheDocument()
   })
 

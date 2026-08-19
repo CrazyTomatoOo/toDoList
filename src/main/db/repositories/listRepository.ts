@@ -5,7 +5,7 @@ export type ListWithTaskCount = ListRow & { totalCount: number; completedCount: 
 
 function validateName(name: string): void {
   if (name.trim().length === 0) {
-    throw new Error('List name must not be empty')
+    throw new Error('列表名称不能为空')
   }
 }
 
@@ -19,14 +19,14 @@ function rejectDuplicateName(name: string, exceptId?: number): void {
     .get(...(exceptId === undefined ? [name.trim()] : [name.trim(), exceptId])) as { id: number } | undefined
 
   if (row) {
-    throw new Error(`List name already exists: ${name.trim()}`)
+    throw new Error(`已存在同名列表：${name.trim()}`)
   }
 }
 
 function getExistingList(id: number): ListRow {
   const list = getListById(id)
   if (!list) {
-    throw new Error(`List does not exist: ${id}`)
+    throw new Error(`列表不存在：${id}`)
   }
   return list
 }

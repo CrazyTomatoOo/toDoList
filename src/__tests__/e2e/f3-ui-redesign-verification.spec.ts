@@ -152,7 +152,7 @@ test.describe('F3 - Final verification (ui-redesign)', () => {
 
     const error = page.locator('[data-testid="task-form-duration-error"]')
     await expect(error).toBeVisible()
-    await expect(error).toHaveText('Start date must be before or equal to end date')
+    await expect(error).toHaveText('开始日期不能晚于结束日期')
     await expect(error).toHaveAttribute('role', 'alert')
     await expect(error).toHaveAttribute('aria-live', 'polite')
 

@@ -68,7 +68,7 @@ describe('ListSidebar', () => {
 
   it('shows loading state', () => {
     render(<ListSidebar {...defaultProps} lists={[]} loading={true} />)
-    expect(screen.getByText('Loading...')).toBeInTheDocument()
+    expect(screen.getByText('加载中…')).toBeInTheDocument()
   })
 
   it('shows add list form when clicking add button', () => {
@@ -82,7 +82,7 @@ describe('ListSidebar', () => {
     render(<ListSidebar {...defaultProps} />)
     const deleteButtons = screen.getAllByTestId('sidebar-item-delete')
     fireEvent.click(deleteButtons[0])
-    expect(window.confirm).toHaveBeenCalledWith('Delete "Work" and all its tasks?')
+    expect(window.confirm).toHaveBeenCalledWith('确定删除「Work」及其全部任务吗？')
     expect(defaultProps.onDeleteList).toHaveBeenCalledWith(1)
   })
 
@@ -114,17 +114,17 @@ describe('ListSidebar', () => {
       render(<ListSidebar {...defaultProps} />)
       const editButtons = screen.getAllByTestId('sidebar-item-edit')
       const deleteButtons = screen.getAllByTestId('sidebar-item-delete')
-      expect(editButtons[0]).toHaveAttribute('aria-label', 'Edit Work')
-      expect(editButtons[1]).toHaveAttribute('aria-label', 'Edit Personal')
-      expect(deleteButtons[0]).toHaveAttribute('aria-label', 'Delete Work')
-      expect(deleteButtons[1]).toHaveAttribute('aria-label', 'Delete Personal')
+      expect(editButtons[0]).toHaveAttribute('aria-label', '编辑「Work」')
+      expect(editButtons[1]).toHaveAttribute('aria-label', '编辑「Personal」')
+      expect(deleteButtons[0]).toHaveAttribute('aria-label', '删除「Work」')
+      expect(deleteButtons[1]).toHaveAttribute('aria-label', '删除「Personal」')
     })
 
     it('add list button contains Lucide Plus icon', () => {
       render(<ListSidebar {...defaultProps} />)
       const addButton = screen.getByTestId('add-list-button')
       expect(addButton.querySelector('svg')).toBeInTheDocument()
-      expect(addButton).toHaveAttribute('title', 'Add list')
+      expect(addButton).toHaveAttribute('title', '新建列表')
     })
   })
 

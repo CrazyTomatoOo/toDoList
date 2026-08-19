@@ -66,7 +66,7 @@ export class ReminderScheduler {
   private fireReminder(task: TaskRow): void {
     const notification = this.deps.createNotification({
       title: task.title,
-      body: task.description || 'Reminder',
+      body: task.description || '提醒',
     })
     notification.on('click', () => {
       this.deps.onNotificationClick(task)

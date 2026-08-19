@@ -164,7 +164,7 @@ test.describe('F3 final verification edge cases', () => {
 
     await expect(page.locator('[data-testid="task-form-duration-error"]')).toBeVisible()
     await expect(page.locator('[data-testid="task-form-duration-error"]')).toHaveText(
-      'Start date must be before or equal to end date'
+      '开始日期不能晚于结束日期'
     )
 
     await page.screenshot({

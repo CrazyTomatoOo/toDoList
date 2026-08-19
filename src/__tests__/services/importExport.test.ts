@@ -152,7 +152,7 @@ describe('importExport service', () => {
       tasks: [{ listName: 'Work', title: '', priority: 'medium', completed: false }],
     })
 
-    expect(() => importFromJson(json)).toThrow(/title must be a non-empty string/i)
+    expect(() => importFromJson(json)).toThrow(/不能为空字符串/)
   })
 
   it('rejects invalid priority values', () => {
@@ -161,7 +161,7 @@ describe('importExport service', () => {
       tasks: [{ listName: 'Work', title: 'Bad priority', priority: 'urgent', completed: false }],
     })
 
-    expect(() => importFromJson(json)).toThrow(/invalid priority/i)
+    expect(() => importFromJson(json)).toThrow(/无效的优先级/)
   })
 
   it('rolls back the entire import when a task is invalid', () => {
@@ -173,7 +173,7 @@ describe('importExport service', () => {
       ],
     })
 
-    expect(() => importFromJson(json)).toThrow(/title must be a non-empty string/i)
+    expect(() => importFromJson(json)).toThrow(/不能为空字符串/)
     expect(getAllLists()).toHaveLength(0)
   })
 

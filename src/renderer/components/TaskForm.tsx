@@ -119,21 +119,21 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
     setRecurrenceError(null)
 
     try {
-      validateDateOnly(startDate || null, 'Start date')
-      validateDateOnly(endDate || null, 'End date')
-      validateDateOnly(recurrenceEndDate || null, 'Recurrence end date')
+      validateDateOnly(startDate || null, '开始日期')
+      validateDateOnly(endDate || null, '结束日期')
+      validateDateOnly(recurrenceEndDate || null, '重复结束日期')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid date')
+      setError(err instanceof Error ? err.message : '无效日期')
       return false
     }
 
     if (startDate && endDate && startDate > endDate) {
-      setDurationError('Start date must be before or equal to end date')
+      setDurationError('开始日期不能晚于结束日期')
       return false
     }
 
     if (recurrence && !dueDate && !startDate) {
-      setRecurrenceError('Recurring tasks require a due date or start date')
+      setRecurrenceError('重复任务需要截止日期或开始日期')
       return false
     }
 
@@ -145,15 +145,15 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
     const trimmedTitle = title.trim()
 
     if (!trimmedTitle) {
-      setError('Title is required')
+      setError('请输入标题')
       return
     }
     if (trimmedTitle.length > 200) {
-      setError('Title must be 200 characters or less')
+      setError('标题不能超过 200 个字符')
       return
     }
     if (description.length > 2000) {
-      setError('Description must be 2000 characters or less')
+      setError('描述不能超过 2000 个字符')
       return
     }
 
@@ -178,7 +178,7 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
         is_important: isImportant
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save task')
+      setError(err instanceof Error ? err.message : '保存任务失败')
     } finally {
       setSubmitting(false)
     }
@@ -197,8 +197,8 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
     >
       <div className="modal-content" ref={modalRef}>
         <div className="modal-header">
-          <h2 id={titleId}>{isEdit ? 'Edit Task' : 'New Task'}</h2>
-          <button className="btn btn-ghost btn-icon" onClick={onCancel} data-testid="task-form-close" aria-label="Close">
+          <h2 id={titleId}>{isEdit ? '编辑任务' : '新建任务'}</h2>
+          <button className="btn btn-ghost btn-icon" onClick={onCancel} data-testid="task-form-close" aria-label="关闭">
             <X size={20} />
           </button>
         </div>
@@ -211,7 +211,7 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
           <form onSubmit={handleSubmit} data-testid="task-form" noValidate>
             <div className="form-group">
               <label className="form-label" htmlFor="task-title">
-                Title *
+                标题 *
               </label>
               <input
                 id="task-title"
@@ -222,25 +222,25 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
                   setTitle(e.target.value)
                   setError(null)
                 }}
-                placeholder="What needs to be done?"
+                placeholder="需要做什么？"
                 autoFocus
                 disabled={submitting}
                 maxLength={200}
                 data-testid="task-form-title"
-                aria-invalid={!!error && (error === 'Title is required' || error === 'Title must be 200 characters or less')}
+                aria-invalid={!!error && (error === '请输入标题' || error === '标题不能超过 200 个字符')}
                 aria-describedby={error ? 'task-form-error-msg' : undefined}
               />
             </div>
             <div className="form-group">
               <label className="form-label" htmlFor="task-description">
-                Description
+                描述
               </label>
               <textarea
                 id="task-description"
                 className="form-input form-textarea"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Add details..."
+                placeholder="添加详情…"
                 disabled={submitting}
                 maxLength={2000}
                 data-testid="task-form-description"
@@ -249,7 +249,7 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
             <div className="form-row">
               <div className="form-group">
                 <label className="form-label" htmlFor="task-priority">
-                  Priority
+                  优先级
                 </label>
                 <select
                   id="task-priority"
@@ -259,14 +259,14 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
                   disabled={submitting}
                   data-testid="task-form-priority"
                 >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
+                  <option value="low">低</option>
+                  <option value="medium">中</option>
+                  <option value="high">高</option>
                 </select>
               </div>
               <div className="form-group">
                 <label className="form-label" htmlFor="task-due-date">
-                  Due Date
+                  截止日期
                 </label>
                 <input
                   id="task-due-date"
@@ -308,7 +308,7 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
             />
             <div className="form-group">
               <label className="form-label" htmlFor="task-reminder">
-                Reminder
+                提醒
               </label>
               <input
                 id="task-reminder"
@@ -328,7 +328,7 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
                 disabled={submitting}
                 data-testid="task-form-cancel"
               >
-                Cancel
+                取消
               </button>
               <button
                 className="btn btn-primary"
@@ -336,7 +336,7 @@ export default function TaskForm({ listId, task, onSubmit, onCancel }: TaskFormP
                 disabled={submitting}
                 data-testid="task-form-save"
               >
-                {submitting ? 'Saving...' : isEdit ? 'Update' : 'Create'}
+                {submitting ? '保存中…' : isEdit ? '更新' : '创建'}
               </button>
             </div>
           </form>

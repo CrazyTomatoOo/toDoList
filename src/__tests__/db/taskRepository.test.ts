@@ -88,8 +88,8 @@ describe('task repository', () => {
 
   it('rejects empty titles and tasks for missing lists', () => {
     const list = createList('Inbox')
-    expect(() => createTask({ list_id: list.id, title: '   ' })).toThrow(/title must not be empty/i)
-    expect(() => createTask({ list_id: 999, title: 'Orphan' })).toThrow(/list does not exist/i)
+    expect(() => createTask({ list_id: list.id, title: '   ' })).toThrow(/不能为空/)
+    expect(() => createTask({ list_id: 999, title: 'Orphan' })).toThrow(/列表不存在/)
   })
 
   it('rolls back sort updates when a task is from another list', () => {

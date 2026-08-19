@@ -32,12 +32,12 @@ export default function FilterBar({
         value={priorityFilter}
         onChange={(e) => onPriorityChange(e.target.value as Priority | '')}
         data-testid="filter-priority"
-        aria-label="Filter by priority"
+        aria-label="按优先级筛选"
       >
-        <option value="">All Priorities</option>
-        <option value="high">High</option>
-        <option value="medium">Medium</option>
-        <option value="low">Low</option>
+        <option value="">全部优先级</option>
+        <option value="high">高</option>
+        <option value="medium">中</option>
+        <option value="low">低</option>
       </select>
 
       <select
@@ -47,11 +47,11 @@ export default function FilterBar({
           onStatusChange(e.target.value as 'all' | 'completed' | 'incomplete')
         }
         data-testid="filter-status"
-        aria-label="Filter by status"
+        aria-label="按状态筛选"
       >
-        <option value="all">All Status</option>
-        <option value="completed">Completed</option>
-        <option value="incomplete">Incomplete</option>
+        <option value="all">全部状态</option>
+        <option value="completed">已完成</option>
+        <option value="incomplete">未完成</option>
       </select>
 
       <select
@@ -59,13 +59,13 @@ export default function FilterBar({
         value={recurrenceFilter}
         onChange={(e) => onRecurrenceChange(e.target.value as Recurrence | '')}
         data-testid="filter-recurrence"
-        aria-label="Filter by recurrence"
+        aria-label="按重复筛选"
       >
-        <option value="">All Recurrences</option>
-        <option value="daily">Daily</option>
-        <option value="weekly">Weekly</option>
-        <option value="monthly">Monthly</option>
-        <option value="yearly">Yearly</option>
+        <option value="">全部重复</option>
+        <option value="daily">每天</option>
+        <option value="weekly">每周</option>
+        <option value="monthly">每月</option>
+        <option value="yearly">每年</option>
       </select>
 
       <select
@@ -73,11 +73,11 @@ export default function FilterBar({
         value={durationFilter}
         onChange={(e) => onDurationChange(e.target.value as DurationFilter)}
         data-testid="filter-duration"
-        aria-label="Filter by duration"
+        aria-label="按时长筛选"
       >
-        <option value="all">All Durations</option>
-        <option value="hasDateRange">Has Date Range</option>
-        <option value="noDateRange">No Date Range</option>
+        <option value="all">全部时长</option>
+        <option value="hasDateRange">有日期范围</option>
+        <option value="noDateRange">无日期范围</option>
       </select>
 
       <select
@@ -85,13 +85,13 @@ export default function FilterBar({
         value={quadrantFilter}
         onChange={(e) => onQuadrantChange(e.target.value as Quadrant | '')}
         data-testid="filter-quadrant"
-        aria-label="Filter by quadrant"
+        aria-label="按象限筛选"
       >
-        <option value="">All Quadrants</option>
-        <option value="q1-urgent-important">Q1: Urgent &amp; Important</option>
-        <option value="q2-not-urgent-important">Q2: Not Urgent &amp; Important</option>
-        <option value="q3-urgent-not-important">Q3: Urgent &amp; Not Important</option>
-        <option value="q4-not-urgent-not-important">Q4: Not Urgent &amp; Not Important</option>
+        <option value="">全部象限</option>
+        <option value="q1-urgent-important">Q1：重要且紧急</option>
+        <option value="q2-not-urgent-important">Q2：重要不紧急</option>
+        <option value="q3-urgent-not-important">Q3：紧急不重要</option>
+        <option value="q4-not-urgent-not-important">Q4：不重要不紧急</option>
       </select>
     </div>
   )

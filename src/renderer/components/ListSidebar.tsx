@@ -26,7 +26,7 @@ export default function ListSidebar({
   const [editingList, setEditingList] = useState<ListWithTaskCount | null>(null)
 
   const handleDelete = async (id: number, name: string) => {
-    if (window.confirm(`Delete "${name}" and all its tasks?`)) {
+    if (window.confirm(`确定删除「${name}」及其全部任务吗？`)) {
       await onDeleteList(id)
     }
   }
@@ -47,7 +47,7 @@ export default function ListSidebar({
   return (
     <aside className="sidebar" data-testid="list-sidebar">
       <div className="sidebar-header">
-        <h2>Lists</h2>
+        <h2>列表</h2>
         <button
           className="btn btn-ghost btn-icon"
           onClick={() => {
@@ -55,7 +55,7 @@ export default function ListSidebar({
             setShowForm(true)
           }}
           data-testid="add-list-button"
-          title="Add list"
+          title="新建列表"
         >
           <Plus size={20} />
         </button>
@@ -64,13 +64,13 @@ export default function ListSidebar({
       <div className="sidebar-list">
         {loading && lists.length === 0 ? (
           <div className="sidebar-empty sidebar-card" data-testid="sidebar-loading" role="status" aria-live="polite">
-            Loading...
+            加载中…
           </div>
         ) : lists.length === 0 ? (
           <div className="sidebar-empty sidebar-card" data-testid="sidebar-empty">
-            No lists yet.
+            还没有列表。
             <br />
-            Click + to create one.
+            点击 + 新建一个。
           </div>
         ) : (
           lists.map((list) =>
@@ -110,8 +110,8 @@ export default function ListSidebar({
                       setEditingList(list)
                     }}
                     data-testid="sidebar-item-edit"
-                    title="Edit list"
-                    aria-label={`Edit ${list.name}`}
+                    title="编辑列表"
+                    aria-label={`编辑「${list.name}」`}
                   >
                     <Edit2 size={16} />
                   </button>
@@ -121,8 +121,8 @@ export default function ListSidebar({
                       handleDelete(list.id, list.name)
                     }}
                     data-testid="sidebar-item-delete"
-                    title="Delete list"
-                    aria-label={`Delete ${list.name}`}
+                    title="删除列表"
+                    aria-label={`删除「${list.name}」`}
                   >
                     <Trash2 size={16} />
                   </button>

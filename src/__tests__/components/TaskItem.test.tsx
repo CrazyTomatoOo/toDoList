@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
-import TaskItem, { getQuadrantLabel } from '../../renderer/components/TaskItem'
+import TaskItem, { getQuadrantLabel, formatChineseDate } from '../../renderer/components/TaskItem'
 import type { TaskRow } from '../../shared/ipc'
 // Memoization behavior is covered by src/__tests__/components/TaskItemMemoization.test.tsx
 
@@ -34,7 +34,25 @@ const defaultProps = {
   onDelete: vi.fn().mockResolvedValue(undefined)
 }
 
-describe('TaskItem', () => {
+describe('formatChineseDate', () => {
+    it('formats a YYYY-MM-DD string as Chinese month and day', () => {
+      expect(formatChineseDate('2026-08-19')).toBe('8月19日')
+    })
+
+    it('drops leading zeros from month and day', () => {
+      expect(formatChineseDate('2026-01-05')).toBe('1月5日')
+    })
+
+    it('returns an empty string for null input', () => {
+      expect(formatChineseDate(null)).toBe('')
+    })
+
+    it('returns unparseable input unchanged', () => {
+      expect(formatChineseDate('not-a-date')).toBe('not-a-date')
+    })
+  })
+
+  describe('TaskItem', () => {
   describe('getQuadrantLabel helper', () => {
     it('returns Q1 for urgent and important', () => {
       expect(getQuadrantLabel(1, 1)).toBe('Q1')
@@ -57,25 +75,25 @@ describe('TaskItem', () => {
     it('displays recurrence badge when recurrence is set', () => {
       const task = createMockTask({ recurrence: 'daily' })
       render(<TaskItem {...defaultProps} task={task} />)
-      expect(screen.getByTestId('task-recurrence')).toHaveTextContent('Daily')
+      expect(screen.getByTestId('task-recurrence')).toHaveTextContent('每天')
     })
 
     it('displays weekly recurrence', () => {
       const task = createMockTask({ recurrence: 'weekly' })
       render(<TaskItem {...defaultProps} task={task} />)
-      expect(screen.getByTestId('task-recurrence')).toHaveTextContent('Weekly')
+      expect(screen.getByTestId('task-recurrence')).toHaveTextContent('每周')
     })
 
     it('displays monthly recurrence', () => {
       const task = createMockTask({ recurrence: 'monthly' })
       render(<TaskItem {...defaultProps} task={task} />)
-      expect(screen.getByTestId('task-recurrence')).toHaveTextContent('Monthly')
+      expect(screen.getByTestId('task-recurrence')).toHaveTextContent('每月')
     })
 
     it('displays yearly recurrence', () => {
       const task = createMockTask({ recurrence: 'yearly' })
       render(<TaskItem {...defaultProps} task={task} />)
-      expect(screen.getByTestId('task-recurrence')).toHaveTextContent('Yearly')
+      expect(screen.getByTestId('task-recurrence')).toHaveTextContent('每年')
     })
 
     it('does not display recurrence badge when recurrence is null', () => {
@@ -152,7 +170,7 @@ describe('TaskItem', () => {
     it('still displays priority badge', () => {
       const task = createMockTask({ priority: 'high' })
       render(<TaskItem {...defaultProps} task={task} />)
-      expect(screen.getByTestId('task-priority')).toHaveTextContent('high')
+      expect(screen.getByTestId('task-priority')).toHaveTextContent('高')
     })
 
     it('still displays due date when set', () => {
@@ -173,9 +191,9 @@ describe('TaskItem', () => {
       })
       render(<TaskItem {...defaultProps} task={task} />)
       
-      expect(screen.getByTestId('task-priority')).toHaveTextContent('high')
+      expect(screen.getByTestId('task-priority')).toHaveTextContent('高')
       expect(screen.getByTestId('task-due-date')).toBeInTheDocument()
-      expect(screen.getByTestId('task-recurrence')).toHaveTextContent('Weekly')
+      expect(screen.getByTestId('task-recurrence')).toHaveTextContent('每周')
       expect(screen.getByTestId('task-duration')).toBeInTheDocument()
       expect(screen.getByTestId('task-quadrant')).toHaveTextContent('Q1')
     })
@@ -221,22 +239,22 @@ describe('TaskItem', () => {
       render(<TaskItem {...defaultProps} task={task} />)
       const checkbox = screen.getByTestId('task-checkbox')
       expect(checkbox).toHaveAttribute('aria-checked', 'true')
-      expect(checkbox).toHaveAttribute('title', 'Mark incomplete')
+      expect(checkbox).toHaveAttribute('title', '标记未完成')
     })
 
     it('provides accessible checkbox label with task title', () => {
       const task = createMockTask({ title: 'Buy milk' })
       render(<TaskItem {...defaultProps} task={task} />)
       const checkbox = screen.getByTestId('task-checkbox')
-      expect(checkbox).toHaveAttribute('aria-label', 'Mark Buy milk complete')
+      expect(checkbox).toHaveAttribute('aria-label', '将「Buy milk」标记为完成')
     })
 
     it('renders action buttons with title tooltips and Lucide icons', () => {
       render(<TaskItem {...defaultProps} />)
       const editButton = screen.getByTestId('task-edit-button')
       const deleteButton = screen.getByTestId('task-delete-button')
-      expect(editButton).toHaveAttribute('title', 'Edit task')
-      expect(deleteButton).toHaveAttribute('title', 'Delete task')
+      expect(editButton).toHaveAttribute('title', '编辑任务')
+      expect(deleteButton).toHaveAttribute('title', '删除任务')
       expect(editButton.querySelector('svg')).toBeInTheDocument()
       expect(deleteButton.querySelector('svg')).toBeInTheDocument()
     })
@@ -244,7 +262,7 @@ describe('TaskItem', () => {
     it('renders drag handle with aria-label and Lucide icon', () => {
       render(<TaskItem {...defaultProps} dragHandleProps={{}} />)
       const dragHandle = screen.getByTestId('task-drag-handle')
-      expect(dragHandle).toHaveAttribute('aria-label', 'Drag to reorder')
+      expect(dragHandle).toHaveAttribute('aria-label', '拖动排序')
       expect(dragHandle.querySelector('svg')).toBeInTheDocument()
     })
   })

@@ -9,11 +9,11 @@ interface RecurrenceFieldsProps {
 }
 
 const RECURRENCE_OPTIONS: { value: Recurrence | ''; label: string }[] = [
-  { value: '', label: 'None' },
-  { value: 'daily', label: 'Daily' },
-  { value: 'weekly', label: 'Weekly' },
-  { value: 'monthly', label: 'Monthly' },
-  { value: 'yearly', label: 'Yearly' }
+  { value: '', label: '不重复' },
+  { value: 'daily', label: '每天' },
+  { value: 'weekly', label: '每周' },
+  { value: 'monthly', label: '每月' },
+  { value: 'yearly', label: '每年' }
 ]
 
 export default function RecurrenceFields({
@@ -27,7 +27,7 @@ export default function RecurrenceFields({
     <div className="form-row">
       <div className="form-group">
         <label className="form-label" htmlFor="task-recurrence">
-          Recurrence
+          重复
         </label>
         <select
           id="task-recurrence"
@@ -48,7 +48,7 @@ export default function RecurrenceFields({
       {recurrence && (
         <div className="form-group">
           <label className="form-label" htmlFor="task-recurrence-end-date">
-            Recurrence End Date
+            重复结束日期
           </label>
           <input
             id="task-recurrence-end-date"

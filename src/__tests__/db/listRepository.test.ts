@@ -45,8 +45,8 @@ describe('list repository', () => {
   it('rejects duplicate and empty names', () => {
     createList('Inbox')
 
-    expect(() => createList('Inbox')).toThrow(/already exists/i)
-    expect(() => createList('   ')).toThrow(/must not be empty/i)
+    expect(() => createList('Inbox')).toThrow(/已存在同名列表/)
+    expect(() => createList('   ')).toThrow(/不能为空/)
   })
 
   it('updates a list and rejects duplicate update names', () => {
@@ -54,7 +54,7 @@ describe('list repository', () => {
     createList('Work')
 
     expect(updateList(inbox.id, 'Personal')).toMatchObject({ id: inbox.id, name: 'Personal' })
-    expect(() => updateList(inbox.id, 'Work')).toThrow(/already exists/i)
+    expect(() => updateList(inbox.id, 'Work')).toThrow(/已存在同名列表/)
   })
 
   it('deletes a list and cascades its tasks', () => {

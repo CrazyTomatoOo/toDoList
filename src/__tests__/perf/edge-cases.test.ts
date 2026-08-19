@@ -36,14 +36,14 @@ describe('edge cases', () => {
     const list = createList('Inbox')
     const longTitle = 'x'.repeat(201)
 
-    expect(() => createTask({ list_id: list.id, title: longTitle })).toThrow(/200 characters or fewer/i)
+    expect(() => createTask({ list_id: list.id, title: longTitle })).toThrow(/不能超过 200 个字符/)
     expect(getTasksByListId(list.id)).toEqual([])
   })
 
   it('rejects invalid due dates', () => {
     const list = createList('Inbox')
 
-    expect(() => createTask({ list_id: list.id, title: 'Bad date', due_date: 'not-a-date' })).toThrow(/valid ISO date/i)
+    expect(() => createTask({ list_id: list.id, title: 'Bad date', due_date: 'not-a-date' })).toThrow(/必须为有效的 ISO/)
     expect(getTasksByListId(list.id)).toEqual([])
   })
 
@@ -62,7 +62,7 @@ describe('edge cases', () => {
   })
 
   it('throws clear import errors without corrupting the database', () => {
-    expect(() => importFromCsv('title,priority\nMissing list,medium')).toThrow(/Missing CSV columns: listName/i)
+    expect(() => importFromCsv('title,priority\nMissing list,medium')).toThrow(/缺少 CSV 列：listName/)
     expect(getAllLists()).toEqual([])
 
     const malformedJson = JSON.stringify({
@@ -73,7 +73,7 @@ describe('edge cases', () => {
       ],
     })
 
-    expect(() => importFromJson(malformedJson)).toThrow(/Task title must be a non-empty string/i)
+    expect(() => importFromJson(malformedJson)).toThrow(/不能为空字符串/)
     expect(getAllLists()).toEqual([])
   })
 
@@ -83,7 +83,7 @@ describe('edge cases', () => {
       tasks: [{ listName: 'Work', title: 'Bad date', priority: 'medium', dueDate: 'tomorrow-ish' }],
     })
 
-    expect(() => importFromJson(payload)).toThrow(/valid ISO date/i)
+    expect(() => importFromJson(payload)).toThrow(/必须为有效的 ISO/)
     expect(getAllLists()).toEqual([])
   })
 })

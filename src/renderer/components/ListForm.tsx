@@ -22,12 +22,12 @@ export default function ListForm({
     const trimmed = name.trim()
 
     if (!trimmed) {
-      setError('List name is required')
+      setError('请输入列表名称')
       return
     }
 
     if (existingNames.some((n) => n.toLowerCase() === trimmed.toLowerCase() && n !== initialName)) {
-      setError('A list with this name already exists')
+      setError('已存在同名列表')
       return
     }
 
@@ -36,7 +36,7 @@ export default function ListForm({
     try {
       await onSubmit(trimmed)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save list')
+      setError(err instanceof Error ? err.message : '保存列表失败')
     } finally {
       setSubmitting(false)
     }
@@ -52,7 +52,7 @@ export default function ListForm({
           setName(e.target.value)
           setError(null)
         }}
-        placeholder="List name"
+        placeholder="列表名称"
         autoFocus
         disabled={submitting}
         data-testid="list-form-input"
@@ -70,7 +70,7 @@ export default function ListForm({
           disabled={submitting}
           data-testid="list-form-save"
         >
-          {submitting ? 'Saving...' : 'Save'}
+          {submitting ? '保存中…' : '保存'}
         </button>
         <button
           className="btn btn-secondary btn-sm"
@@ -79,7 +79,7 @@ export default function ListForm({
           disabled={submitting}
           data-testid="list-form-cancel"
         >
-          Cancel
+          取消
         </button>
       </div>
     </form>

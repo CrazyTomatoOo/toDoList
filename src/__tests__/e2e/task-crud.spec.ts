@@ -68,7 +68,7 @@ test.describe('Task CRUD', () => {
     // Verify task appears in list
     await expect(page.locator('[data-testid="task-item"]')).toHaveCount(1, { timeout: 10000 })
     await expect(page.locator('[data-testid="task-title"]').first()).toHaveText('Buy groceries')
-    await expect(page.locator('[data-testid="task-priority"]').first()).toHaveText('high')
+    await expect(page.locator('[data-testid="task-priority"]').first()).toHaveText('高')
   })
 
   test('can create a second task', async () => {
@@ -143,7 +143,7 @@ test.describe('Task CRUD', () => {
 
     // Verify error message appears
     await expect(page.locator('[data-testid="task-form-error"]')).toBeVisible()
-    await expect(page.locator('[data-testid="task-form-error"]')).toHaveText('Title is required')
+    await expect(page.locator('[data-testid="task-form-error"]')).toHaveText('请输入标题')
 
     // Close the form so it doesn't interfere with subsequent tests
     await page.click('[data-testid="task-form-cancel"]')

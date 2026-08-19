@@ -25,35 +25,35 @@ interface QuadrantConfig {
 const QUADRANTS: QuadrantConfig[] = [
   {
     key: 'q1',
-    label: 'Q1: Do First',
-    subtitle: 'Urgent & Important',
+    label: 'Q1：重要且紧急',
+    subtitle: '立即执行',
     isUrgent: 1,
     isImportant: 1,
-    emptyMessage: 'No urgent & important tasks'
+    emptyMessage: '暂无重要且紧急的任务'
   },
   {
     key: 'q2',
-    label: 'Q2: Schedule',
-    subtitle: 'Not Urgent & Important',
+    label: 'Q2：重要不紧急',
+    subtitle: '制定计划',
     isUrgent: 0,
     isImportant: 1,
-    emptyMessage: 'No important tasks to schedule'
+    emptyMessage: '暂无需要计划的重要任务'
   },
   {
     key: 'q3',
-    label: 'Q3: Delegate',
-    subtitle: 'Urgent & Not Important',
+    label: 'Q3：紧急不重要',
+    subtitle: '委托他人',
     isUrgent: 1,
     isImportant: 0,
-    emptyMessage: 'No tasks to delegate'
+    emptyMessage: '暂无需要委托的任务'
   },
   {
     key: 'q4',
-    label: 'Q4: Eliminate',
-    subtitle: 'Not Urgent & Not Important',
+    label: 'Q4：不重要不紧急',
+    subtitle: '尽量不做',
     isUrgent: 0,
     isImportant: 0,
-    emptyMessage: 'No tasks to eliminate'
+    emptyMessage: '暂无需要减少的任务'
   }
 ]
 
@@ -104,7 +104,7 @@ export default function QuadrantBoard({
   if (selectedListId === null) {
     return (
       <div className="main-empty" data-testid="quadrant-board-empty">
-        Select a list to view the quadrant board
+        请选择列表查看看板
       </div>
     )
   }

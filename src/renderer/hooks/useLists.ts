@@ -23,7 +23,7 @@ export function useLists(): UseListsReturn {
       const result = await window.electronAPI.lists.getWithTaskCount()
       setLists(result)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load lists')
+      setError(err instanceof Error ? err.message : '加载列表失败')
     } finally {
       setLoading(false)
     }

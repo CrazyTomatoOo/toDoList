@@ -94,7 +94,7 @@ test.describe('Task 7 - Form redesign screenshots', () => {
     // Verify field-level error is visible
     const durationError = page.locator('[data-testid="task-form-duration-error"]')
     await expect(durationError).toBeVisible()
-    await expect(durationError).toHaveText('Start date must be before or equal to end date')
+    await expect(durationError).toHaveText('开始日期不能晚于结束日期')
     await expect(durationError).toHaveAttribute('role', 'alert')
     await expect(durationError).toHaveAttribute('aria-live', 'polite')
 

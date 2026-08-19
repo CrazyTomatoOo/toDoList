@@ -87,7 +87,7 @@ export default function TaskList({
   if (selectedListId === null) {
     return (
       <div className="main-empty" data-testid="task-list-empty">
-        Select a list to view tasks
+        请选择列表查看任务
       </div>
     )
   }
@@ -102,14 +102,14 @@ export default function TaskList({
 
       {loading ? (
         <div className="tasklist-card" data-testid="task-list-loading" role="status" aria-live="polite">
-          <div className="tasklist-card-text">Loading tasks...</div>
+          <div className="tasklist-card-text">正在加载任务…</div>
         </div>
       ) : tasks.length === 0 ? (
         <div className="tasklist-card" data-testid="task-list-empty">
-          <div className="tasklist-card-text">{emptyMessage ?? 'No tasks yet'}</div>
+          <div className="tasklist-card-text">{emptyMessage ?? '暂无任务'}</div>
           {!emptyMessage && (
             <button className="btn btn-primary" onClick={onOpenAddForm}>
-              Add your first task
+              添加你的第一个任务
             </button>
           )}
         </div>

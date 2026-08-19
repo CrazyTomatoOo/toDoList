@@ -17,7 +17,7 @@ export function validateDateOnly(value: string | null | undefined, field: string
   }
 
   if (!DATE_ONLY_REGEX.test(value)) {
-    throw new Error(`${field} must be a valid YYYY-MM-DD date`)
+    throw new Error(`${field}必须为有效的 YYYY-MM-DD 日期`)
   }
 
   const [yearStr, monthStr, dayStr] = value.split('-')
@@ -31,6 +31,6 @@ export function validateDateOnly(value: string | null | undefined, field: string
     date.getMonth() !== month - 1 ||
     date.getDate() !== day
   ) {
-    throw new Error(`${field} must be a valid YYYY-MM-DD date`)
+    throw new Error(`${field}必须为有效的 YYYY-MM-DD 日期`)
   }
 }

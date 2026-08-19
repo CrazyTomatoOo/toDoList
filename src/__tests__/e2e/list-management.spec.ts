@@ -87,7 +87,7 @@ test.describe('List management', () => {
 
     await page.fill('[data-testid="list-form-input"]', 'Personal')
     await page.click('[data-testid="list-form-save"]')
-    await expect(page.locator('[data-testid="list-form-error"]')).toHaveText('A list with this name already exists')
+    await expect(page.locator('[data-testid="list-form-error"]')).toHaveText('已存在同名列表')
 
     await page.fill('[data-testid="list-form-input"]', 'Projects')
     await page.click('[data-testid="list-form-save"]')

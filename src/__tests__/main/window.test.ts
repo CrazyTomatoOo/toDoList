@@ -92,7 +92,7 @@ describe('window creation', () => {
 
     expect(BrowserWindowMock).toHaveBeenCalledTimes(1)
     const options = BrowserWindowMock.mock.calls[0][0] as Electron.BrowserWindowConstructorOptions
-    expect(options.title).toBe('ToDoList')
+    expect(options.title).toBe('待办清单')
     expect(options.width).toBe(1200)
     expect(options.height).toBe(800)
     expect(options.minWidth).toBe(800)

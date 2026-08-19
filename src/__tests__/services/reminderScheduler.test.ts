@@ -67,7 +67,7 @@ describe('ReminderScheduler', () => {
     expect(deps.createNotification).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Past reminder',
-        body: 'Reminder',
+        body: '提醒',
       })
     )
     expect(deps.clearReminder).toHaveBeenCalledWith(42)

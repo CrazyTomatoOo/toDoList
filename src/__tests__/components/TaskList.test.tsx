@@ -85,8 +85,8 @@ describe('TaskList', () => {
 
   it('displays priority badges', () => {
     render(<TaskList {...defaultProps} />)
-    expect(screen.getByText('high')).toBeInTheDocument()
-    expect(screen.getByText('low')).toBeInTheDocument()
+    expect(screen.getByText('高')).toBeInTheDocument()
+    expect(screen.getByText('低')).toBeInTheDocument()
   })
 
   it('displays due date when set', () => {
@@ -105,7 +105,7 @@ describe('TaskList', () => {
   it('shows empty state when no tasks', () => {
     render(<TaskList {...defaultProps} tasks={[]} />)
     expect(screen.getByTestId('task-list-empty')).toBeInTheDocument()
-    expect(screen.getByText('No tasks yet')).toBeInTheDocument()
+    expect(screen.getByText('暂无任务')).toBeInTheDocument()
   })
 
   it('shows loading state', () => {
@@ -120,12 +120,12 @@ describe('TaskList', () => {
 
   it('shows "select a list" when no list selected', () => {
     render(<TaskList {...defaultProps} selectedListId={null} />)
-    expect(screen.getByTestId('task-list-empty')).toHaveTextContent('Select a list to view tasks')
+    expect(screen.getByTestId('task-list-empty')).toHaveTextContent('请选择列表查看任务')
   })
 
   it('calls onOpenAddForm when clicking empty state button', () => {
     render(<TaskList {...defaultProps} tasks={[]} />)
-    fireEvent.click(screen.getByText('Add your first task'))
+    fireEvent.click(screen.getByText('添加你的第一个任务'))
     expect(defaultProps.onOpenAddForm).toHaveBeenCalled()
   })
 
@@ -148,7 +148,7 @@ describe('TaskList', () => {
       render(<TaskList {...defaultProps} tasks={[]} />)
       const empty = screen.getByTestId('task-list-empty')
       expect(empty).toHaveClass('tasklist-card')
-      expect(empty.querySelector('.tasklist-card-text')).toHaveTextContent('No tasks yet')
+      expect(empty.querySelector('.tasklist-card-text')).toHaveTextContent('暂无任务')
     })
 
     it('renders loading state with tasklist-card classes and status role', () => {
@@ -157,7 +157,7 @@ describe('TaskList', () => {
       expect(loading).toHaveClass('tasklist-card')
       expect(loading).toHaveAttribute('role', 'status')
       expect(loading).toHaveAttribute('aria-live', 'polite')
-      expect(loading.querySelector('.tasklist-card-text')).toHaveTextContent('Loading tasks...')
+      expect(loading.querySelector('.tasklist-card-text')).toHaveTextContent('正在加载任务…')
     })
 
     it('renders error state with tasklist-card-error class', () => {

@@ -68,14 +68,14 @@ describe('QuadrantBoard', () => {
 
   it('shows quadrant labels and subtitles', () => {
     render(<QuadrantBoard {...defaultProps} />)
-    expect(screen.getByText('Q1: Do First')).toBeInTheDocument()
-    expect(screen.getByText('Urgent & Important')).toBeInTheDocument()
-    expect(screen.getByText('Q2: Schedule')).toBeInTheDocument()
-    expect(screen.getByText('Not Urgent & Important')).toBeInTheDocument()
-    expect(screen.getByText('Q3: Delegate')).toBeInTheDocument()
-    expect(screen.getByText('Urgent & Not Important')).toBeInTheDocument()
-    expect(screen.getByText('Q4: Eliminate')).toBeInTheDocument()
-    expect(screen.getByText('Not Urgent & Not Important')).toBeInTheDocument()
+    expect(screen.getByText('Q1：重要且紧急')).toBeInTheDocument()
+    expect(screen.getByText('立即执行')).toBeInTheDocument()
+    expect(screen.getByText('Q2：重要不紧急')).toBeInTheDocument()
+    expect(screen.getByText('制定计划')).toBeInTheDocument()
+    expect(screen.getByText('Q3：紧急不重要')).toBeInTheDocument()
+    expect(screen.getByText('委托他人')).toBeInTheDocument()
+    expect(screen.getByText('Q4：不重要不紧急')).toBeInTheDocument()
+    expect(screen.getByText('尽量不做')).toBeInTheDocument()
   })
 
   it('shows task counts per quadrant', () => {
@@ -87,19 +87,19 @@ describe('QuadrantBoard', () => {
   it('shows empty state messages when quadrants have no tasks', () => {
     render(<QuadrantBoard {...defaultProps} tasks={[]} />)
     expect(screen.getByTestId('quadrant-q1-empty')).toHaveTextContent(
-      'No urgent & important tasks'
+      '暂无重要且紧急的任务'
     )
     expect(screen.getByTestId('quadrant-q2-empty')).toHaveTextContent(
-      'No important tasks to schedule'
+      '暂无需要计划的重要任务'
     )
-    expect(screen.getByTestId('quadrant-q3-empty')).toHaveTextContent('No tasks to delegate')
-    expect(screen.getByTestId('quadrant-q4-empty')).toHaveTextContent('No tasks to eliminate')
+    expect(screen.getByTestId('quadrant-q3-empty')).toHaveTextContent('暂无需要委托的任务')
+    expect(screen.getByTestId('quadrant-q4-empty')).toHaveTextContent('暂无需要减少的任务')
   })
 
   it('shows "select a list" when no list is selected', () => {
     render(<QuadrantBoard {...defaultProps} selectedListId={null} />)
     expect(screen.getByTestId('quadrant-board-empty')).toHaveTextContent(
-      'Select a list to view the quadrant board'
+      '请选择列表查看看板'
     )
   })
 
@@ -172,8 +172,8 @@ describe('QuadrantBoard', () => {
       const q1 = screen.getByTestId('quadrant-q1')
       expect(q1).toHaveClass('quadrant', 'quadrant-q1')
       expect(q1.querySelector('.quadrant-header')).toBeInTheDocument()
-      expect(q1.querySelector('.quadrant-label')).toHaveTextContent('Q1: Do First')
-      expect(q1.querySelector('.quadrant-subtitle')).toHaveTextContent('Urgent & Important')
+      expect(q1.querySelector('.quadrant-label')).toHaveTextContent('Q1：重要且紧急')
+      expect(q1.querySelector('.quadrant-subtitle')).toHaveTextContent('立即执行')
       expect(q1.querySelector('.quadrant-count')).toHaveTextContent('1')
     })
 
@@ -181,7 +181,7 @@ describe('QuadrantBoard', () => {
       render(<QuadrantBoard {...defaultProps} tasks={[]} />)
       const q1Empty = screen.getByTestId('quadrant-q1-empty')
       expect(q1Empty).toHaveClass('quadrant-empty')
-      expect(q1Empty).toHaveTextContent('No urgent & important tasks')
+      expect(q1Empty).toHaveTextContent('暂无重要且紧急的任务')
     })
   })
 

@@ -17,7 +17,7 @@ export default function ImportExportButtons({
         onClick={() => void onImport()}
         data-testid="import-button"
       >
-        Import
+        导入
       </button>
       <button
         type="button"
@@ -25,7 +25,7 @@ export default function ImportExportButtons({
         onClick={() => void onExportJson()}
         data-testid="export-json-button"
       >
-        Export JSON
+        导出 JSON
       </button>
       <button
         type="button"
@@ -33,7 +33,7 @@ export default function ImportExportButtons({
         onClick={() => void onExportCsv()}
         data-testid="export-csv-button"
       >
-        Export CSV
+        导出 CSV
       </button>
     </div>
   )

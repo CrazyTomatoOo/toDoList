@@ -23,11 +23,11 @@ export function importFromJson(jsonString: string): ImportResult {
   try {
     data = JSON.parse(jsonString)
   } catch {
-    throw new Error('Invalid JSON file')
+    throw new Error('无效的 JSON 文件')
   }
 
   if (!data || typeof data !== 'object') {
-    throw new Error('Invalid JSON structure')
+    throw new Error('无效的 JSON 结构')
   }
 
   const payload = data as { lists?: unknown[]; tasks?: unknown[] }
@@ -47,7 +47,7 @@ export function importFromCsv(csvString: string): ImportResult {
   const requiredColumns = ['listName', 'title', 'priority']
   const missing = requiredColumns.filter((col) => !header.includes(col))
   if (missing.length > 0) {
-    throw new Error(`Missing CSV columns: ${missing.join(', ')}`)
+    throw new Error(`缺少 CSV 列：${missing.join(', ')}`)
   }
 
   const tasks: unknown[] = []
@@ -154,7 +154,7 @@ function importData(listRows: unknown[], taskRows: unknown[]): ImportResult {
 
       validateDateOrder(startDate, endDate)
       if (recurrence) {
-        validateDateOnly(dueDate, 'Task dueDate')
+        validateDateOnly(dueDate, '任务截止日期')
       }
 
       if (!nameToId.has(listName)) {

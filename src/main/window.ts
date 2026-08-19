@@ -28,7 +28,7 @@ export function createMainWindow(): BrowserWindow {
     height: 800,
     minWidth: 800,
     minHeight: 600,
-    title: 'ToDoList',
+    title: '待办清单',
     show: false,
     webPreferences: {
       preload: path.join(__dirname, '../preload/preload.js'),

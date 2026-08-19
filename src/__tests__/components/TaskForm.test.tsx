@@ -39,11 +39,11 @@ describe('TaskForm', () => {
       render(<TaskForm {...defaultProps} />)
       const select = screen.getByTestId('task-form-recurrence')
       expect(select).toBeInTheDocument()
-      expect(screen.getByText('None')).toBeInTheDocument()
-      expect(screen.getByText('Daily')).toBeInTheDocument()
-      expect(screen.getByText('Weekly')).toBeInTheDocument()
-      expect(screen.getByText('Monthly')).toBeInTheDocument()
-      expect(screen.getByText('Yearly')).toBeInTheDocument()
+      expect(screen.getByText('不重复')).toBeInTheDocument()
+      expect(screen.getByText('每天')).toBeInTheDocument()
+      expect(screen.getByText('每周')).toBeInTheDocument()
+      expect(screen.getByText('每月')).toBeInTheDocument()
+      expect(screen.getByText('每年')).toBeInTheDocument()
     })
 
     it('renders start date and end date inputs', () => {
@@ -110,7 +110,7 @@ describe('TaskForm', () => {
       
       await waitFor(() => {
         expect(screen.getByTestId('task-form-duration-error')).toHaveTextContent(
-          'Start date must be before or equal to end date'
+          '开始日期不能晚于结束日期'
         )
       })
       
@@ -127,7 +127,7 @@ describe('TaskForm', () => {
       
       await waitFor(() => {
         expect(screen.getByTestId('task-form-recurrence-error')).toHaveTextContent(
-          'Recurring tasks require a due date or start date'
+          '重复任务需要截止日期或开始日期'
         )
       })
       
@@ -223,7 +223,7 @@ describe('TaskForm', () => {
 
       await waitFor(() => {
         expect(screen.getByTestId('task-form-duration-error')).toHaveTextContent(
-          'Start date must be before or equal to end date'
+          '开始日期不能晚于结束日期'
         )
       })
 
@@ -296,7 +296,7 @@ describe('TaskForm', () => {
       render(<TaskForm {...defaultProps} />)
       fireEvent.click(screen.getByTestId('task-form-save'))
       const error = await screen.findByTestId('task-form-error')
-      expect(error).toHaveTextContent('Title is required')
+      expect(error).toHaveTextContent('请输入标题')
       expect(error).toHaveAttribute('role', 'alert')
       expect(error).toHaveAttribute('aria-live', 'polite')
     })
@@ -308,7 +308,7 @@ describe('TaskForm', () => {
       fireEvent.change(screen.getByTestId('task-form-end-date'), { target: { value: '2026-01-01' } })
       fireEvent.click(screen.getByTestId('task-form-save'))
       const error = await screen.findByTestId('task-form-duration-error')
-      expect(error).toHaveTextContent('Start date must be before or equal to end date')
+      expect(error).toHaveTextContent('开始日期不能晚于结束日期')
       expect(error).toHaveAttribute('role', 'alert')
       expect(error).toHaveAttribute('aria-live', 'polite')
     })
@@ -319,7 +319,7 @@ describe('TaskForm', () => {
       fireEvent.change(screen.getByTestId('task-form-recurrence'), { target: { value: 'daily' } })
       fireEvent.click(screen.getByTestId('task-form-save'))
       const error = await screen.findByTestId('task-form-recurrence-error')
-      expect(error).toHaveTextContent('Recurring tasks require a due date or start date')
+      expect(error).toHaveTextContent('重复任务需要截止日期或开始日期')
       expect(error).toHaveAttribute('role', 'alert')
       expect(error).toHaveAttribute('aria-live', 'polite')
     })
