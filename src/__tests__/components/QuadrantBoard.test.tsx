@@ -5,13 +5,20 @@ import '@testing-library/jest-dom/vitest'
 import QuadrantBoard from '../../renderer/components/QuadrantBoard'
 import type { TaskRow } from '../../shared/ipc'
 
-function makeTask(overrides: Partial<TaskRow> & Pick<TaskRow, 'id' | 'title'>): TaskRow {
+function makeTask(
+  overrides: Partial<TaskRow> & Pick<TaskRow, 'id' | 'title'>,
+): TaskRow {
   return {
     list_id: 1,
     description: null,
     priority: 'medium',
     due_date: null,
     reminder_at: null,
+    reminder_recurrence: 'once',
+    reminder_interval: null,
+    reminder_end_date: null,
+    reminder_follow_duration: 0,
+    reminder_time: null,
     completed: 0,
     sort_order: 0,
     recurrence: null,
@@ -22,14 +29,34 @@ function makeTask(overrides: Partial<TaskRow> & Pick<TaskRow, 'id' | 'title'>): 
     is_important: 0,
     created_at: '',
     updated_at: '',
-    ...overrides
+    ...overrides,
   }
 }
 
-const q1Task = makeTask({ id: 1, title: 'Q1 Crisis', is_urgent: 1, is_important: 1 })
-const q2Task = makeTask({ id: 2, title: 'Q2 Planning', is_urgent: 0, is_important: 1 })
-const q3Task = makeTask({ id: 3, title: 'Q3 Interruption', is_urgent: 1, is_important: 0 })
-const q4Task = makeTask({ id: 4, title: 'Q4 Distraction', is_urgent: 0, is_important: 0 })
+const q1Task = makeTask({
+  id: 1,
+  title: 'Q1 Crisis',
+  is_urgent: 1,
+  is_important: 1,
+})
+const q2Task = makeTask({
+  id: 2,
+  title: 'Q2 Planning',
+  is_urgent: 0,
+  is_important: 1,
+})
+const q3Task = makeTask({
+  id: 3,
+  title: 'Q3 Interruption',
+  is_urgent: 1,
+  is_important: 0,
+})
+const q4Task = makeTask({
+  id: 4,
+  title: 'Q4 Distraction',
+  is_urgent: 0,
+  is_important: 0,
+})
 
 describe('QuadrantBoard', () => {
   const defaultProps = {
@@ -37,7 +64,7 @@ describe('QuadrantBoard', () => {
     selectedListId: 1,
     onUpdateTask: vi.fn().mockResolvedValue(undefined),
     onDeleteTask: vi.fn().mockResolvedValue(undefined),
-    onToggleComplete: vi.fn().mockResolvedValue(undefined)
+    onToggleComplete: vi.fn().mockResolvedValue(undefined),
   }
 
   beforeEach(() => {
@@ -87,19 +114,23 @@ describe('QuadrantBoard', () => {
   it('shows empty state messages when quadrants have no tasks', () => {
     render(<QuadrantBoard {...defaultProps} tasks={[]} />)
     expect(screen.getByTestId('quadrant-q1-empty')).toHaveTextContent(
-      '暂无重要且紧急的任务'
+      '暂无重要且紧急的任务',
     )
     expect(screen.getByTestId('quadrant-q2-empty')).toHaveTextContent(
-      '暂无需要计划的重要任务'
+      '暂无需要计划的重要任务',
     )
-    expect(screen.getByTestId('quadrant-q3-empty')).toHaveTextContent('暂无需要委托的任务')
-    expect(screen.getByTestId('quadrant-q4-empty')).toHaveTextContent('暂无需要减少的任务')
+    expect(screen.getByTestId('quadrant-q3-empty')).toHaveTextContent(
+      '暂无需要委托的任务',
+    )
+    expect(screen.getByTestId('quadrant-q4-empty')).toHaveTextContent(
+      '暂无需要减少的任务',
+    )
   })
 
   it('shows "select a list" when no list is selected', () => {
     render(<QuadrantBoard {...defaultProps} selectedListId={null} />)
     expect(screen.getByTestId('quadrant-board-empty')).toHaveTextContent(
-      '请选择列表查看看板'
+      '请选择列表查看看板',
     )
   })
 
@@ -108,7 +139,7 @@ describe('QuadrantBoard', () => {
     const checkboxes = screen.getAllByTestId('task-checkbox')
     fireEvent.click(checkboxes[0])
     expect(defaultProps.onToggleComplete).toHaveBeenCalledWith(
-      expect.objectContaining({ id: 1 })
+      expect.objectContaining({ id: 1 }),
     )
   })
 
@@ -123,7 +154,7 @@ describe('QuadrantBoard', () => {
     const tasks = [
       q1Task,
       makeTask({ id: 5, title: 'Q1 Another', is_urgent: 1, is_important: 1 }),
-      q2Task
+      q2Task,
     ]
     render(<QuadrantBoard {...defaultProps} tasks={tasks} />)
 
@@ -148,7 +179,7 @@ describe('QuadrantBoard', () => {
       makeTask({ id: 10, title: 'Q1', is_urgent: 1, is_important: 1 }),
       makeTask({ id: 11, title: 'Q2', is_urgent: 0, is_important: 1 }),
       makeTask({ id: 12, title: 'Q3', is_urgent: 1, is_important: 0 }),
-      makeTask({ id: 13, title: 'Q4', is_urgent: 0, is_important: 0 })
+      makeTask({ id: 13, title: 'Q4', is_urgent: 0, is_important: 0 }),
     ]
     render(<QuadrantBoard {...defaultProps} tasks={tasks} />)
 
@@ -157,7 +188,6 @@ describe('QuadrantBoard', () => {
     expect(screen.getByTestId('quadrant-q3-tasks')).toHaveTextContent('Q3')
     expect(screen.getByTestId('quadrant-q4-tasks')).toHaveTextContent('Q4')
   })
-
 
   describe('redesigned quadrant board classes', () => {
     it('renders board with quadrant-board and quadrant-grid classes', () => {
@@ -172,8 +202,12 @@ describe('QuadrantBoard', () => {
       const q1 = screen.getByTestId('quadrant-q1')
       expect(q1).toHaveClass('quadrant', 'quadrant-q1')
       expect(q1.querySelector('.quadrant-header')).toBeInTheDocument()
-      expect(q1.querySelector('.quadrant-label')).toHaveTextContent('Q1：重要且紧急')
-      expect(q1.querySelector('.quadrant-subtitle')).toHaveTextContent('立即执行')
+      expect(q1.querySelector('.quadrant-label')).toHaveTextContent(
+        'Q1：重要且紧急',
+      )
+      expect(q1.querySelector('.quadrant-subtitle')).toHaveTextContent(
+        '立即执行',
+      )
       expect(q1.querySelector('.quadrant-count')).toHaveTextContent('1')
     })
 
@@ -184,5 +218,4 @@ describe('QuadrantBoard', () => {
       expect(q1Empty).toHaveTextContent('暂无重要且紧急的任务')
     })
   })
-
 })

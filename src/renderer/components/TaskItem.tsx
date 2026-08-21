@@ -1,5 +1,10 @@
 import { memo, useEffect } from 'react'
-import type { TaskRow, Priority, Recurrence } from '../../shared/ipc'
+import type {
+  TaskRow,
+  Priority,
+  Recurrence,
+  ReminderRecurrence,
+} from '../../shared/ipc'
 import { Edit2, Trash2, GripVertical } from 'lucide-react'
 
 interface TaskItemProps {
@@ -27,13 +32,42 @@ const RECURRENCE_LABELS: Record<Recurrence, string> = {
   daily: '每天',
   weekly: '每周',
   monthly: '每月',
-  yearly: '每年'
+  yearly: '每年',
+}
+
+const REMINDER_RECURRENCE_LABELS: Record<ReminderRecurrence, string> = {
+  once: '提醒',
+  daily: '每天',
+  weekly: '每周',
+  monthly: '每月',
+  yearly: '每年',
+  everyN: '每N天',
+}
+
+/**
+ * Formats a task's reminder as a short badge: a one-shot reminder shows its
+ * date and time, a repeating rule shows the cadence and trigger time.
+ */
+export function formatReminderBadge(task: TaskRow): string {
+  const label = REMINDER_RECURRENCE_LABELS[task.reminder_recurrence]
+  const time = task.reminder_at ? task.reminder_at.slice(11, 16) : ''
+  if (task.reminder_recurrence === 'once') {
+    const date = formatChineseDate(
+      task.reminder_at ? task.reminder_at.slice(0, 10) : null,
+    )
+    return `提醒 ${date} ${time}`.trim()
+  }
+  const intervalSuffix =
+    task.reminder_recurrence === 'everyN' && task.reminder_interval
+      ? ` ${task.reminder_interval}天`
+      : ''
+  return `${label}${intervalSuffix} ${time}`.trim()
 }
 
 const PRIORITY_LABELS: Record<Priority, string> = {
   low: '低',
   medium: '中',
-  high: '高'
+  high: '高',
 }
 
 /**
@@ -50,7 +84,14 @@ export function formatChineseDate(dateStr: string | null): string {
   return `${Number(match[2])}月${Number(match[3])}日`
 }
 
-function TaskItem({ task, onToggleComplete, onEdit, onDelete, dragHandleProps, renderCounter }: TaskItemProps) {
+function TaskItem({
+  task,
+  onToggleComplete,
+  onEdit,
+  onDelete,
+  dragHandleProps,
+  renderCounter,
+}: TaskItemProps) {
   useEffect(() => {
     renderCounter?.(task)
   })
@@ -93,7 +134,10 @@ function TaskItem({ task, onToggleComplete, onEdit, onDelete, dragHandleProps, r
           {task.title}
         </div>
         <div className="task-meta">
-          <span className={`task-priority ${task.priority}`} data-testid="task-priority">
+          <span
+            className={`task-priority ${task.priority}`}
+            data-testid="task-priority"
+          >
             {PRIORITY_LABELS[task.priority]}
           </span>
           {task.due_date && (
@@ -102,18 +146,35 @@ function TaskItem({ task, onToggleComplete, onEdit, onDelete, dragHandleProps, r
             </span>
           )}
           {task.recurrence && (
-            <span className="task-badge task-badge-recurrence" data-testid="task-recurrence">
+            <span
+              className="task-badge task-badge-recurrence"
+              data-testid="task-recurrence"
+            >
               {RECURRENCE_LABELS[task.recurrence]}
             </span>
           )}
           {(task.start_date || task.end_date) && (
-            <span className="task-badge task-badge-duration" data-testid="task-duration">
+            <span
+              className="task-badge task-badge-duration"
+              data-testid="task-duration"
+            >
               {task.start_date ? formatChineseDate(task.start_date) : '…'}
               {' → '}
               {task.end_date ? formatChineseDate(task.end_date) : '…'}
             </span>
           )}
-          <span className="task-badge task-badge-quadrant" data-testid="task-quadrant">
+          {task.reminder_at && (
+            <span
+              className="task-badge task-badge-reminder"
+              data-testid="task-reminder"
+            >
+              {formatReminderBadge(task)}
+            </span>
+          )}
+          <span
+            className="task-badge task-badge-quadrant"
+            data-testid="task-quadrant"
+          >
             {getQuadrantLabel(task.is_urgent, task.is_important)}
           </span>
         </div>

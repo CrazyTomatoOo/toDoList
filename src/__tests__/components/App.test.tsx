@@ -13,8 +13,8 @@ vi.mock('../../renderer/hooks/useLists', () => ({
     createList: vi.fn(),
     updateList: vi.fn(),
     deleteList: vi.fn(),
-    refresh: vi.fn()
-  })
+    refresh: vi.fn(),
+  }),
 }))
 
 vi.mock('../../renderer/hooks/useTasks', () => ({
@@ -28,6 +28,11 @@ vi.mock('../../renderer/hooks/useTasks', () => ({
         priority: 'medium',
         due_date: null,
         reminder_at: null,
+        reminder_recurrence: 'once',
+        reminder_interval: null,
+        reminder_end_date: null,
+        reminder_follow_duration: 0,
+        reminder_time: null,
         completed: 0,
         sort_order: 0,
         recurrence: null,
@@ -37,8 +42,8 @@ vi.mock('../../renderer/hooks/useTasks', () => ({
         is_urgent: 1,
         is_important: 1,
         created_at: '',
-        updated_at: ''
-      }
+        updated_at: '',
+      },
     ] as TaskRow[],
     loading: false,
     error: null,
@@ -46,16 +51,16 @@ vi.mock('../../renderer/hooks/useTasks', () => ({
     updateTask: vi.fn(),
     deleteTask: vi.fn(),
     toggleComplete: vi.fn(),
-    refresh: vi.fn()
-  })
+    refresh: vi.fn(),
+  }),
 }))
 
 vi.mock('../../renderer/hooks/useSelectedList', () => ({
   useSelectedList: () => ({
     selectedListId: 1,
     selectList: vi.fn(),
-    clearSelection: vi.fn()
-  })
+    clearSelection: vi.fn(),
+  }),
 }))
 
 vi.mock('../../renderer/hooks/useSearchAndFilter', () => ({
@@ -81,6 +86,11 @@ vi.mock('../../renderer/hooks/useSearchAndFilter', () => ({
         priority: 'medium',
         due_date: null,
         reminder_at: null,
+        reminder_recurrence: 'once',
+        reminder_interval: null,
+        reminder_end_date: null,
+        reminder_follow_duration: 0,
+        reminder_time: null,
         completed: 0,
         sort_order: 0,
         recurrence: null,
@@ -90,19 +100,19 @@ vi.mock('../../renderer/hooks/useSearchAndFilter', () => ({
         is_urgent: 1,
         is_important: 1,
         created_at: '',
-        updated_at: ''
-      }
+        updated_at: '',
+      },
     ] as TaskRow[],
     isFiltering: false,
-    loading: false
-  })
+    loading: false,
+  }),
 }))
 
 vi.mock('../../renderer/services/theme', () => ({
   useTheme: () => ({
     mode: 'light',
-    toggle: vi.fn()
-  })
+    toggle: vi.fn(),
+  }),
 }))
 
 // Mock electronAPI
@@ -112,20 +122,20 @@ beforeEach(() => {
     value: {
       lists: {
         getWithTaskCount: vi.fn(async () => []),
-        getAll: vi.fn(async () => [])
+        getAll: vi.fn(async () => []),
       },
       tasks: {
-        getByListId: vi.fn(async () => [])
+        getByListId: vi.fn(async () => []),
       },
       importExport: {
         importFile: vi.fn(),
         exportJson: vi.fn(),
-        exportCsv: vi.fn()
+        exportCsv: vi.fn(),
       },
       reminders: {
-        onReminderClicked: vi.fn(() => vi.fn())
-      }
-    }
+        onReminderClicked: vi.fn(() => vi.fn()),
+      },
+    },
   })
 })
 
@@ -138,28 +148,40 @@ describe('App view toggle', () => {
 
   it('starts in list view by default', () => {
     render(<App />)
-    expect(screen.getByTestId('view-toggle-list')).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByTestId('view-toggle-board')).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByTestId('view-toggle-list')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByTestId('view-toggle-board')).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
     expect(screen.getByTestId('search-filter-bar')).toBeInTheDocument()
   })
 
   it('switches to board view when Board button is clicked', () => {
     render(<App />)
     fireEvent.click(screen.getByTestId('view-toggle-board'))
-    
-    expect(screen.getByTestId('view-toggle-board')).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByTestId('view-toggle-list')).toHaveAttribute('aria-pressed', 'false')
+
+    expect(screen.getByTestId('view-toggle-board')).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    expect(screen.getByTestId('view-toggle-list')).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    )
     expect(screen.queryByTestId('search-filter-bar')).not.toBeInTheDocument()
     expect(screen.getByTestId('quadrant-board')).toBeInTheDocument()
   })
 
   it('switches back to list view when List button is clicked', () => {
     render(<App />)
-    
+
     // Switch to board
     fireEvent.click(screen.getByTestId('view-toggle-board'))
     expect(screen.getByTestId('quadrant-board')).toBeInTheDocument()
-    
+
     // Switch back to list
     fireEvent.click(screen.getByTestId('view-toggle-list'))
     expect(screen.getByTestId('search-filter-bar')).toBeInTheDocument()
@@ -168,13 +190,13 @@ describe('App view toggle', () => {
 
   it('preserves selected list when switching views', () => {
     render(<App />)
-    
+
     // Verify list is selected in list view
     expect(screen.getAllByText('Test List').length).toBeGreaterThanOrEqual(1)
-    
+
     // Switch to board view
     fireEvent.click(screen.getByTestId('view-toggle-board'))
-    
+
     // List name should still be visible in header
     expect(screen.getAllByText('Test List').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByTestId('quadrant-board')).toBeInTheDocument()
@@ -184,12 +206,12 @@ describe('App view toggle', () => {
 
     fireEvent.click(screen.getByTestId('view-toggle-board'))
 
-    expect(screen.getByRole('heading', { level: 1, name: 'Test List' })).toBeInTheDocument()
+    expect(
+      screen.getByRole('heading', { level: 1, name: 'Test List' }),
+    ).toBeInTheDocument()
     expect(screen.getByTestId('quadrant-board')).toBeInTheDocument()
   })
-
 })
-
 
 describe('App redesigned UI classes', () => {
   it('renders app shell with app-layout class', () => {
@@ -227,4 +249,3 @@ describe('App redesigned UI classes', () => {
     expect(bar).toHaveClass('search-filter-bar')
   })
 })
-

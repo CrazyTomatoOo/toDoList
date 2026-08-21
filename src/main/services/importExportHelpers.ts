@@ -1,11 +1,22 @@
 import { validateDateOnly } from '../../shared/utils/dateValidator.js'
-import type { Priority, Recurrence } from '../../shared/ipc.js'
-import { normalizeBoolean, validateRecurrence } from '../db/repositories/taskValidation.js'
+import type {
+  Priority,
+  Recurrence,
+  ReminderRecurrence,
+} from '../../shared/ipc.js'
+import {
+  normalizeBoolean,
+  validateRecurrence,
+  validateReminderRecurrence,
+} from '../db/repositories/taskValidation.js'
 
 export const VALID_PRIORITIES: Priority[] = ['high', 'medium', 'low']
 
 export function assertPriority(value: unknown): Priority {
-  if (typeof value !== 'string' || !VALID_PRIORITIES.includes(value as Priority)) {
+  if (
+    typeof value !== 'string' ||
+    !VALID_PRIORITIES.includes(value as Priority)
+  ) {
     throw new Error(`无效的优先级：${value}`)
   }
   return value as Priority
@@ -26,7 +37,10 @@ export function assertTaskTitle(value: unknown): string {
   return title
 }
 
-export function assertOptionalIsoDate(value: unknown, field: string): string | null {
+export function assertOptionalIsoDate(
+  value: unknown,
+  field: string,
+): string | null {
   if (value === undefined || value === null || value === '') {
     return null
   }
@@ -37,7 +51,10 @@ export function assertOptionalIsoDate(value: unknown, field: string): string | n
   return date
 }
 
-export function assertOptionalDateOnly(value: unknown, field: string): string | null {
+export function assertOptionalDateOnly(
+  value: unknown,
+  field: string,
+): string | null {
   if (value === undefined || value === null || value === '') {
     return null
   }
@@ -53,6 +70,28 @@ export function assertOptionalRecurrence(value: unknown): Recurrence | null {
   const recurrence = String(value) as Recurrence
   validateRecurrence(recurrence)
   return recurrence
+}
+
+export function assertOptionalReminderRecurrence(
+  value: unknown,
+): ReminderRecurrence | null {
+  if (value === undefined || value === null || value === '') {
+    return null
+  }
+  const recurrence = String(value) as ReminderRecurrence
+  validateReminderRecurrence(recurrence)
+  return recurrence
+}
+
+export function parseReminderInterval(value: unknown): number | null {
+  if (value === undefined || value === null || value === '') {
+    return null
+  }
+  const n = Number(value)
+  if (!Number.isInteger(n) || n < 1 || n > 365) {
+    throw new Error('提醒间隔必须为 1-365 的整数')
+  }
+  return n
 }
 
 export function parseBoolean(value: unknown): boolean {

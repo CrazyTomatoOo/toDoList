@@ -35,7 +35,7 @@ vi.mock('../../renderer/components/TaskItem', async () => {
           renderCounter={globalRenderCounter ?? props.renderCounter}
         />
       )
-    }
+    },
   }
 })
 
@@ -48,6 +48,11 @@ const mockTasks: TaskRow[] = [
     priority: 'medium',
     due_date: null,
     reminder_at: null,
+    reminder_recurrence: 'once',
+    reminder_interval: null,
+    reminder_end_date: null,
+    reminder_follow_duration: 0,
+    reminder_time: null,
     completed: 0,
     sort_order: 0,
     recurrence: null,
@@ -57,7 +62,7 @@ const mockTasks: TaskRow[] = [
     is_urgent: 0,
     is_important: 0,
     created_at: '',
-    updated_at: ''
+    updated_at: '',
   },
   {
     id: 2,
@@ -67,6 +72,11 @@ const mockTasks: TaskRow[] = [
     priority: 'medium',
     due_date: null,
     reminder_at: null,
+    reminder_recurrence: 'once',
+    reminder_interval: null,
+    reminder_end_date: null,
+    reminder_follow_duration: 0,
+    reminder_time: null,
     completed: 0,
     sort_order: 1,
     recurrence: null,
@@ -76,7 +86,7 @@ const mockTasks: TaskRow[] = [
     is_urgent: 0,
     is_important: 0,
     created_at: '',
-    updated_at: ''
+    updated_at: '',
   },
   {
     id: 3,
@@ -86,6 +96,11 @@ const mockTasks: TaskRow[] = [
     priority: 'medium',
     due_date: null,
     reminder_at: null,
+    reminder_recurrence: 'once',
+    reminder_interval: null,
+    reminder_end_date: null,
+    reminder_follow_duration: 0,
+    reminder_time: null,
     completed: 0,
     sort_order: 2,
     recurrence: null,
@@ -95,8 +110,8 @@ const mockTasks: TaskRow[] = [
     is_urgent: 0,
     is_important: 0,
     created_at: '',
-    updated_at: ''
-  }
+    updated_at: '',
+  },
 ]
 
 function TestWrapper() {
@@ -107,7 +122,10 @@ function TestWrapper() {
       const index = prev.findIndex((t) => t.id === task.id)
       if (index === -1) return prev
       const next = [...prev]
-      next[index] = { ...next[index], completed: next[index].completed === 0 ? 1 : 0 }
+      next[index] = {
+        ...next[index],
+        completed: next[index].completed === 0 ? 1 : 0,
+      }
       return next
     })
   }, [])
@@ -150,7 +168,10 @@ describe('TaskItem memoization', () => {
     const renderCountsByTaskId = new Map<number, number>()
 
     const renderCounter = (task: TaskRow) => {
-      renderCountsByTaskId.set(task.id, (renderCountsByTaskId.get(task.id) ?? 0) + 1)
+      renderCountsByTaskId.set(
+        task.id,
+        (renderCountsByTaskId.get(task.id) ?? 0) + 1,
+      )
     }
 
     globalRenderCounter = renderCounter

@@ -28,6 +28,38 @@ _Avoid_: switching hue, un-derived hover/pressed variants
 The board view's four cells Q1–Q4 (`Q1：重要且紧急` … `Q4：不重要不紧急`), derived from the task's urgent/important flags. A task belongs to exactly one quadrant.
 _Avoid_: Freeform priority quadrants, extra cells
 
+## 提醒与重复
+
+**重复提醒**:
+A reminder on a single task that fires repeatedly on a cadence, independent of the task's own recurrence. May be unbounded (stops when the task is completed) or bounded by an end date or the task's duration window; end-date day still fires (inclusive). Missed fire times collapse into one catch-up notification on the next scheduler poll.
+_Avoid_: 周期提醒, 循环提醒
+
+**提醒节奏**:
+The repeat interval of a repeating reminder: 每天/每周/每月/每年 (calendar arithmetic anchored on the first fire time), or a custom every-N-days interval. The trigger time-of-day lives on the rule itself.
+_Avoid_: 周期, 频率
+
+**提醒边界**:
+The end condition of a repeating reminder: task completion, a static end date (inclusive), or the task's duration window (dynamic binding — changes to start_date/end_date propagate). When the rule's boundary mode is "follow duration" but the task has no duration set, the UI disables the option until the duration is configured.
+_Avoid_: 结束日期 (ambiguous with static end)
+
+**任务重复**:
+The task's own repetition settings (每天/每周/每月/每年, with an optional end date) that generate a new task instance when the current one is completed. Independent from repeating reminders; generated instances never inherit reminders.
+_Avoid_: 周期, 重复提醒 (different concept)
+
+**持续期**:
+The date range a task is expected to span, from its start date to its end date, both ends included. Drives the duration filter; a repeating reminder may use it as its boundary ("daily reminder during the duration").
+_Avoid_: 时间段, 时间范围
+
 **Date picker (日期选择器)**:
 The app's custom calendar popup (`DatePicker` component) used by all date-only fields. It replaces the native `<input type="date">` popup, which renders with a light-only palette in Electron regardless of theme; a visually hidden native input keeps value semantics, form a11y and the e2e `fill()` path.
 _Avoid_: Reintroducing the native date popup as the visible control, datetime-local pickers (still native light popup — known limitation)
+
+## 安装与分发
+
+**一键安装**:
+The Windows distribution default: a one-click NSIS installer (`oneClick: true`), no wizard, installs per-user into `%LOCALAPPDATA%\Programs\ToDoList` and supports silent install (`/S`). Deliberate — per-user install avoids UAC, elevation and SmartScreen friction for a single-user offline app.
+_Avoid_: 自定义安装, 安装向导
+
+**便携版**:
+The optional Windows artifact (a zip) for users who want the app without installing — extract anywhere (D:\, USB) and run. No self-extraction, no registry changes.
+_Avoid_: portable-exe 自解压包

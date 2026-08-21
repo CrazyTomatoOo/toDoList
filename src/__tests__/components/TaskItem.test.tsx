@@ -2,7 +2,10 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
-import TaskItem, { getQuadrantLabel, formatChineseDate } from '../../renderer/components/TaskItem'
+import TaskItem, {
+  getQuadrantLabel,
+  formatChineseDate,
+} from '../../renderer/components/TaskItem'
 import type { TaskRow } from '../../shared/ipc'
 // Memoization behavior is covered by src/__tests__/components/TaskItemMemoization.test.tsx
 
@@ -14,6 +17,11 @@ const createMockTask = (overrides: Partial<TaskRow> = {}): TaskRow => ({
   priority: 'medium',
   due_date: null,
   reminder_at: null,
+  reminder_recurrence: 'once',
+  reminder_interval: null,
+  reminder_end_date: null,
+  reminder_follow_duration: 0,
+  reminder_time: null,
   completed: 0,
   sort_order: 0,
   recurrence: null,
@@ -24,35 +32,35 @@ const createMockTask = (overrides: Partial<TaskRow> = {}): TaskRow => ({
   is_important: 0,
   created_at: '',
   updated_at: '',
-  ...overrides
+  ...overrides,
 })
 
 const defaultProps = {
   task: createMockTask(),
   onToggleComplete: vi.fn().mockResolvedValue(undefined),
   onEdit: vi.fn(),
-  onDelete: vi.fn().mockResolvedValue(undefined)
+  onDelete: vi.fn().mockResolvedValue(undefined),
 }
 
 describe('formatChineseDate', () => {
-    it('formats a YYYY-MM-DD string as Chinese month and day', () => {
-      expect(formatChineseDate('2026-08-19')).toBe('8月19日')
-    })
-
-    it('drops leading zeros from month and day', () => {
-      expect(formatChineseDate('2026-01-05')).toBe('1月5日')
-    })
-
-    it('returns an empty string for null input', () => {
-      expect(formatChineseDate(null)).toBe('')
-    })
-
-    it('returns unparseable input unchanged', () => {
-      expect(formatChineseDate('not-a-date')).toBe('not-a-date')
-    })
+  it('formats a YYYY-MM-DD string as Chinese month and day', () => {
+    expect(formatChineseDate('2026-08-19')).toBe('8月19日')
   })
 
-  describe('TaskItem', () => {
+  it('drops leading zeros from month and day', () => {
+    expect(formatChineseDate('2026-01-05')).toBe('1月5日')
+  })
+
+  it('returns an empty string for null input', () => {
+    expect(formatChineseDate(null)).toBe('')
+  })
+
+  it('returns unparseable input unchanged', () => {
+    expect(formatChineseDate('not-a-date')).toBe('not-a-date')
+  })
+})
+
+describe('TaskItem', () => {
   describe('getQuadrantLabel helper', () => {
     it('returns Q1 for urgent and important', () => {
       expect(getQuadrantLabel(1, 1)).toBe('Q1')
@@ -107,7 +115,7 @@ describe('formatChineseDate', () => {
     it('displays date range when both start and end dates are set', () => {
       const task = createMockTask({
         start_date: '2024-01-01',
-        end_date: '2024-01-07'
+        end_date: '2024-01-07',
       })
       render(<TaskItem {...defaultProps} task={task} />)
       const duration = screen.getByTestId('task-duration')
@@ -187,10 +195,10 @@ describe('formatChineseDate', () => {
         start_date: '2024-01-01',
         end_date: '2024-01-07',
         is_urgent: 1,
-        is_important: 1
+        is_important: 1,
       })
       render(<TaskItem {...defaultProps} task={task} />)
-      
+
       expect(screen.getByTestId('task-priority')).toHaveTextContent('高')
       expect(screen.getByTestId('task-due-date')).toBeInTheDocument()
       expect(screen.getByTestId('task-recurrence')).toHaveTextContent('每周')
@@ -206,10 +214,10 @@ describe('formatChineseDate', () => {
         start_date: null,
         end_date: null,
         is_urgent: 0,
-        is_important: 0
+        is_important: 0,
       })
       render(<TaskItem {...defaultProps} task={task} />)
-      
+
       // Should still render quadrant badge (Q4)
       expect(screen.getByTestId('task-quadrant')).toHaveTextContent('Q4')
       // Should not render recurrence or duration badges
@@ -266,5 +274,4 @@ describe('formatChineseDate', () => {
       expect(dragHandle.querySelector('svg')).toBeInTheDocument()
     })
   })
-
 })

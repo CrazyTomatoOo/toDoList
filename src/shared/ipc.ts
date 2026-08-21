@@ -27,7 +27,7 @@ export const IPC_CHANNELS = {
   IMPORT_EXPORT_IMPORT_FILE: 'import-export:importFile',
   THEME_GET_MODE: 'theme:getMode',
   THEME_SET_MODE: 'theme:setMode',
-  THEME_GET_SYSTEM_THEME: 'theme:getSystemTheme'
+  THEME_GET_SYSTEM_THEME: 'theme:getSystemTheme',
 } as const
 
 export const REMINDER_CLICKED_CHANNEL = 'reminder:clicked' as const
@@ -35,6 +35,8 @@ export const REMINDER_FIRED_CHANNEL = 'reminder:fired' as const
 
 export type Priority = 'high' | 'medium' | 'low'
 export type Recurrence = 'daily' | 'weekly' | 'monthly' | 'yearly'
+export type ReminderRecurrence =
+  'once' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'everyN'
 export type Quadrant =
   | 'q1-urgent-important'
   | 'q2-not-urgent-important'
@@ -51,7 +53,10 @@ export interface ListRow {
   updated_at: string
 }
 
-export type ListWithTaskCount = ListRow & { totalCount: number; completedCount: number }
+export type ListWithTaskCount = ListRow & {
+  totalCount: number
+  completedCount: number
+}
 
 export interface TaskRow {
   id: number
@@ -61,6 +66,11 @@ export interface TaskRow {
   priority: Priority
   due_date: string | null
   reminder_at: string | null
+  reminder_recurrence: ReminderRecurrence
+  reminder_interval: number | null
+  reminder_end_date: string | null
+  reminder_follow_duration: 0 | 1
+  reminder_time: string | null
   completed: 0 | 1
   sort_order: number
   recurrence: Recurrence | null
@@ -80,6 +90,10 @@ export interface CreateTaskInput {
   priority?: Priority
   due_date?: string | null
   reminder_at?: string | null
+  reminder_recurrence?: ReminderRecurrence
+  reminder_interval?: number | null
+  reminder_end_date?: string | null
+  reminder_follow_duration?: boolean
   recurrence?: Recurrence | null
   recurrence_end_date?: string | null
   start_date?: string | null
@@ -94,6 +108,10 @@ export interface UpdateTaskInput {
   priority: Priority
   due_date: string | null
   reminder_at: string | null
+  reminder_recurrence: ReminderRecurrence
+  reminder_interval: number | null
+  reminder_end_date: string | null
+  reminder_follow_duration: boolean
   completed: boolean
   sort_order: number
   recurrence: Recurrence | null
@@ -133,11 +151,23 @@ export interface IpcHandlers {
   [IPC_CHANNELS.PING]: (message: string) => string
   [IPC_CHANNELS.TASK_CREATE]: (input: CreateTaskInput) => TaskRow
   [IPC_CHANNELS.TASK_GET_BY_ID]: (id: number) => TaskRow | undefined
-  [IPC_CHANNELS.TASK_GET_BY_LIST_ID]: (listId: number, options?: TaskListOptions) => TaskRow[]
-  [IPC_CHANNELS.TASK_UPDATE]: (id: number, input: Partial<UpdateTaskInput>) => TaskRow
+  [IPC_CHANNELS.TASK_GET_BY_LIST_ID]: (
+    listId: number,
+    options?: TaskListOptions,
+  ) => TaskRow[]
+  [IPC_CHANNELS.TASK_UPDATE]: (
+    id: number,
+    input: Partial<UpdateTaskInput>,
+  ) => TaskRow
   [IPC_CHANNELS.TASK_DELETE]: (id: number) => void
-  [IPC_CHANNELS.TASK_SEARCH]: (query: string, filters?: TaskSearchFilters) => TaskRow[]
-  [IPC_CHANNELS.TASK_UPDATE_SORT_ORDER]: (listId: number, taskIds: number[]) => void
+  [IPC_CHANNELS.TASK_SEARCH]: (
+    query: string,
+    filters?: TaskSearchFilters,
+  ) => TaskRow[]
+  [IPC_CHANNELS.TASK_UPDATE_SORT_ORDER]: (
+    listId: number,
+    taskIds: number[],
+  ) => void
   [IPC_CHANNELS.LIST_CREATE]: (name: string) => ListRow
   [IPC_CHANNELS.LIST_GET_BY_ID]: (id: number) => ListRow | undefined
   [IPC_CHANNELS.LIST_GET_ALL]: () => ListRow[]
@@ -156,7 +186,9 @@ export interface IpcHandlers {
 export type IpcRequest<T extends keyof IpcHandlers> = Parameters<IpcHandlers[T]>
 
 /** Helper type: response payload for a given channel. */
-export type IpcResponse<T extends keyof IpcHandlers> = ReturnType<IpcHandlers[T]>
+export type IpcResponse<T extends keyof IpcHandlers> = ReturnType<
+  IpcHandlers[T]
+>
 
 export interface ReminderClickedPayload {
   taskId: number
@@ -169,7 +201,10 @@ export type ElectronAPI = {
   tasks: {
     create: (input: CreateTaskInput) => Promise<TaskRow>
     getById: (id: number) => Promise<TaskRow | undefined>
-    getByListId: (listId: number, options?: TaskListOptions) => Promise<TaskRow[]>
+    getByListId: (
+      listId: number,
+      options?: TaskListOptions,
+    ) => Promise<TaskRow[]>
     update: (id: number, input: Partial<UpdateTaskInput>) => Promise<TaskRow>
     delete: (id: number) => Promise<void>
     search: (query: string, filters?: TaskSearchFilters) => Promise<TaskRow[]>
@@ -184,8 +219,12 @@ export type ElectronAPI = {
     delete: (id: number) => Promise<void>
   }
   reminders: {
-    onReminderClicked: (callback: (payload: ReminderClickedPayload) => void) => () => void
-    onReminderFired: (callback: (payload: ReminderClickedPayload) => void) => () => void
+    onReminderClicked: (
+      callback: (payload: ReminderClickedPayload) => void,
+    ) => () => void
+    onReminderFired: (
+      callback: (payload: ReminderClickedPayload) => void,
+    ) => () => void
   }
   importExport: {
     exportJson: () => Promise<ExportResult>
@@ -200,4 +239,5 @@ export type ElectronAPI = {
 }
 
 /** All channel names as a runtime array for registration/validation. */
-export const IPC_CHANNEL_NAMES: (keyof IpcHandlers)[] = Object.values(IPC_CHANNELS)
+export const IPC_CHANNEL_NAMES: (keyof IpcHandlers)[] =
+  Object.values(IPC_CHANNELS)

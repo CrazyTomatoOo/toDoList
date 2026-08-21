@@ -6,8 +6,16 @@ import { closeDb } from '../../main/db/connection.js'
 import { runMigrations } from '../../main/db/migrations.js'
 import { createList } from '../../main/db/repositories/listRepository.js'
 import { getAllLists } from '../../main/db/repositories/listRepository.js'
-import { createTask, getTasksByListId } from '../../main/db/repositories/taskRepository.js'
-import { exportToCsv, exportToJson, importFromCsv, importFromJson } from '../../main/services/importExport.js'
+import {
+  createTask,
+  getTasksByListId,
+} from '../../main/db/repositories/taskRepository.js'
+import {
+  exportToCsv,
+  exportToJson,
+  importFromCsv,
+  importFromJson,
+} from '../../main/services/importExport.js'
 
 function createTempUserDataDir(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'todolist-import-export-test-'))
@@ -30,7 +38,12 @@ describe('importExport service', () => {
 
   it('exports JSON with nested lists and tasks', () => {
     const work = createList('Work')
-    createTask({ list_id: work.id, title: 'Task 1', description: 'A description', priority: 'high' })
+    createTask({
+      list_id: work.id,
+      title: 'Task 1',
+      description: 'A description',
+      priority: 'high',
+    })
 
     const json = exportToJson()
     const data = JSON.parse(json) as { lists: unknown[]; tasks: unknown[] }
@@ -54,7 +67,9 @@ describe('importExport service', () => {
     const csv = exportToCsv()
     const lines = csv.split('\n')
 
-    expect(lines[0]).toBe('listName,title,description,priority,dueDate,reminderAt,completed,sortOrder,recurrence,recurrenceEndDate,startDate,endDate,isUrgent,isImportant')
+    expect(lines[0]).toBe(
+      'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder,recurrence,recurrenceEndDate,startDate,endDate,isUrgent,isImportant,reminderRecurrence,reminderInterval,reminderEndDate,reminderFollowDuration',
+    )
     expect(lines[1]).toContain('Task 1')
     expect(lines[1]).toContain('Work')
   })
@@ -65,7 +80,12 @@ describe('importExport service', () => {
 
     const json = JSON.stringify({
       lists: [
-        { id: 999, name: 'Work', createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-01T00:00:00.000Z' },
+        {
+          id: 999,
+          name: 'Work',
+          createdAt: '2020-01-01T00:00:00.000Z',
+          updatedAt: '2020-01-01T00:00:00.000Z',
+        },
       ],
       tasks: [
         {
@@ -95,7 +115,8 @@ describe('importExport service', () => {
   })
 
   it('imports CSV and creates missing lists', () => {
-    const csv = 'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder\nPersonal,Buy milk,,medium,,,false,0'
+    const csv =
+      'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder\nPersonal,Buy milk,,medium,,,false,0'
 
     const result = importFromCsv(csv)
     expect(result.importedLists).toBe(1)
@@ -115,8 +136,18 @@ describe('importExport service', () => {
 
     const json = JSON.stringify({
       lists: [
-        { id: 1, name: 'Work', createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-01T00:00:00.000Z' },
-        { id: 2, name: 'Work', createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-01T00:00:00.000Z' },
+        {
+          id: 1,
+          name: 'Work',
+          createdAt: '2020-01-01T00:00:00.000Z',
+          updatedAt: '2020-01-01T00:00:00.000Z',
+        },
+        {
+          id: 2,
+          name: 'Work',
+          createdAt: '2020-01-01T00:00:00.000Z',
+          updatedAt: '2020-01-01T00:00:00.000Z',
+        },
       ],
       tasks: [],
     })
@@ -135,7 +166,12 @@ describe('importExport service', () => {
     const json = JSON.stringify({
       lists: [],
       tasks: [
-        { listName: 'Work', title: 'Imported', priority: 'low', completed: false },
+        {
+          listName: 'Work',
+          title: 'Imported',
+          priority: 'low',
+          completed: false,
+        },
       ],
     })
 
@@ -149,7 +185,9 @@ describe('importExport service', () => {
   it('rejects tasks with empty titles', () => {
     const json = JSON.stringify({
       lists: [],
-      tasks: [{ listName: 'Work', title: '', priority: 'medium', completed: false }],
+      tasks: [
+        { listName: 'Work', title: '', priority: 'medium', completed: false },
+      ],
     })
 
     expect(() => importFromJson(json)).toThrow(/不能为空字符串/)
@@ -158,7 +196,14 @@ describe('importExport service', () => {
   it('rejects invalid priority values', () => {
     const json = JSON.stringify({
       lists: [],
-      tasks: [{ listName: 'Work', title: 'Bad priority', priority: 'urgent', completed: false }],
+      tasks: [
+        {
+          listName: 'Work',
+          title: 'Bad priority',
+          priority: 'urgent',
+          completed: false,
+        },
+      ],
     })
 
     expect(() => importFromJson(json)).toThrow(/无效的优先级/)
@@ -166,9 +211,21 @@ describe('importExport service', () => {
 
   it('rolls back the entire import when a task is invalid', () => {
     const json = JSON.stringify({
-      lists: [{ id: 1, name: 'Work', createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-01T00:00:00.000Z' }],
+      lists: [
+        {
+          id: 1,
+          name: 'Work',
+          createdAt: '2020-01-01T00:00:00.000Z',
+          updatedAt: '2020-01-01T00:00:00.000Z',
+        },
+      ],
       tasks: [
-        { listName: 'Work', title: 'Valid', priority: 'medium', completed: false },
+        {
+          listName: 'Work',
+          title: 'Valid',
+          priority: 'medium',
+          completed: false,
+        },
         { listName: 'Work', title: '', priority: 'medium', completed: false },
       ],
     })
@@ -178,7 +235,8 @@ describe('importExport service', () => {
   })
 
   it('handles CSV fields with commas and quotes', () => {
-    const csv = 'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder\n"Work,Personal","Note, with comma","Has ""quotes"" inside",high,,,false,0'
+    const csv =
+      'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder\n"Work,Personal","Note, with comma","Has ""quotes"" inside",high,,,false,0'
 
     importFromCsv(csv)
 

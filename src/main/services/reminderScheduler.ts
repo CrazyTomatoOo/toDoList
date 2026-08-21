@@ -1,14 +1,21 @@
 import { Notification } from 'electron'
 import type { TaskRow } from '../../shared/ipc.js'
+import { shouldFireReminder } from '../db/repositories/reminderSchedule.js'
 import { focusMainWindow, getMainWindow } from '../window.js'
 
 export interface ReminderSchedulerDependencies {
   /** Return all tasks that still have an active reminder. */
   getPendingReminders: () => TaskRow[]
-  /** Called after a reminder is fired so the reminder can be cleared from storage. */
-  clearReminder: (id: number) => void
+  /**
+   * Called after a due reminder is processed: advances a repeating rule to its
+   * next fire time or clears the one-shot rule (ADR-0001). Also called without
+   * a notification when the fire is outside the rule's boundary.
+   */
+  completeReminder: (task: TaskRow) => void
   /** Create and return a notification instance. Overridable for tests. */
-  createNotification?: (options: Electron.NotificationConstructorOptions) => Electron.Notification
+  createNotification?: (
+    options: Electron.NotificationConstructorOptions,
+  ) => Electron.Notification
   /** Called when the user clicks a reminder notification. */
   onNotificationClick?: (task: TaskRow) => void
   /** Called when a reminder is fired (after the notification is shown). */
@@ -57,10 +64,14 @@ export class ReminderScheduler {
       const reminderTime = new Date(task.reminder_at).getTime()
       if (Number.isNaN(reminderTime)) continue
       if (reminderTime <= now) {
-        this.fireReminder(task)
+        if (shouldFireReminder(task)) {
+          this.fireReminder(task)
+        } else {
+          // Fire day is outside the rule's boundary: advance silently, no notification.
+          this.deps.completeReminder(task)
+        }
       }
     }
-
   }
 
   private fireReminder(task: TaskRow): void {
@@ -72,7 +83,7 @@ export class ReminderScheduler {
       this.deps.onNotificationClick(task)
     })
     notification.show()
-    this.deps.clearReminder(task.id)
+    this.deps.completeReminder(task)
     this.deps.onReminderFired(task)
   }
 }
@@ -81,6 +92,9 @@ function defaultOnNotificationClick(task: TaskRow): void {
   focusMainWindow()
   const win = getMainWindow()
   if (win) {
-    win.webContents.send('reminder:clicked', { taskId: task.id, listId: task.list_id })
+    win.webContents.send('reminder:clicked', {
+      taskId: task.id,
+      listId: task.list_id,
+    })
   }
 }

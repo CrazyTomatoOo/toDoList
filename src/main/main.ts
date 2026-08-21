@@ -5,8 +5,9 @@ import { ReminderScheduler } from './services/reminderScheduler.js'
 import { initThemeSource } from './services/theme.js'
 import {
   getTasksWithPendingReminders,
-  updateTask,
+  updateReminderNextFire,
 } from './db/repositories/taskRepository.js'
+import { computeNextReminderFire } from './db/repositories/reminderSchedule.js'
 import {
   REMINDER_FIRED_CHANNEL,
   type ReminderClickedPayload,
@@ -144,7 +145,10 @@ export function initializeApp(): void {
             : 10_000
           const scheduler = new ReminderScheduler({
             getPendingReminders: getTasksWithPendingReminders,
-            clearReminder: (id) => updateTask(id, { reminder_at: null }),
+            completeReminder: (task) => {
+              const nextFire = computeNextReminderFire(task)
+              updateReminderNextFire(task.id, nextFire)
+            },
             pollIntervalMs,
             onReminderFired: (task) => {
               const win = getMainWindow()

@@ -1,6 +1,10 @@
 import { getDb } from '../db/connection.js'
 import { getAllLists } from '../db/repositories/listRepository.js'
-import type { Priority, Recurrence } from '../../shared/ipc.js'
+import type {
+  Priority,
+  Recurrence,
+  ReminderRecurrence,
+} from '../../shared/ipc.js'
 import type { ImportResult } from '../../shared/ipc.js'
 import type { TaskRow } from '../db/schema.js'
 import { escapeCsv } from './importExportHelpers.js'
@@ -20,6 +24,10 @@ export interface JsonExportTask {
   priority: Priority
   dueDate: string | null
   reminderAt: string | null
+  reminderRecurrence: ReminderRecurrence
+  reminderInterval: number | null
+  reminderEndDate: string | null
+  reminderFollowDuration: boolean
   completed: boolean
   sortOrder: number
   recurrence: Recurrence | null
@@ -60,6 +68,10 @@ export function exportToJson(): string {
     priority: task.priority,
     dueDate: task.due_date,
     reminderAt: task.reminder_at,
+    reminderRecurrence: task.reminder_recurrence,
+    reminderInterval: task.reminder_interval,
+    reminderEndDate: task.reminder_end_date,
+    reminderFollowDuration: task.reminder_follow_duration === 1,
     completed: task.completed === 1,
     sortOrder: task.sort_order,
     recurrence: task.recurrence,
@@ -83,6 +95,10 @@ export function exportToCsv(): string {
               tasks.priority,
               tasks.due_date AS dueDate,
               tasks.reminder_at AS reminderAt,
+              tasks.reminder_recurrence AS reminderRecurrence,
+              tasks.reminder_interval AS reminderInterval,
+              tasks.reminder_end_date AS reminderEndDate,
+              tasks.reminder_follow_duration AS reminderFollowDuration,
               tasks.completed,
               tasks.sort_order AS sortOrder,
               tasks.recurrence,
@@ -96,24 +112,28 @@ export function exportToCsv(): string {
        ORDER BY tasks.sort_order ASC, tasks.created_at ASC`,
     )
     .all() as Array<{
-      listName: string
-      title: string
-      description: string | null
-      priority: Priority
-      dueDate: string | null
-      reminderAt: string | null
-      completed: 0 | 1
-      sortOrder: number
-      recurrence: Recurrence | null
-      recurrenceEndDate: string | null
-      startDate: string | null
-      endDate: string | null
-      isUrgent: 0 | 1
-      isImportant: 0 | 1
-    }>
+    listName: string
+    title: string
+    description: string | null
+    priority: Priority
+    dueDate: string | null
+    reminderAt: string | null
+    reminderRecurrence: ReminderRecurrence
+    reminderInterval: number | null
+    reminderEndDate: string | null
+    reminderFollowDuration: 0 | 1
+    completed: 0 | 1
+    sortOrder: number
+    recurrence: Recurrence | null
+    recurrenceEndDate: string | null
+    startDate: string | null
+    endDate: string | null
+    isUrgent: 0 | 1
+    isImportant: 0 | 1
+  }>
 
   const lines: string[] = [
-    'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder,recurrence,recurrenceEndDate,startDate,endDate,isUrgent,isImportant',
+    'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder,recurrence,recurrenceEndDate,startDate,endDate,isUrgent,isImportant,reminderRecurrence,reminderInterval,reminderEndDate,reminderFollowDuration',
   ]
   for (const row of rows) {
     const fields = [
@@ -131,6 +151,10 @@ export function exportToCsv(): string {
       escapeCsv(row.endDate ?? ''),
       row.isUrgent ? 'true' : 'false',
       row.isImportant ? 'true' : 'false',
+      escapeCsv(row.reminderRecurrence),
+      row.reminderInterval === null ? '' : String(row.reminderInterval),
+      escapeCsv(row.reminderEndDate ?? ''),
+      row.reminderFollowDuration ? 'true' : 'false',
     ]
     lines.push(fields.join(','))
   }

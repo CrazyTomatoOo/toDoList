@@ -1,5 +1,9 @@
 import { useState, useCallback } from 'react'
-import type { TaskRow, CreateTaskInput, UpdateTaskInput } from '../../shared/ipc'
+import type {
+  TaskRow,
+  CreateTaskInput,
+  UpdateTaskInput,
+} from '../../shared/ipc'
 import TaskItem from './TaskItem'
 import SortableTaskItem from './SortableTaskItem'
 import { useSortableTasks } from '../hooks/useSortableTasks'
@@ -33,14 +37,14 @@ export default function TaskList({
   showAddForm,
   onOpenAddForm,
   onCloseAddForm,
-  emptyMessage
+  emptyMessage,
 }: TaskListProps) {
   const [editingTask, setEditingTask] = useState<TaskRow | null>(null)
   const sortable = onReorder !== undefined && tasks.length > 1
   const { DndProvider } = useSortableTasks(
     tasks,
     selectedListId,
-    onReorder ?? (() => {})
+    onReorder ?? (() => {}),
   )
 
   const handleCreate = async (data: TaskFormData) => {
@@ -52,12 +56,16 @@ export default function TaskList({
       priority: data.priority,
       due_date: data.due_date,
       reminder_at: data.reminder_at,
+      reminder_recurrence: data.reminder_recurrence,
+      reminder_interval: data.reminder_interval,
+      reminder_end_date: data.reminder_end_date,
+      reminder_follow_duration: data.reminder_follow_duration,
       recurrence: data.recurrence,
       recurrence_end_date: data.recurrence_end_date,
       start_date: data.start_date,
       end_date: data.end_date,
       is_urgent: data.is_urgent,
-      is_important: data.is_important
+      is_important: data.is_important,
     })
     onCloseAddForm()
   }
@@ -70,12 +78,16 @@ export default function TaskList({
       priority: data.priority,
       due_date: data.due_date,
       reminder_at: data.reminder_at,
+      reminder_recurrence: data.reminder_recurrence,
+      reminder_interval: data.reminder_interval,
+      reminder_end_date: data.reminder_end_date,
+      reminder_follow_duration: data.reminder_follow_duration,
       recurrence: data.recurrence,
       recurrence_end_date: data.recurrence_end_date,
       start_date: data.start_date,
       end_date: data.end_date,
       is_urgent: data.is_urgent,
-      is_important: data.is_important
+      is_important: data.is_important,
     })
     setEditingTask(null)
   }
@@ -95,13 +107,22 @@ export default function TaskList({
   return (
     <div className="main-content" data-testid="task-list-container">
       {error && (
-        <div className="tasklist-card tasklist-card-error" data-testid="task-list-error" role="alert">
+        <div
+          className="tasklist-card tasklist-card-error"
+          data-testid="task-list-error"
+          role="alert"
+        >
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="tasklist-card" data-testid="task-list-loading" role="status" aria-live="polite">
+        <div
+          className="tasklist-card"
+          data-testid="task-list-loading"
+          role="status"
+          aria-live="polite"
+        >
           <div className="tasklist-card-text">正在加载任务…</div>
         </div>
       ) : tasks.length === 0 ? (

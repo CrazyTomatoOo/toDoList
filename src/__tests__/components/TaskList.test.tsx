@@ -14,6 +14,11 @@ const mockTasks: TaskRow[] = [
     priority: 'high',
     due_date: '2026-07-20',
     reminder_at: null,
+    reminder_recurrence: 'once',
+    reminder_interval: null,
+    reminder_end_date: null,
+    reminder_follow_duration: 0,
+    reminder_time: null,
     completed: 0,
     sort_order: 0,
     recurrence: null,
@@ -23,7 +28,7 @@ const mockTasks: TaskRow[] = [
     is_urgent: 0,
     is_important: 0,
     created_at: '',
-    updated_at: ''
+    updated_at: '',
   },
   {
     id: 2,
@@ -33,6 +38,11 @@ const mockTasks: TaskRow[] = [
     priority: 'low',
     due_date: null,
     reminder_at: null,
+    reminder_recurrence: 'once',
+    reminder_interval: null,
+    reminder_end_date: null,
+    reminder_follow_duration: 0,
+    reminder_time: null,
     completed: 1,
     sort_order: 1,
     recurrence: null,
@@ -42,8 +52,8 @@ const mockTasks: TaskRow[] = [
     is_urgent: 0,
     is_important: 0,
     created_at: '',
-    updated_at: ''
-  }
+    updated_at: '',
+  },
 ]
 
 describe('TaskList', () => {
@@ -58,7 +68,7 @@ describe('TaskList', () => {
     onToggleComplete: vi.fn().mockResolvedValue(undefined),
     showAddForm: false,
     onOpenAddForm: vi.fn(),
-    onCloseAddForm: vi.fn()
+    onCloseAddForm: vi.fn(),
   }
 
   beforeEach(() => {
@@ -115,12 +125,16 @@ describe('TaskList', () => {
 
   it('shows error message', () => {
     render(<TaskList {...defaultProps} error="Failed to load" />)
-    expect(screen.getByTestId('task-list-error')).toHaveTextContent('Failed to load')
+    expect(screen.getByTestId('task-list-error')).toHaveTextContent(
+      'Failed to load',
+    )
   })
 
   it('shows "select a list" when no list selected', () => {
     render(<TaskList {...defaultProps} selectedListId={null} />)
-    expect(screen.getByTestId('task-list-empty')).toHaveTextContent('请选择列表查看任务')
+    expect(screen.getByTestId('task-list-empty')).toHaveTextContent(
+      '请选择列表查看任务',
+    )
   })
 
   it('calls onOpenAddForm when clicking empty state button', () => {
@@ -148,7 +162,9 @@ describe('TaskList', () => {
       render(<TaskList {...defaultProps} tasks={[]} />)
       const empty = screen.getByTestId('task-list-empty')
       expect(empty).toHaveClass('tasklist-card')
-      expect(empty.querySelector('.tasklist-card-text')).toHaveTextContent('暂无任务')
+      expect(empty.querySelector('.tasklist-card-text')).toHaveTextContent(
+        '暂无任务',
+      )
     })
 
     it('renders loading state with tasklist-card classes and status role', () => {
@@ -157,7 +173,9 @@ describe('TaskList', () => {
       expect(loading).toHaveClass('tasklist-card')
       expect(loading).toHaveAttribute('role', 'status')
       expect(loading).toHaveAttribute('aria-live', 'polite')
-      expect(loading.querySelector('.tasklist-card-text')).toHaveTextContent('正在加载任务…')
+      expect(loading.querySelector('.tasklist-card-text')).toHaveTextContent(
+        '正在加载任务…',
+      )
     })
 
     it('renders error state with tasklist-card-error class', () => {
@@ -168,5 +186,4 @@ describe('TaskList', () => {
       expect(error).toHaveAttribute('role', 'alert')
     })
   })
-
 })

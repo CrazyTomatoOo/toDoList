@@ -1,6 +1,11 @@
 import { useState, useEffect, useRef, useCallback, type FormEvent } from 'react'
 import { X } from 'lucide-react'
-import type { TaskRow, Priority, Recurrence } from '../../shared/ipc'
+import type {
+  TaskRow,
+  Priority,
+  Recurrence,
+  ReminderRecurrence,
+} from '../../shared/ipc'
 import { validateDateOnly } from '../../shared/utils/dateValidator'
 import RecurrenceFields from './RecurrenceFields'
 import DurationFields from './DurationFields'
@@ -20,6 +25,10 @@ export interface TaskFormData {
   priority: Priority
   due_date: string | null
   reminder_at: string | null
+  reminder_recurrence: ReminderRecurrence
+  reminder_interval: number | null
+  reminder_end_date: string | null
+  reminder_follow_duration: boolean
   recurrence: Recurrence | null
   recurrence_end_date: string | null
   start_date: string | null
@@ -39,6 +48,21 @@ export default function TaskForm({
   const [priority, setPriority] = useState<Priority>(task?.priority ?? 'medium')
   const [dueDate, setDueDate] = useState(task?.due_date ?? '')
   const [reminderAt, setReminderAt] = useState(task?.reminder_at ?? '')
+  const [reminderRecurrence, setReminderRecurrence] =
+    useState<ReminderRecurrence>(task?.reminder_recurrence ?? 'once')
+  const [reminderInterval, setReminderInterval] = useState(
+    task?.reminder_interval != null ? String(task.reminder_interval) : '',
+  )
+  const [reminderBoundary, setReminderBoundary] = useState<
+    'none' | 'endDate' | 'followDuration'
+  >(() => {
+    if (task?.reminder_follow_duration === 1) return 'followDuration'
+    if (task?.reminder_end_date) return 'endDate'
+    return 'none'
+  })
+  const [reminderEndDate, setReminderEndDate] = useState(
+    task?.reminder_end_date ?? '',
+  )
   const [recurrence, setRecurrence] = useState<Recurrence | ''>(
     task?.recurrence ?? '',
   )
@@ -147,6 +171,33 @@ export default function TaskForm({
       return false
     }
 
+    if (reminderRecurrence === 'everyN') {
+      const n = Number(reminderInterval)
+      if (!Number.isInteger(n) || n < 1 || n > 365) {
+        setError('每 N 天提醒需要设置有效的间隔天数（1-365）')
+        return false
+      }
+    }
+
+    if (reminderRecurrence !== 'once' && reminderBoundary === 'endDate') {
+      try {
+        validateDateOnly(reminderEndDate || null, '提醒结束日期')
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '无效日期')
+        return false
+      }
+    }
+
+    if (
+      reminderRecurrence !== 'once' &&
+      reminderBoundary === 'followDuration'
+    ) {
+      if (!startDate || !endDate) {
+        setError('跟随持续期的提醒需要任务设置开始和结束日期')
+        return false
+      }
+    }
+
     return true
   }
 
@@ -180,6 +231,16 @@ export default function TaskForm({
         priority,
         due_date: dueDate || null,
         reminder_at: reminderAt || null,
+        reminder_recurrence: reminderRecurrence,
+        reminder_interval:
+          reminderRecurrence === 'everyN' ? Number(reminderInterval) : null,
+        reminder_end_date:
+          reminderRecurrence !== 'once' && reminderBoundary === 'endDate'
+            ? reminderEndDate || null
+            : null,
+        reminder_follow_duration:
+          reminderRecurrence !== 'once' &&
+          reminderBoundary === 'followDuration',
         recurrence: recurrence || null,
         recurrence_end_date: recurrenceEndDate || null,
         start_date: startDate || null,
@@ -336,7 +397,7 @@ export default function TaskForm({
             />
             <div className="form-group">
               <label className="form-label" htmlFor="task-reminder">
-                提醒
+                提醒时间
               </label>
               <input
                 id="task-reminder"
@@ -348,6 +409,106 @@ export default function TaskForm({
                 data-testid="task-form-reminder"
               />
             </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label
+                  className="form-label"
+                  htmlFor="task-reminder-recurrence"
+                >
+                  提醒重复
+                </label>
+                <select
+                  id="task-reminder-recurrence"
+                  className="form-input"
+                  value={reminderRecurrence}
+                  onChange={(e) =>
+                    setReminderRecurrence(e.target.value as ReminderRecurrence)
+                  }
+                  disabled={submitting}
+                  data-testid="task-form-reminder-recurrence"
+                >
+                  <option value="once">不重复</option>
+                  <option value="daily">每天</option>
+                  <option value="weekly">每周</option>
+                  <option value="monthly">每月</option>
+                  <option value="yearly">每年</option>
+                  <option value="everyN">每 N 天</option>
+                </select>
+              </div>
+              {reminderRecurrence === 'everyN' && (
+                <div className="form-group">
+                  <label
+                    className="form-label"
+                    htmlFor="task-reminder-interval"
+                  >
+                    间隔天数
+                  </label>
+                  <input
+                    id="task-reminder-interval"
+                    className="form-input"
+                    type="number"
+                    min={1}
+                    max={365}
+                    step={1}
+                    value={reminderInterval}
+                    onChange={(e) => setReminderInterval(e.target.value)}
+                    disabled={submitting}
+                    data-testid="task-form-reminder-interval"
+                  />
+                </div>
+              )}
+            </div>
+            {reminderRecurrence !== 'once' && (
+              <div className="form-row">
+                <div className="form-group">
+                  <label
+                    className="form-label"
+                    htmlFor="task-reminder-boundary"
+                  >
+                    提醒边界
+                  </label>
+                  <select
+                    id="task-reminder-boundary"
+                    className="form-input"
+                    value={reminderBoundary}
+                    onChange={(e) =>
+                      setReminderBoundary(
+                        e.target.value as 'none' | 'endDate' | 'followDuration',
+                      )
+                    }
+                    disabled={submitting}
+                    data-testid="task-form-reminder-boundary"
+                  >
+                    <option value="none">无</option>
+                    <option value="endDate">结束日期</option>
+                    <option
+                      value="followDuration"
+                      disabled={!startDate || !endDate}
+                    >
+                      跟随持续期
+                    </option>
+                  </select>
+                </div>
+                {reminderBoundary === 'endDate' && (
+                  <div className="form-group">
+                    <label
+                      className="form-label"
+                      htmlFor="task-reminder-end-date"
+                    >
+                      提醒结束日期
+                    </label>
+                    <DatePicker
+                      value={reminderEndDate || null}
+                      onChange={setReminderEndDate}
+                      disabled={submitting}
+                      id="task-reminder-end-date"
+                      testid="task-form-reminder-end-date"
+                      placeholder="年/月/日"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
             <div className="form-actions">
               <button
                 className="btn btn-secondary"

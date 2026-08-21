@@ -2,12 +2,21 @@ import { getDb } from '../connection.js'
 import type { CreateTaskInput, TaskRow, UpdateTaskInput } from '../schema.js'
 import {
   normalizeBoolean,
+  normalizeReminderRule,
   validateIsoDate,
+  validateReminderBoundary,
   validateTaskDates,
   validateTitle,
 } from './taskValidation.js'
-import { generateNextRecurringInstance, type RecurringInstanceInput } from './taskRecurrence.js'
-export { getTasksByListId, getTasksByQuadrant, searchTasks } from './taskQueries.js'
+import {
+  generateNextRecurringInstance,
+  type RecurringInstanceInput,
+} from './taskRecurrence.js'
+export {
+  getTasksByListId,
+  getTasksByQuadrant,
+  searchTasks,
+} from './taskQueries.js'
 
 function now(): string {
   return new Date().toISOString()
@@ -20,9 +29,14 @@ function getInsertedTask(id: number): TaskRow {
   }
   return task
 }
-function insertRecurringInstance(db: ReturnType<typeof getDb>, input: RecurringInstanceInput): void {
+function insertRecurringInstance(
+  db: ReturnType<typeof getDb>,
+  input: RecurringInstanceInput,
+): void {
   const maxSort = db
-    .prepare('SELECT COALESCE(MAX(sort_order), -1) AS maxSortOrder FROM tasks WHERE list_id = ?')
+    .prepare(
+      'SELECT COALESCE(MAX(sort_order), -1) AS maxSortOrder FROM tasks WHERE list_id = ?',
+    )
     .get(input.list_id) as { maxSortOrder: number }
   const timestamp = now()
 
@@ -31,7 +45,7 @@ function insertRecurringInstance(db: ReturnType<typeof getDb>, input: RecurringI
       list_id, title, description, priority, due_date, reminder_at, completed, sort_order,
       recurrence, recurrence_end_date, start_date, end_date, is_urgent, is_important,
       created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     input.list_id,
     input.title,
@@ -57,15 +71,29 @@ export function createTask(input: CreateTaskInput): TaskRow {
   validateIsoDate(input.due_date, 'Task due date')
   validateIsoDate(input.reminder_at, 'Task reminder date')
   validateTaskDates(input)
+  const reminderRule = normalizeReminderRule({
+    reminder_recurrence: input.reminder_recurrence,
+    reminder_interval: input.reminder_interval,
+    reminder_at: input.reminder_at,
+  })
+  validateReminderBoundary({
+    reminder_end_date: input.reminder_end_date,
+    reminder_follow_duration: input.reminder_follow_duration,
+    end_date: input.end_date,
+  })
 
   const db = getDb()
-  const list = db.prepare('SELECT id FROM lists WHERE id = ?').get(input.list_id)
+  const list = db
+    .prepare('SELECT id FROM lists WHERE id = ?')
+    .get(input.list_id)
   if (!list) {
     throw new Error(`列表不存在：${input.list_id}`)
   }
 
   const maxSort = db
-    .prepare('SELECT COALESCE(MAX(sort_order), -1) AS maxSortOrder FROM tasks WHERE list_id = ?')
+    .prepare(
+      'SELECT COALESCE(MAX(sort_order), -1) AS maxSortOrder FROM tasks WHERE list_id = ?',
+    )
     .get(input.list_id) as { maxSortOrder: number }
   const timestamp = now()
   const result = db
@@ -73,8 +101,9 @@ export function createTask(input: CreateTaskInput): TaskRow {
       `INSERT INTO tasks (
         list_id, title, description, priority, due_date, reminder_at, completed, sort_order,
         recurrence, recurrence_end_date, start_date, end_date, is_urgent, is_important,
+        reminder_recurrence, reminder_interval, reminder_end_date, reminder_follow_duration, reminder_time,
         created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
       input.list_id,
@@ -90,6 +119,11 @@ export function createTask(input: CreateTaskInput): TaskRow {
       input.end_date ?? null,
       normalizeBoolean(input.is_urgent ?? false),
       normalizeBoolean(input.is_important ?? false),
+      reminderRule.reminder_recurrence,
+      reminderRule.reminder_interval,
+      input.reminder_end_date ?? null,
+      normalizeBoolean(input.reminder_follow_duration ?? false),
+      reminderRule.reminder_time,
       timestamp,
       timestamp,
     )
@@ -98,16 +132,55 @@ export function createTask(input: CreateTaskInput): TaskRow {
 }
 
 export function getTaskById(id: number): TaskRow | undefined {
-  return getDb().prepare('SELECT * FROM tasks WHERE id = ?').get(id) as TaskRow | undefined
+  return getDb().prepare('SELECT * FROM tasks WHERE id = ?').get(id) as
+    TaskRow | undefined
 }
 
-export function updateTask(id: number, input: Partial<UpdateTaskInput>): TaskRow {
+export function updateTask(
+  id: number,
+  input: Partial<UpdateTaskInput>,
+): TaskRow {
   if (input.title !== undefined) {
     validateTitle(input.title)
   }
   validateIsoDate(input.due_date, 'Task due date')
   validateIsoDate(input.reminder_at, 'Task reminder date')
   validateTaskDates(input)
+
+  const existing = getTaskById(id)
+  if (!existing) {
+    throw new Error(`任务不存在：${id}`)
+  }
+
+  const reminderRuleTouched =
+    input.reminder_recurrence !== undefined ||
+    input.reminder_interval !== undefined ||
+    input.reminder_at !== undefined
+  const reminderRule = reminderRuleTouched
+    ? normalizeReminderRule({
+        reminder_recurrence:
+          input.reminder_recurrence ?? existing.reminder_recurrence,
+        reminder_interval:
+          input.reminder_interval !== undefined
+            ? input.reminder_interval
+            : existing.reminder_interval,
+        reminder_at:
+          input.reminder_at !== undefined
+            ? input.reminder_at
+            : existing.reminder_at,
+      })
+    : null
+  validateReminderBoundary({
+    reminder_end_date:
+      input.reminder_end_date !== undefined
+        ? input.reminder_end_date
+        : existing.reminder_end_date,
+    reminder_follow_duration:
+      input.reminder_follow_duration !== undefined
+        ? input.reminder_follow_duration
+        : existing.reminder_follow_duration === 1,
+    end_date: input.end_date !== undefined ? input.end_date : existing.end_date,
+  })
 
   const fields: string[] = []
   const params: unknown[] = []
@@ -131,6 +204,22 @@ export function updateTask(id: number, input: Partial<UpdateTaskInput>): TaskRow
   if (input.reminder_at !== undefined) {
     fields.push('reminder_at = ?')
     params.push(input.reminder_at)
+  }
+  if (reminderRuleTouched && reminderRule) {
+    fields.push('reminder_recurrence = ?')
+    params.push(reminderRule.reminder_recurrence)
+    fields.push('reminder_interval = ?')
+    params.push(reminderRule.reminder_interval)
+    fields.push('reminder_time = ?')
+    params.push(reminderRule.reminder_time)
+  }
+  if (input.reminder_end_date !== undefined) {
+    fields.push('reminder_end_date = ?')
+    params.push(input.reminder_end_date)
+  }
+  if (input.reminder_follow_duration !== undefined) {
+    fields.push('reminder_follow_duration = ?')
+    params.push(normalizeBoolean(input.reminder_follow_duration))
   }
   if (input.completed !== undefined) {
     fields.push('completed = ?')
@@ -165,13 +254,13 @@ export function updateTask(id: number, input: Partial<UpdateTaskInput>): TaskRow
     params.push(normalizeBoolean(input.is_important))
   }
 
-  const existing = getTaskById(id)
-  if (!existing) {
-    throw new Error(`任务不存在：${id}`)
-  }
-
-  const isCompletingRecurring = existing.completed === 0 && input.completed === true && existing.recurrence !== null
-  const nextInstance = isCompletingRecurring ? generateNextRecurringInstance(existing) : undefined
+  const isCompletingRecurring =
+    existing.completed === 0 &&
+    input.completed === true &&
+    existing.recurrence !== null
+  const nextInstance = isCompletingRecurring
+    ? generateNextRecurringInstance(existing)
+    : undefined
 
   if (fields.length === 0 && !nextInstance) {
     return existing
@@ -180,7 +269,10 @@ export function updateTask(id: number, input: Partial<UpdateTaskInput>): TaskRow
   const db = getDb()
   const transaction = db.transaction(() => {
     if (fields.length > 0) {
-      db.prepare(`UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`).run(...params, id)
+      db.prepare(`UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`).run(
+        ...params,
+        id,
+      )
     }
     if (nextInstance) {
       insertRecurringInstance(db, nextInstance)
@@ -196,7 +288,9 @@ export function deleteTask(id: number): void {
 }
 
 export function countTasksByList(listId: number): number {
-  const row = getDb().prepare('SELECT COUNT(*) AS count FROM tasks WHERE list_id = ?').get(listId) as {
+  const row = getDb()
+    .prepare('SELECT COUNT(*) AS count FROM tasks WHERE list_id = ?')
+    .get(listId) as {
     count: number
   }
   return row.count
@@ -211,13 +305,19 @@ export function updateTaskSortOrder(listId: number, taskIds: number[]): void {
     }
 
     const rows = db
-      .prepare('SELECT id FROM tasks WHERE list_id = ? AND id IN (' + taskIds.map(() => '?').join(',') + ')')
+      .prepare(
+        'SELECT id FROM tasks WHERE list_id = ? AND id IN (' +
+          taskIds.map(() => '?').join(',') +
+          ')',
+      )
       .all(listId, ...taskIds) as { id: number }[]
     if (rows.length !== taskIds.length) {
       throw new Error('All sorted tasks must belong to the requested list')
     }
 
-    const update = db.prepare('UPDATE tasks SET sort_order = ? WHERE id = ? AND list_id = ?')
+    const update = db.prepare(
+      'UPDATE tasks SET sort_order = ? WHERE id = ? AND list_id = ?',
+    )
     taskIds.forEach((taskId, index) => {
       update.run(index, taskId, listId)
     })
@@ -231,6 +331,21 @@ export function updateTaskSortOrder(listId: number, taskIds: number[]): void {
 
 export function getTasksWithPendingReminders(): TaskRow[] {
   return getDb()
-    .prepare('SELECT * FROM tasks WHERE reminder_at IS NOT NULL AND completed = 0')
+    .prepare(
+      'SELECT * FROM tasks WHERE reminder_at IS NOT NULL AND completed = 0',
+    )
     .all() as TaskRow[]
+}
+
+/**
+ * Materializes the next fire time of a task's reminder rule after it fires:
+ * a repeating rule advances, a one-shot rule clears to null (ADR-0001).
+ */
+export function updateReminderNextFire(
+  id: number,
+  nextFire: string | null,
+): void {
+  getDb()
+    .prepare('UPDATE tasks SET reminder_at = ?, updated_at = ? WHERE id = ?')
+    .run(nextFire, now(), id)
 }

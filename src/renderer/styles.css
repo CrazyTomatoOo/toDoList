@@ -876,6 +876,11 @@ select:focus {
   background: var(--color-accent-light, #e8eefd);
 }
 
+.task-badge-reminder {
+  color: var(--color-accent, #1456f0);
+  background: var(--color-accent-light, #e8eefd);
+}
+
 .task-badge-duration {
   color: var(--color-text-secondary, #4e5969);
   background: var(--color-bg-tertiary, #f2f3f5);

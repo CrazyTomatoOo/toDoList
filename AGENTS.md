@@ -25,7 +25,7 @@ Typical data flow (create task): `TaskForm` → `useTasks.createTask` → `windo
 
 **Recurrence:** completing a recurring task inside `updateTask` calls `generateNextRecurringInstance` (`src/main/db/repositories/taskRecurrence.ts`) and inserts the next instance in the same transaction. That file is the only place recurrence math lives (daily/weekly/monthly/yearly, end-date clamping, leap/month-end handling).
 
-**Reminders:** `ReminderScheduler` polls pending reminders every 10s (override via `REMINDER_POLL_INTERVAL_MS`), shows an Electron `Notification`, clears `reminder_at`, then emits `reminder:fired`; clicking focuses the window and sends `reminder:clicked`.
+**Reminders:** one reminder rule per task (`reminder_recurrence` once/daily/weekly/monthly/yearly/everyN + `reminder_interval`/`reminder_end_date`/`reminder_follow_duration`/`reminder_time`, ADR-0001). `ReminderScheduler` polls pending reminders every 10s (override via `REMINDER_POLL_INTERVAL_MS`), shows an Electron `Notification`, then advances the rule's next fire (`reminderSchedule.computeNextReminderFire`) or clears the one-shot `reminder_at`, and emits `reminder:fired`; clicking focuses the window and sends `reminder:clicked`.
 
 ## Key Directories
 
@@ -40,7 +40,7 @@ Typical data flow (create task): `TaskForm` → `useTasks.createTask` → `windo
 | `src/__tests__/` | All tests, mirrored by domain: `components/ db/ services/ main/ types/ perf/ renderer/ e2e/` |
 | `scripts/` | Packaged-app verification: `smoke-test.js`, `perf-report.js`, `verify-mac-dmg.sh`, `verify-win-exe.sh` |
 | `out/` | electron-vite build output — gitignored, never edit |
-| `dist/` | electron-builder installers (DMG/NSIS) |
+|`dist/` | electron-builder installers (DMG/NSIS) + portable zip |
 
 ## Development Commands
 
@@ -56,7 +56,7 @@ npm only; Node 22 (CI pins it; no `engines` field in package.json).
 | `npm run test:ui` | Interactive Vitest UI |
 | `npm run test:e2e` | `build` + `electron-rebuild --force` + Playwright |
 | `npm run build` | electron-vite build → `out/` |
-| `npm run build:mac` / `build:win` / `dist` | electron-builder packaging (DMG / NSIS x64 / both) |
+|`npm run build:mac` / `build:win` / `dist` | electron-builder packaging (DMG / NSIS x64 + portable zip / both) |
 
 CI (`release.yml`, on `v*` tags or `workflow_dispatch`) runs typecheck + lint + build + package only — **not** the test suites; run `npm test` locally before pushing. Release job attaches `dist/*` to a GitHub Release (signing optional via `CSC_LINK`, `APPLE_ID`, `WIN_CSC_LINK` secrets).
 
@@ -77,14 +77,14 @@ CI (`release.yml`, on `v*` tags or `workflow_dispatch`) runs typecheck + lint + 
 - `src/main/main.ts` — lifecycle: lazy DB init inside `whenReady`, single-instance lock (skipped under `E2E_TEST`), menu, scheduler start/stop, IPC registration
 - `src/main/preload.ts` — the entire renderer-visible API surface
 - `src/main/db/connection.ts` — `getDb()`/`closeDb()`; DB path order: `TODO_USER_DATA_DIR/todo.db` → `app.getPath('userData')/todo.db` → tmp fallback
-- `src/main/db/migrations.ts` + `migrations/*.sql` — numeric-prefixed SQL migrations (currently 001–004) applied in order inside a transaction
-- `src/main/db/repositories/` — `taskRepository.ts`, `taskQueries.ts` (dynamic filtered queries), `taskValidation.ts`, `taskRecurrence.ts`, `listRepository.ts`
+- `src/main/db/migrations.ts` + `migrations/*.sql` — numeric-prefixed SQL migrations (currently 001–005) applied in order inside a transaction
+- `src/main/db/repositories/` — `taskRepository.ts`, `taskQueries.ts` (dynamic filtered queries), `taskValidation.ts`, `taskRecurrence.ts`, `reminderSchedule.ts` (repeating-reminder cadence math), `listRepository.ts`
 - `src/main/services/reminderScheduler.ts`, `theme.ts`, `importExport*.ts`
 - `src/renderer/App.tsx` — root orchestration: auto-selects first list, listens for `reminder:clicked` to switch list, toggles list/quadrant view
 - `src/renderer/hooks/useTasks.ts`, `useLists.ts`, `useSearchAndFilter.ts` — renderer data layer
 - `src/renderer/styles.css` — design-token CSS variables (theme via `data-theme`)
 - `electron.vite.config.ts` — three targets (main/preload/renderer); `better-sqlite3` is external; plugin copies migrations SQL into `out/main/chunks/migrations`
-- `electron-builder.yml` — `appId: com.example.todolist`, asar with `better-sqlite3` unpacked, DMG/NSIS-x64 targets
+- `electron-builder.yml` — `appId: com.example.todolist`, asar with `better-sqlite3` unpacked, DMG / NSIS-x64 + portable zip targets (ADR-0002)
 
 ## Runtime/Tooling Preferences
 

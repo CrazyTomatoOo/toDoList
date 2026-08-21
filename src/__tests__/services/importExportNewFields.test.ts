@@ -6,11 +6,21 @@ import { closeDb } from '../../main/db/connection.js'
 import { runMigrations } from '../../main/db/migrations.js'
 import { createList } from '../../main/db/repositories/listRepository.js'
 import { getAllLists } from '../../main/db/repositories/listRepository.js'
-import { createTask, getTasksByListId } from '../../main/db/repositories/taskRepository.js'
-import { exportToCsv, exportToJson, importFromCsv, importFromJson } from '../../main/services/importExport.js'
+import {
+  createTask,
+  getTasksByListId,
+} from '../../main/db/repositories/taskRepository.js'
+import {
+  exportToCsv,
+  exportToJson,
+  importFromCsv,
+  importFromJson,
+} from '../../main/services/importExport.js'
 
 function createTempUserDataDir(): string {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'todolist-import-export-new-fields-test-'))
+  return fs.mkdtempSync(
+    path.join(os.tmpdir(), 'todolist-import-export-new-fields-test-'),
+  )
 }
 
 describe('importExport new fields', () => {
@@ -91,7 +101,14 @@ describe('importExport new fields', () => {
 
   it('imports legacy JSON without new fields using defaults', () => {
     const json = JSON.stringify({
-      lists: [{ id: 1, name: 'Legacy', createdAt: '2020-01-01T00:00:00.000Z', updatedAt: '2020-01-01T00:00:00.000Z' }],
+      lists: [
+        {
+          id: 1,
+          name: 'Legacy',
+          createdAt: '2020-01-01T00:00:00.000Z',
+          updatedAt: '2020-01-01T00:00:00.000Z',
+        },
+      ],
       tasks: [
         {
           listName: 'Legacy',
@@ -117,6 +134,34 @@ describe('importExport new fields', () => {
     expect(task.end_date).toBeNull()
     expect(task.is_urgent).toBe(0)
     expect(task.is_important).toBe(0)
+    expect(task.reminder_recurrence).toBe('once')
+    expect(task.reminder_interval).toBeNull()
+    expect(task.reminder_end_date).toBeNull()
+    expect(task.reminder_follow_duration).toBe(0)
+  })
+
+  it('round-trips a repeating reminder rule through JSON', () => {
+    const work = createList('Work')
+    createTask({
+      list_id: work.id,
+      title: 'Pills',
+      priority: 'medium',
+      reminder_at: '2026-08-21T09:00',
+      reminder_recurrence: 'everyN',
+      reminder_interval: 3,
+      reminder_end_date: '2026-12-31',
+    })
+
+    const json = exportToJson()
+    importFromJson(json)
+
+    const tasks = getTasksByListId(work.id)
+    const imported = tasks.find((t) => t.title === 'Pills')!
+    expect(imported.reminder_recurrence).toBe('everyN')
+    expect(imported.reminder_interval).toBe(3)
+    expect(imported.reminder_end_date).toBe('2026-12-31')
+    expect(imported.reminder_follow_duration).toBe(0)
+    expect(imported.reminder_time).toBe('09:00')
   })
 
   it('exports CSV with new headers', () => {
@@ -127,7 +172,7 @@ describe('importExport new fields', () => {
     const lines = csv.split('\n')
 
     expect(lines[0]).toBe(
-      'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder,recurrence,recurrenceEndDate,startDate,endDate,isUrgent,isImportant',
+      'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder,recurrence,recurrenceEndDate,startDate,endDate,isUrgent,isImportant,reminderRecurrence,reminderInterval,reminderEndDate,reminderFollowDuration',
     )
   })
 
@@ -160,7 +205,8 @@ describe('importExport new fields', () => {
   })
 
   it('imports legacy CSV without new fields using defaults', () => {
-    const csv = 'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder\nLegacy,Old task,,medium,,,false,0'
+    const csv =
+      'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder\nLegacy,Old task,,medium,,,false,0'
 
     importFromCsv(csv)
 
@@ -173,6 +219,52 @@ describe('importExport new fields', () => {
     expect(task.end_date).toBeNull()
     expect(task.is_urgent).toBe(0)
     expect(task.is_important).toBe(0)
+    expect(task.reminder_recurrence).toBe('once')
+    expect(task.reminder_interval).toBeNull()
+    expect(task.reminder_end_date).toBeNull()
+    expect(task.reminder_follow_duration).toBe(0)
+  })
+
+  it('round-trips a repeating reminder rule through CSV', () => {
+    const work = createList('Work')
+    createTask({
+      list_id: work.id,
+      title: 'Daily during task',
+      priority: 'medium',
+      reminder_at: '2026-08-21T09:00',
+      reminder_recurrence: 'daily',
+      reminder_follow_duration: true,
+      start_date: '2026-08-01',
+      end_date: '2026-08-31',
+    })
+
+    const csv = exportToCsv()
+    importFromCsv(csv)
+
+    const tasks = getTasksByListId(work.id)
+    const imported = tasks.find((t) => t.title === 'Daily during task')!
+    expect(imported.reminder_recurrence).toBe('daily')
+    expect(imported.reminder_follow_duration).toBe(1)
+    expect(imported.reminder_time).toBe('09:00')
+  })
+
+  it('rejects an everyN reminder without an interval on import', () => {
+    const json = JSON.stringify({
+      lists: [],
+      tasks: [
+        {
+          listName: 'Work',
+          title: 'Bad reminder',
+          priority: 'medium',
+          completed: false,
+          reminderRecurrence: 'everyN',
+        },
+      ],
+    })
+
+    expect(() => importFromJson(json)).toThrow(
+      /每 N 天提醒需要设置有效的间隔天数/,
+    )
   })
 
   it('rejects invalid recurrence values', () => {
@@ -236,7 +328,7 @@ describe('importExport new fields', () => {
     expect(() => importFromCsv(csv)).toThrow(/必须为有效的 YYYY-MM-DD/)
     expect(getAllLists()).toHaveLength(0)
   })
-})
+
   it('rejects invalid recurrence values in CSV', () => {
     const csv =
       'listName,title,description,priority,dueDate,reminderAt,completed,sortOrder,recurrence,recurrenceEndDate,startDate,endDate,isUrgent,isImportant\n' +
@@ -260,4 +352,4 @@ describe('importExport new fields', () => {
 
     expect(() => importFromCsv(csv)).toThrow(/开始日期不能晚于结束日期/)
   })
-
+})

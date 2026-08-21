@@ -1,17 +1,23 @@
 import type { ImportResult } from '../../shared/ipc.js'
 import { createList, getAllLists } from '../db/repositories/listRepository.js'
 import { validateDateOnly } from '../../shared/utils/dateValidator.js'
-import { validateDateOrder } from '../db/repositories/taskValidation.js'
+import {
+  normalizeReminderRule,
+  validateDateOrder,
+  validateReminderBoundary,
+} from '../db/repositories/taskValidation.js'
 import { getDb } from '../db/connection.js'
 import {
   assertNonEmptyString,
   assertOptionalDateOnly,
   assertOptionalIsoDate,
   assertOptionalRecurrence,
+  assertOptionalReminderRecurrence,
   assertPriority,
   assertTaskTitle,
   parseBoolean,
   parseCsv,
+  parseReminderInterval,
 } from './importExportHelpers.js'
 
 function now(): string {
@@ -70,6 +76,10 @@ export function importFromCsv(csvString: string): ImportResult {
       priority: row.priority,
       dueDate: row.dueDate,
       reminderAt: row.reminderAt,
+      reminderRecurrence: row.reminderRecurrence,
+      reminderInterval: row.reminderInterval,
+      reminderEndDate: row.reminderEndDate,
+      reminderFollowDuration: row.reminderFollowDuration,
       completed: row.completed,
       sortOrder: row.sortOrder,
       recurrence: row.recurrence,
@@ -122,8 +132,9 @@ function importData(listRows: unknown[], taskRows: unknown[]): ImportResult {
       `INSERT INTO tasks (
         list_id, title, description, priority, due_date, reminder_at, completed, sort_order,
         recurrence, recurrence_end_date, start_date, end_date, is_urgent, is_important,
+        reminder_recurrence, reminder_interval, reminder_end_date, reminder_follow_duration, reminder_time,
         created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
 
     let importedTasks = 0
@@ -138,19 +149,44 @@ function importData(listRows: unknown[], taskRows: unknown[]): ImportResult {
       const title = assertTaskTitle(r.title)
       const priority = assertPriority(r.priority)
       const description =
-        r.description === undefined || r.description === null || r.description === ''
+        r.description === undefined ||
+        r.description === null ||
+        r.description === ''
           ? null
           : String(r.description)
       const dueDate = assertOptionalIsoDate(r.dueDate, 'Task dueDate')
       const reminderAt = assertOptionalIsoDate(r.reminderAt, 'Task reminderAt')
       const recurrence = assertOptionalRecurrence(r.recurrence)
-      const recurrenceEndDate = assertOptionalDateOnly(r.recurrenceEndDate, 'Task recurrenceEndDate')
+      const recurrenceEndDate = assertOptionalDateOnly(
+        r.recurrenceEndDate,
+        'Task recurrenceEndDate',
+      )
       const startDate = assertOptionalDateOnly(r.startDate, 'Task startDate')
       const endDate = assertOptionalDateOnly(r.endDate, 'Task endDate')
+      const reminderRecurrence =
+        assertOptionalReminderRecurrence(r.reminderRecurrence) ?? 'once'
+      const reminderInterval = parseReminderInterval(r.reminderInterval)
+      const reminderEndDate = assertOptionalDateOnly(
+        r.reminderEndDate,
+        'Task reminderEndDate',
+      )
+      const reminderFollowDuration = parseBoolean(r.reminderFollowDuration)
+      const reminderRule = normalizeReminderRule({
+        reminder_recurrence: reminderRecurrence,
+        reminder_interval: reminderInterval,
+        reminder_at: reminderAt,
+      })
+      validateReminderBoundary({
+        reminder_end_date: reminderEndDate,
+        reminder_follow_duration: reminderFollowDuration,
+        end_date: endDate,
+      })
       const isUrgent = parseBoolean(r.isUrgent)
       const isImportant = parseBoolean(r.isImportant)
       const completed =
-        r.completed === true || r.completed === 'true' || r.completed === 1 ? 1 : 0
+        r.completed === true || r.completed === 'true' || r.completed === 1
+          ? 1
+          : 0
 
       validateDateOrder(startDate, endDate)
       if (recurrence) {
@@ -185,6 +221,11 @@ function importData(listRows: unknown[], taskRows: unknown[]): ImportResult {
         endDate,
         isUrgent ? 1 : 0,
         isImportant ? 1 : 0,
+        reminderRule.reminder_recurrence,
+        reminderRule.reminder_interval,
+        reminderEndDate,
+        reminderFollowDuration ? 1 : 0,
+        reminderRule.reminder_time,
         timestamp,
         timestamp,
       )

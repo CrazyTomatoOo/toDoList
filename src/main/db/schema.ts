@@ -7,6 +7,8 @@ export interface ListRow {
 
 export type Priority = 'high' | 'medium' | 'low'
 export type Recurrence = 'daily' | 'weekly' | 'monthly' | 'yearly'
+export type ReminderRecurrence =
+  'once' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'everyN'
 export type Quadrant =
   | 'q1-urgent-important'
   | 'q2-not-urgent-important'
@@ -21,6 +23,11 @@ export interface TaskRow {
   priority: Priority
   due_date: string | null
   reminder_at: string | null
+  reminder_recurrence: ReminderRecurrence
+  reminder_interval: number | null
+  reminder_end_date: string | null
+  reminder_follow_duration: 0 | 1
+  reminder_time: string | null
   completed: 0 | 1
   sort_order: number
   recurrence: Recurrence | null
@@ -40,6 +47,10 @@ export interface CreateTaskInput {
   priority?: Priority
   due_date?: string | null
   reminder_at?: string | null
+  reminder_recurrence?: ReminderRecurrence
+  reminder_interval?: number | null
+  reminder_end_date?: string | null
+  reminder_follow_duration?: boolean
   recurrence?: Recurrence | null
   recurrence_end_date?: string | null
   start_date?: string | null
@@ -54,6 +65,10 @@ export interface UpdateTaskInput {
   priority: Priority
   due_date: string | null
   reminder_at: string | null
+  reminder_recurrence: ReminderRecurrence
+  reminder_interval: number | null
+  reminder_end_date: string | null
+  reminder_follow_duration: boolean
   completed: boolean
   sort_order: number
   recurrence: Recurrence | null
