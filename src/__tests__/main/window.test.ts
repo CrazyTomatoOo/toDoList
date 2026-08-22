@@ -6,7 +6,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
  */
 const windowInstances: Array<ReturnType<typeof createMockBrowserWindow>> = []
 
-function createMockBrowserWindow(options: Electron.BrowserWindowConstructorOptions) {
+function createMockBrowserWindow(
+  options: Electron.BrowserWindowConstructorOptions,
+) {
   const eventHandlers: Record<string, Array<(...args: unknown[]) => void>> = {}
   const instance = {
     options,
@@ -28,12 +30,12 @@ function createMockBrowserWindow(options: Electron.BrowserWindowConstructorOptio
       return instance
     }),
     webContents: {
-      openDevTools: vi.fn()
+      openDevTools: vi.fn(),
     },
     _eventHandlers: eventHandlers,
     _emit(event: string, ...args: unknown[]) {
       eventHandlers[event]?.forEach((h) => h(...args))
-    }
+    },
   }
   windowInstances.push(instance)
   return instance
@@ -42,8 +44,12 @@ function createMockBrowserWindow(options: Electron.BrowserWindowConstructorOptio
 const BrowserWindowMock = vi.fn(function (options) {
   return createMockBrowserWindow(options)
 }) as unknown as typeof BrowserWindow
-BrowserWindowMock.getAllWindows = vi.fn(() => windowInstances.filter((w) => !w.isDestroyed()))
-BrowserWindowMock.getAllWindows = vi.fn(() => windowInstances.filter((w) => !w.isDestroyed()))
+BrowserWindowMock.getAllWindows = vi.fn(() =>
+  windowInstances.filter((w) => !w.isDestroyed()),
+)
+BrowserWindowMock.getAllWindows = vi.fn(() =>
+  windowInstances.filter((w) => !w.isDestroyed()),
+)
 
 const appHandlers: Record<string, Array<(...args: unknown[]) => void>> = {}
 const appMock = {
@@ -55,12 +61,12 @@ const appMock = {
     appHandlers[event].push(handler)
     return appMock
   }),
-  name: 'ToDoList'
+  name: 'ToDoList',
 }
 
 const menuMock = {
   buildFromTemplate: vi.fn(() => ({ items: [] })),
-  setApplicationMenu: vi.fn()
+  setApplicationMenu: vi.fn(),
 }
 
 vi.mock('electron', async () => {
@@ -71,8 +77,8 @@ vi.mock('electron', async () => {
     ipcMain: {
       handle: vi.fn(),
       removeHandler: vi.fn(),
-      listeners: vi.fn(() => [])
-    }
+      listeners: vi.fn(() => []),
+    },
   }
 })
 
@@ -82,7 +88,7 @@ beforeEach(() => {
   windowInstances.length = 0
   BrowserWindowMock.getAllWindows.mockReturnValue([])
   Object.keys(appHandlers).forEach((key) => delete appHandlers[key])
-  delete process.env.VITE_DEV_SERVER_URL
+  delete process.env.ELECTRON_RENDERER_URL
 })
 
 describe('window creation', () => {
@@ -91,7 +97,8 @@ describe('window creation', () => {
     createMainWindow()
 
     expect(BrowserWindowMock).toHaveBeenCalledTimes(1)
-    const options = BrowserWindowMock.mock.calls[0][0] as Electron.BrowserWindowConstructorOptions
+    const options = BrowserWindowMock.mock
+      .calls[0][0] as Electron.BrowserWindowConstructorOptions
     expect(options.title).toBe('待办清单')
     expect(options.width).toBe(1200)
     expect(options.height).toBe(800)
@@ -112,7 +119,7 @@ describe('window creation', () => {
   })
 
   it('loads the Vite dev server URL in development', async () => {
-    process.env.VITE_DEV_SERVER_URL = 'http://localhost:5173'
+    process.env.ELECTRON_RENDERER_URL = 'http://localhost:5173'
     const { createMainWindow } = await import('../../main/window')
     const win = createMainWindow() as ReturnType<typeof createMockBrowserWindow>
 
@@ -130,7 +137,8 @@ describe('window creation', () => {
   })
 
   it('focuses, restores and shows the existing window when requested', async () => {
-    const { createMainWindow, focusMainWindow } = await import('../../main/window')
+    const { createMainWindow, focusMainWindow } =
+      await import('../../main/window')
     const win = createMainWindow() as ReturnType<typeof createMockBrowserWindow>
     win.isMinimized.mockReturnValue(true)
 

@@ -37,6 +37,49 @@ export interface TaskFormData {
   is_important: boolean
 }
 
+/**
+ * The next local `YYYY-MM-DDTHH:MM` at or after the given time-of-day. Used to
+ * compute a repeating reminder's first fire from its trigger time. `now` is
+ * injectable for deterministic tests.
+ */
+export function nextTimeOccurrence(
+  hhmm: string,
+  now: Date = new Date(),
+): string {
+  const [hour, minute] = hhmm.split(':').map(Number)
+  const candidate = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    hour,
+    minute,
+  )
+  if (candidate.getTime() <= now.getTime()) {
+    candidate.setDate(candidate.getDate() + 1)
+  }
+  const month = String(candidate.getMonth() + 1).padStart(2, '0')
+  const day = String(candidate.getDate()).padStart(2, '0')
+  return `${candidate.getFullYear()}-${month}-${day}T${hhmm}`
+}
+
+/**
+ * Materialized next fire for a repeating rule: keep the already-scheduled
+ * reminder when editing without changing the rule's time-of-day, otherwise
+ * derive the next occurrence of the trigger time.
+ */
+function repeatingReminderAt(
+  task: TaskRow | null | undefined,
+  time: string,
+): string {
+  const scheduledTime =
+    task?.reminder_time ??
+    (task?.reminder_at ? task.reminder_at.slice(11, 16) : null)
+  if (task?.reminder_at && scheduledTime === time) {
+    return task.reminder_at
+  }
+  return nextTimeOccurrence(time)
+}
+
 export default function TaskForm({
   listId,
   task,
@@ -48,6 +91,10 @@ export default function TaskForm({
   const [priority, setPriority] = useState<Priority>(task?.priority ?? 'medium')
   const [dueDate, setDueDate] = useState(task?.due_date ?? '')
   const [reminderAt, setReminderAt] = useState(task?.reminder_at ?? '')
+  const [reminderTime, setReminderTime] = useState(
+    task?.reminder_time ??
+      (task?.reminder_at ? task.reminder_at.slice(11, 16) : ''),
+  )
   const [reminderRecurrence, setReminderRecurrence] =
     useState<ReminderRecurrence>(task?.reminder_recurrence ?? 'once')
   const [reminderInterval, setReminderInterval] = useState(
@@ -198,6 +245,13 @@ export default function TaskForm({
       }
     }
 
+    if (reminderRecurrence !== 'once') {
+      if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(reminderTime)) {
+        setError('请设置提醒时刻')
+        return false
+      }
+    }
+
     return true
   }
 
@@ -225,12 +279,16 @@ export default function TaskForm({
     setSubmitting(true)
     setError(null)
     try {
+      const reminderAtValue =
+        reminderRecurrence === 'once'
+          ? reminderAt || null
+          : repeatingReminderAt(task, reminderTime)
       await onSubmit({
         title: trimmedTitle,
         description: description.trim() || null,
         priority,
         due_date: dueDate || null,
-        reminder_at: reminderAt || null,
+        reminder_at: reminderAtValue,
         reminder_recurrence: reminderRecurrence,
         reminder_interval:
           reminderRecurrence === 'everyN' ? Number(reminderInterval) : null,
@@ -396,18 +454,37 @@ export default function TaskForm({
               onImportantChange={setIsImportant}
             />
             <div className="form-group">
-              <label className="form-label" htmlFor="task-reminder">
-                提醒时间
-              </label>
-              <input
-                id="task-reminder"
-                className="form-input"
-                type="datetime-local"
-                value={reminderAt}
-                onChange={(e) => setReminderAt(e.target.value)}
-                disabled={submitting}
-                data-testid="task-form-reminder"
-              />
+              {reminderRecurrence === 'once' ? (
+                <>
+                  <label className="form-label" htmlFor="task-reminder">
+                    提醒时间
+                  </label>
+                  <input
+                    id="task-reminder"
+                    className="form-input"
+                    type="datetime-local"
+                    value={reminderAt}
+                    onChange={(e) => setReminderAt(e.target.value)}
+                    disabled={submitting}
+                    data-testid="task-form-reminder"
+                  />
+                </>
+              ) : (
+                <>
+                  <label className="form-label" htmlFor="task-reminder-time">
+                    提醒时刻
+                  </label>
+                  <input
+                    id="task-reminder-time"
+                    className="form-input"
+                    type="time"
+                    value={reminderTime}
+                    onChange={(e) => setReminderTime(e.target.value)}
+                    disabled={submitting}
+                    data-testid="task-form-reminder-time"
+                  />
+                </>
+              )}
             </div>
             <div className="form-row">
               <div className="form-group">

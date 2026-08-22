@@ -3,7 +3,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 
-import TaskForm from '../../renderer/components/TaskForm'
+import TaskForm, {
+  nextTimeOccurrence,
+} from '../../renderer/components/TaskForm'
 import type { TaskRow } from '../../shared/ipc'
 
 const createMockTask = (overrides: Partial<TaskRow> = {}): TaskRow => ({
@@ -164,6 +166,24 @@ describe('TaskForm', () => {
       ).toBeInTheDocument()
     })
 
+    it('uses a time-only input for repeating reminder rules (no date semantics)', () => {
+      render(<TaskForm {...defaultProps} />)
+      // One-shot: full datetime picker (the actual fire time).
+      expect(
+        (screen.getByTestId('task-form-reminder') as HTMLInputElement).type,
+      ).toBe('datetime-local')
+
+      // Repeating: the rule owns a trigger time-of-day, not a calendar date.
+      fireEvent.change(screen.getByTestId('task-form-reminder-recurrence'), {
+        target: { value: 'daily' },
+      })
+      expect(screen.queryByTestId('task-form-reminder')).not.toBeInTheDocument()
+      const timeInput = screen.getByTestId(
+        'task-form-reminder-time',
+      ) as HTMLInputElement
+      expect(timeInput.type).toBe('time')
+    })
+
     it('disables follow-duration option until the task has a duration', () => {
       render(<TaskForm {...defaultProps} />)
       fireEvent.change(screen.getByTestId('task-form-reminder-recurrence'), {
@@ -228,16 +248,16 @@ describe('TaskForm', () => {
       expect(defaultProps.onSubmit).not.toHaveBeenCalled()
     })
 
-    it('submits a repeating reminder rule', async () => {
+    it('submits a repeating reminder rule with a time-of-day input', async () => {
       render(<TaskForm {...defaultProps} />)
       fireEvent.change(screen.getByTestId('task-form-title'), {
         target: { value: 'Test' },
       })
-      fireEvent.change(screen.getByTestId('task-form-reminder'), {
-        target: { value: '2026-08-21T09:00' },
-      })
       fireEvent.change(screen.getByTestId('task-form-reminder-recurrence'), {
         target: { value: 'everyN' },
+      })
+      fireEvent.change(screen.getByTestId('task-form-reminder-time'), {
+        target: { value: '09:00' },
       })
       fireEvent.change(screen.getByTestId('task-form-reminder-interval'), {
         target: { value: '3' },
@@ -255,11 +275,70 @@ describe('TaskForm', () => {
         expect(defaultProps.onSubmit).toHaveBeenCalledWith(
           expect.objectContaining({
             title: 'Test',
-            reminder_at: '2026-08-21T09:00',
+            reminder_at: expect.stringMatching(/T09:00$/),
             reminder_recurrence: 'everyN',
             reminder_interval: 3,
             reminder_end_date: '2026-08-31',
             reminder_follow_duration: false,
+          }),
+        )
+      })
+    })
+
+    it('derives the first fire from the trigger time (next occurrence)', () => {
+      // 09:00 today has passed → first fire tomorrow.
+      expect(nextTimeOccurrence('09:00', new Date('2026-08-20T10:00'))).toBe(
+        '2026-08-21T09:00',
+      )
+      // Still ahead today → first fire today.
+      expect(nextTimeOccurrence('09:00', new Date('2026-08-20T08:00'))).toBe(
+        '2026-08-20T09:00',
+      )
+      // Exactly on the minute → strictly future, so tomorrow.
+      expect(nextTimeOccurrence('09:00', new Date('2026-08-20T09:00'))).toBe(
+        '2026-08-21T09:00',
+      )
+    })
+
+    it('blocks submission when a repeating rule has no trigger time', async () => {
+      render(<TaskForm {...defaultProps} />)
+      fireEvent.change(screen.getByTestId('task-form-title'), {
+        target: { value: 'Test' },
+      })
+      fireEvent.change(screen.getByTestId('task-form-reminder-recurrence'), {
+        target: { value: 'daily' },
+      })
+
+      fireEvent.click(screen.getByTestId('task-form-save'))
+
+      await waitFor(() => {
+        expect(screen.getByTestId('task-form-error')).toHaveTextContent(
+          '请设置提醒时刻',
+        )
+      })
+      expect(defaultProps.onSubmit).not.toHaveBeenCalled()
+    })
+
+    it('keeps the scheduled fire when editing a repeating rule without changing its time', async () => {
+      const task = createMockTask({
+        reminder_at: '2026-08-21T09:00',
+        reminder_recurrence: 'daily',
+        reminder_time: '09:00',
+      })
+      render(<TaskForm {...defaultProps} task={task} />)
+
+      const timeInput = screen.getByTestId(
+        'task-form-reminder-time',
+      ) as HTMLInputElement
+      expect(timeInput.value).toBe('09:00')
+
+      fireEvent.click(screen.getByTestId('task-form-save'))
+
+      await waitFor(() => {
+        expect(defaultProps.onSubmit).toHaveBeenCalledWith(
+          expect.objectContaining({
+            reminder_at: '2026-08-21T09:00',
+            reminder_recurrence: 'daily',
           }),
         )
       })
