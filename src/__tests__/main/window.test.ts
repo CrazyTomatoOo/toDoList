@@ -224,7 +224,8 @@ describe('data directory wiring', () => {
       // Imported, not statically referenced: the module runs initializeApp on
       // load, which is the boundary this test exercises.
       await import('../../main/main')
-      const { getDataDirState } = await import('../../main/services/dataDirState')
+      const { getDataDirState } =
+        await import('../../main/services/dataDirState')
 
       const state = getDataDirState()
       expect(state?.resolution.dir).toBe(customDir)
