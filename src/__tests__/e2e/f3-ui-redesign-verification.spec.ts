@@ -1,6 +1,7 @@
 import { test, expect, type ElectronApplication, type Page, _electron as electron } from '@playwright/test'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { createTempUserDataDir } from '../main/ipc.harness'
 import { ensureResolvedTheme } from './settings.helpers'
 import fs from 'node:fs'
 

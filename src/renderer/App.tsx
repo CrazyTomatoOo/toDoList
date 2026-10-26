@@ -12,7 +12,7 @@ import { useSelectedList } from './hooks/useSelectedList'
 import { useSearchAndFilter } from './hooks/useSearchAndFilter'
 import { useTheme } from './services/theme'
 import ListSidebar from './components/ListSidebar'
-import SettingsPage from './components/SettingsPage'
+import SettingsPage, { type SettingsSection } from './components/SettingsPage'
 import ConfigNotice from './components/ConfigNotice'
 import NoStoreScreen from './components/NoStoreScreen'
 import TaskList from './components/TaskList'
@@ -45,9 +45,7 @@ export default function App() {
       .getState()
       .then((state) => {
         setBoot(
-          state.noStore
-            ? { kind: 'noStore', state }
-            : { kind: 'ready', state },
+          state.noStore ? { kind: 'noStore', state } : { kind: 'ready', state },
         )
       })
       .catch(() => {
@@ -121,6 +119,8 @@ function MainApp({ configNotice }: MainAppProps) {
   const [showAddForm, setShowAddForm] = useState(false)
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list')
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsSection, setSettingsSection] =
+    useState<SettingsSection>('general')
   const [noticeHidden, setNoticeHidden] = useState(false)
   const theme = useTheme()
   const {
@@ -298,7 +298,10 @@ function MainApp({ configNotice }: MainAppProps) {
             )}
             <button
               className="btn btn-ghost btn-icon settings-button"
-              onClick={() => setSettingsOpen(true)}
+              onClick={() => {
+                setSettingsSection('general')
+                setSettingsOpen(true)
+              }}
               data-testid="settings-button"
               title="设置"
               aria-label="设置"
@@ -328,19 +331,22 @@ function MainApp({ configNotice }: MainAppProps) {
         {configNotice?.problem &&
           !configNotice.noticeAcknowledged &&
           !noticeHidden && (
-          <ConfigNotice
-            problem={configNotice.problem}
-            configPath={configNotice.configPath}
-            onOpenSettings={() => setSettingsOpen(true)}
-            onAcknowledge={() => {
-              setNoticeHidden(true)
-              window.electronAPI.dataDir.ackNotice().catch(() => {
-                // The main process already degrades to re-showing the notice
-                // next launch when the acknowledgement cannot be persisted.
-              })
-            }}
-          />
-        )}
+            <ConfigNotice
+              problem={configNotice.problem}
+              configPath={configNotice.configPath}
+              onOpenSettings={() => {
+                setSettingsSection('data')
+                setSettingsOpen(true)
+              }}
+              onAcknowledge={() => {
+                setNoticeHidden(true)
+                window.electronAPI.dataDir.ackNotice().catch(() => {
+                  // The main process already degrades to re-showing the notice
+                  // next launch when the acknowledgement cannot be persisted.
+                })
+              }}
+            />
+          )}
 
         {!settingsOpen && selectedListId !== null && viewMode === 'list' && (
           <div className="search-filter-bar" data-testid="search-filter-bar">
@@ -364,7 +370,7 @@ function MainApp({ configNotice }: MainAppProps) {
           <SettingsPage
             theme={theme}
             onExit={() => setSettingsOpen(false)}
-            initialSection="data"
+            initialSection={settingsSection}
           />
         ) : viewMode === 'list' ? (
           <TaskList

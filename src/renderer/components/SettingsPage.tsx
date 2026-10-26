@@ -6,7 +6,7 @@ import type {
   ApplyDataDirResult,
 } from '../../shared/ipc'
 
-type SettingsSection = 'general' | 'data' | 'about'
+export type SettingsSection = 'general' | 'data' | 'about'
 
 const THEME_OPTIONS: { mode: ThemeMode; label: string }[] = [
   { mode: 'system', label: '跟随系统' },
