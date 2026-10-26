@@ -1,0 +1,1138 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PROTOTYPE · 数据目录设置（三变体）</title>
+    <!--
+      PROTOTYPE — throwaway. 不进 main。
+      问题：数据目录的四种状态 + 迁移确认 + 重启提示，各自长什么样、怎么交互？
+      三个结构不同的变体，`?variant=A|B|C`；六个状态，`?state=1..6`。
+      A 设置页（左导航 + 内容区）  B 紧凑模态（标签值行）  C 底部抽屉（分组卡片 + 分步向导）
+      状态 1 默认目录  2 自定义目录  3 配置损坏  4 目录不可用（no-store 全屏）  5 变更确认  6 重启提示
+    -->
+    <style>
+      :root {
+        color-scheme: light;
+        --n50: #f7f8fa;
+        --n100: #f2f3f5;
+        --n200: #e5e6eb;
+        --n300: #c9cdd4;
+        --n400: #a9aeb8;
+        --n500: #86909c;
+        --n600: #6b7785;
+        --n700: #4e5969;
+        --n800: #272e3b;
+        --n900: #1d2129;
+        --brand: #1456f0;
+        --brand-hover: #0e42c7;
+        --brand-light: #e8eefd;
+        --bg: #ffffff;
+        --surface-hover: rgba(29, 33, 41, 0.08);
+        --border: var(--n300);
+        --border-light: var(--n200);
+        --text: var(--n900);
+        --text-2: var(--n700);
+        --text-3: var(--n600);
+        --danger: #f53f3f;
+        --danger-light: #ffece8;
+        --warning: #ff7d00;
+        --warning-light: rgba(255, 125, 0, 0.12);
+        --success: #00b42a;
+        --success-light: rgba(0, 180, 42, 0.12);
+        --overlay: rgba(0, 0, 0, 0.45);
+        --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+          'Microsoft YaHei', Roboto, 'Helvetica Neue', Arial,
+          'Noto Sans CJK SC', sans-serif;
+        --shadow-lg: 0 12px 32px rgba(29, 33, 41, 0.18),
+          0 2px 8px rgba(29, 33, 41, 0.08);
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+      body {
+        font-family: var(--font);
+        font-size: 14px;
+        color: var(--text);
+        background: var(--n50);
+        overflow: hidden;
+      }
+      button {
+        font-family: inherit;
+        font-size: inherit;
+        cursor: pointer;
+      }
+      code,
+      .mono {
+        font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, monospace;
+        font-size: 12.5px;
+      }
+
+      /* ── app shell (approximate, only to give the dialog real neighbours) ── */
+      .shell {
+        display: flex;
+        height: 100vh;
+      }
+      .sidebar {
+        width: 240px;
+        flex: 0 0 240px;
+        background: var(--n50);
+        border-right: 1px solid var(--border-light);
+        padding: 16px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .sidebar h2 {
+        font-size: 11px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-3);
+        margin: 8px 8px 4px;
+        font-weight: 600;
+      }
+      .list-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        border-radius: 6px;
+        color: var(--text-2);
+        font-size: 13px;
+      }
+      .list-row.active {
+        background: var(--brand-light);
+        color: var(--brand);
+        font-weight: 600;
+      }
+      .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+        background: var(--n300);
+      }
+      .main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        background: var(--bg);
+      }
+      .main-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 24px;
+        border-bottom: 1px solid var(--border-light);
+        gap: 16px;
+      }
+      .main-header h1 {
+        font-size: 18px;
+        margin: 0;
+      }
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .segmented {
+        display: inline-flex;
+        background: var(--n100);
+        border-radius: 6px;
+        padding: 2px;
+      }
+      .segmented button {
+        border: 0;
+        background: transparent;
+        padding: 4px 12px;
+        border-radius: 4px;
+        color: var(--text-2);
+        font-size: 13px;
+      }
+      .segmented button.on {
+        background: var(--bg);
+        color: var(--text);
+        box-shadow: 0 1px 2px rgba(29, 33, 41, 0.12);
+      }
+      .btn {
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--text);
+        border-radius: 6px;
+        padding: 6px 12px;
+        font-size: 13px;
+        line-height: 20px;
+      }
+      .btn:hover {
+        background: var(--n100);
+      }
+      .btn-primary {
+        background: var(--brand);
+        border-color: var(--brand);
+        color: #fff;
+        font-weight: 500;
+      }
+      .btn-primary:hover {
+        background: var(--brand-hover);
+        border-color: var(--brand-hover);
+      }
+      .btn-ghost {
+        border-color: transparent;
+        background: transparent;
+      }
+      .btn-icon {
+        padding: 6px;
+        display: inline-flex;
+      }
+      .btn-danger-ghost {
+        border-color: transparent;
+        background: transparent;
+        color: var(--danger);
+      }
+      .task-rows {
+        padding: 8px 24px 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        overflow: auto;
+      }
+      .task-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+      }
+      .task-row .box {
+        width: 16px;
+        height: 16px;
+        border: 1.5px solid var(--n400);
+        border-radius: 4px;
+        flex: 0 0 16px;
+      }
+      .task-row .title {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .task-row .due {
+        font-size: 12px;
+        color: var(--text-3);
+      }
+      .tag {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: 500;
+      }
+      .tag.high {
+        color: #cb2634;
+        background: var(--danger-light);
+      }
+      .tag.mid {
+        color: #cc5800;
+        background: var(--warning-light);
+      }
+      .tag.low {
+        color: #008020;
+        background: var(--success-light);
+      }
+
+      /* ── shared bits ── */
+      .badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background: var(--n100);
+        color: var(--text-2);
+        white-space: nowrap;
+      }
+      .badge.ok {
+        background: var(--success-light);
+        color: #008020;
+      }
+      .badge.warn {
+        background: var(--warning-light);
+        color: #a61d24;
+      }
+      .banner {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        padding: 12px 16px;
+        border-radius: 8px;
+        background: var(--warning-light);
+        border: 1px solid rgba(255, 125, 0, 0.32);
+        color: var(--n800);
+        font-size: 13px;
+        line-height: 20px;
+      }
+      .banner strong {
+        display: block;
+        margin-bottom: 2px;
+      }
+      .hint {
+        color: var(--text-3);
+        font-size: 12.5px;
+        line-height: 20px;
+      }
+      .path {
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: bottom;
+      }
+
+      /* ── variant A: settings page with rail ── */
+      .variant-a {
+        display: flex;
+        flex: 1;
+        min-height: 0;
+      }
+      .rail {
+        width: 168px;
+        flex: 0 0 168px;
+        border-right: 1px solid var(--border-light);
+        padding: 16px 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .rail button {
+        text-align: left;
+        border: 0;
+        background: transparent;
+        padding: 8px 12px;
+        border-radius: 6px;
+        color: var(--text-2);
+        font-size: 13px;
+      }
+      .rail button.on {
+        background: var(--brand-light);
+        color: var(--brand);
+        font-weight: 600;
+      }
+      .pane {
+        flex: 1;
+        min-width: 0;
+        padding: 24px 32px 32px;
+        overflow: auto;
+      }
+      .pane h3 {
+        font-size: 16px;
+        margin: 0 0 4px;
+      }
+      .pane .section {
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid var(--border-light);
+      }
+      .pane .section:first-of-type {
+        border-top: 0;
+        padding-top: 0;
+      }
+      .card {
+        border: 1px solid var(--border-light);
+        border-radius: 8px;
+        padding: 16px;
+        margin-top: 12px;
+      }
+      .row-between {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+      .backup-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 8px;
+        font-size: 13px;
+      }
+      .backup-table th {
+        text-align: left;
+        color: var(--text-3);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        padding: 8px 8px;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .backup-table td {
+        padding: 10px 8px;
+        border-bottom: 1px solid var(--border-light);
+      }
+
+      /* ── variant B: compact modal ── */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: var(--overlay);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+      }
+      .modal-b {
+        width: 520px;
+        max-width: 100%;
+        background: var(--bg);
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+      }
+      .modal-b header {
+        padding: 20px 24px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .modal-b header h3 {
+        margin: 0;
+        font-size: 16px;
+      }
+      .modal-b .rows {
+        padding: 0 24px;
+      }
+      .modal-b .row {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .modal-b .row:last-child {
+        border-bottom: 0;
+      }
+      .modal-b .row .label {
+        width: 88px;
+        flex: 0 0 88px;
+        color: var(--text-2);
+        font-size: 13px;
+      }
+      .modal-b .row .value {
+        flex: 1;
+        min-width: 0;
+        font-size: 13px;
+      }
+      .modal-b details {
+        padding: 12px 0;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .modal-b summary {
+        cursor: pointer;
+        color: var(--text-2);
+        font-size: 13px;
+      }
+      .modal-b footer {
+        padding: 16px 24px;
+        background: var(--n50);
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      /* ── variant C: bottom sheet, grouped cards, steps ── */
+      .sheet-wrap {
+        position: fixed;
+        inset: 0;
+        background: var(--overlay);
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+      }
+      .sheet-c {
+        width: 560px;
+        max-width: 100%;
+        background: var(--n50);
+        border-radius: 16px 16px 0 0;
+        box-shadow: var(--shadow-lg);
+        padding: 8px 16px 24px;
+        max-height: 82vh;
+        overflow: auto;
+      }
+      .grabber {
+        width: 36px;
+        height: 4px;
+        border-radius: 2px;
+        background: var(--n300);
+        margin: 8px auto 12px;
+      }
+      .sheet-c .sheet-title {
+        font-size: 13px;
+        color: var(--text-3);
+        padding: 0 4px 8px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .group {
+        background: var(--bg);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 12px;
+      }
+      .group .g-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border-light);
+        width: 100%;
+        text-align: left;
+        border-left: 0;
+        border-right: 0;
+        border-top: 0;
+        background: transparent;
+        font-size: 14px;
+        color: var(--text);
+      }
+      .group .g-row:last-child {
+        border-bottom: 0;
+      }
+      .group .g-row .grow-main {
+        flex: 1;
+        min-width: 0;
+      }
+      .group .g-row .grow-sub {
+        font-size: 12px;
+        color: var(--text-3);
+        margin-top: 2px;
+      }
+      .opt-card {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        width: 100%;
+        text-align: left;
+        background: var(--bg);
+        border: 1px solid var(--border-light);
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 8px;
+      }
+      .opt-card.recommended {
+        border-color: var(--brand);
+        box-shadow: 0 0 0 1px var(--brand) inset;
+      }
+      .opt-card .radio {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 1.5px solid var(--n400);
+        flex: 0 0 16px;
+        margin-top: 2px;
+      }
+      .opt-card.recommended .radio {
+        border-color: var(--brand);
+        background: radial-gradient(
+          circle at center,
+          var(--brand) 0 4px,
+          transparent 5px
+        );
+      }
+
+      /* ── safe mode (state 4) ── */
+      .safe {
+        position: fixed;
+        inset: 0;
+        background: var(--n50);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+      }
+      .safe-card {
+        max-width: 520px;
+        background: var(--bg);
+        border: 1px solid var(--border-light);
+        border-radius: 12px;
+        padding: 28px;
+        box-shadow: var(--shadow-lg);
+      }
+      .safe-card .warn-dot {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--warning-light);
+        color: #a61d24;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin-bottom: 16px;
+      }
+      .safe-card h3 {
+        margin: 0 0 8px;
+        font-size: 18px;
+      }
+      .safe-card p {
+        margin: 0 0 12px;
+        color: var(--text-2);
+        line-height: 22px;
+        font-size: 13.5px;
+      }
+      .safe-card .actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 20px;
+      }
+
+      /* ── prototype chrome (not part of the design) ── */
+      .proto-bar {
+        position: fixed;
+        bottom: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #101418;
+        color: #fff;
+        border-radius: 999px;
+        padding: 6px 10px;
+        box-shadow: var(--shadow-lg);
+        font-size: 12px;
+        z-index: 9999;
+      }
+      .proto-bar button {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        min-width: 28px;
+        height: 28px;
+        font-size: 12px;
+      }
+      .proto-bar button.on {
+        background: #fff;
+        color: #101418;
+        font-weight: 600;
+      }
+      .proto-bar .label {
+        padding: 0 6px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+      .proto-states {
+        position: fixed;
+        bottom: 64px;
+        left: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        background: #101418;
+        border-radius: 999px;
+        padding: 6px 10px;
+        z-index: 9999;
+        font-size: 12px;
+      }
+      .proto-states button {
+        background: rgba(255, 255, 255, 0.12);
+        color: #fff;
+        border: 0;
+        border-radius: 999px;
+        padding: 4px 10px;
+      }
+      .proto-states button.on {
+        background: #fff;
+        color: #101418;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app"></div>
+    <div class="proto-states" id="stateBar"></div>
+    <div class="proto-bar" id="variantBar"></div>
+    <script>
+      const STATES = [
+        '1 默认目录',
+        '2 自定义目录',
+        '3 配置损坏',
+        '4 目录不可用',
+        '5 变更确认',
+        '6 重启提示',
+      ]
+      const VARIANTS = {
+        A: '设置页',
+        B: '紧凑模态',
+        C: '底部抽屉',
+      }
+
+      const DEFAULT_DIR = 'C:\\Users\\tomato\\AppData\\Roaming\\todolist-app'
+      const CUSTOM_DIR = 'D:\\ToDo\\data'
+      const BROKEN_CONFIG =
+        'C:\\Users\\tomato\\AppData\\Roaming\\ToDoList\\config.json'
+      const BACKUP = 'todo-data-backup-2026-10-20T14-32-11'
+
+      const params = new URLSearchParams(location.search)
+      let variant = VARIANTS[params.get('variant')] ? params.get('variant') : 'A'
+      let state = Math.min(Math.max(Number(params.get('state') || 1), 1), 6)
+
+      function setUrl() {
+        const u = new URL(location.href)
+        u.searchParams.set('variant', variant)
+        u.searchParams.set('state', String(state))
+        history.replaceState(null, '', u)
+        render()
+      }
+
+      const rowsHtml = [
+        ['设计评审会材料', 'high', '今天 18:00'],
+        ['把周报发出去', 'mid', '明天'],
+        ['回访三位用户', 'mid', '周三'],
+        ['采购打印机墨盒', 'low', '无日期'],
+      ]
+        .map(
+          ([t, p, d]) => `
+        <div class="task-row">
+          <div class="box"></div>
+          <div class="title">${t}</div>
+          <span class="tag ${p}">${
+            p === 'high' ? '高' : p === 'mid' ? '中' : '低'
+          }</span>
+          <span class="due">${d}</span>
+        </div>`
+        )
+        .join('')
+
+      function shell(inner, opts = {}) {
+        if (inner === undefined) {
+          inner = `<div class="task-rows">${rowsHtml}</div>`
+        }
+
+        const lists = ['今天', '工作', '个人', '购物清单', '长期项目']
+          .map(
+            (l, i) => `
+        <div class="list-row ${i === 1 ? 'active' : ''}">
+          <span class="dot" style="background:${
+            ['#1456f0', '#00b42a', '#ff7d00', '#722ed1', '#f53f3f'][i]
+          }"></span>${l}
+        </div>`
+          )
+          .join('')
+
+        return `
+        <div class="shell">
+          <aside class="sidebar">
+            <h2>列表</h2>
+            ${lists}
+          </aside>
+          <main class="main">
+            <div class="main-header">
+              <h1>${opts.title || '工作'}</h1>
+              <div class="header-actions">
+                <div class="segmented"><button class="on">列表</button><button>看板</button></div>
+                <button class="btn btn-ghost btn-icon" title="主题">◐</button>
+                <button class="btn btn-primary">+ 添加任务</button>
+                <button class="btn">导入 / 导出</button>
+              </div>
+            </div>
+            ${inner}
+          </main>
+        </div>`
+      }
+
+      const warningBanner = (where) => `
+        <div class="banner">
+          <span class="warn-dot" style="margin:0;width:20px;height:20px;font-size:12px">!</span>
+          <div>
+            <strong>配置文件无法解析，已使用默认数据目录</strong>
+            <span class="mono">${BROKEN_CONFIG}</span> 没有改动；修正或删除它后重启即可生效。
+            ${
+              where === 'safe'
+                ? ''
+                : '本次运行期间显示的是 <span class="mono">' +
+                  DEFAULT_DIR +
+                  '</span> 中的数据。'
+            }
+          </div>
+        </div>`
+      const warningBannerShort = `
+        <div class="banner">
+          <span class="warn-dot" style="margin:0;width:20px;height:20px;font-size:12px">!</span>
+          <div>
+            <strong>配置文件无法解析，已使用默认数据目录</strong>
+            文件未被修改。修正后重启生效。
+          </div>
+        </div>`
+
+      /* ─────────── variant A: settings page ─────────── */
+      function pageA() {
+        const dir = state === 2 ? CUSTOM_DIR : DEFAULT_DIR
+        const badge =
+          state === 3
+            ? '<span class="badge warn">配置文件损坏</span>'
+            : state === 2
+              ? '<span class="badge">自定义</span>'
+              : '<span class="badge ok">默认</span>'
+
+        let data = ''
+        if (state === 5) {
+          data = `
+            <div class="section">
+              <h3>更改数据目录</h3>
+              <p class="hint">当前 <span class="mono">${DEFAULT_DIR}</span> → 新位置 <span class="mono">${CUSTOM_DIR}</span></p>
+              <div class="card" style="padding:0;overflow:hidden">
+                <label style="display:flex;gap:12px;padding:16px;background:var(--brand-light);align-items:flex-start;cursor:pointer">
+                  <input type="radio" name="mode" checked style="margin-top:3px" />
+                  <span>
+                    <strong>迁移现有数据（推荐）</strong>
+                    <div class="hint">复制 <span class="mono">todo.db</span>（约 84 KB，含 -wal / -shm）到新位置，先做完整性检查再切换。</div>
+                    <div class="hint">旧目录会被改名为 <span class="mono">${BACKUP}</span>，可在下方备份列表中删除。</div>
+                  </span>
+                </label>
+                <label style="display:flex;gap:12px;padding:16px;border-top:1px solid var(--border-light);align-items:flex-start;cursor:pointer">
+                  <input type="radio" name="mode" style="margin-top:3px" />
+                  <span>
+                    <strong>从空目录开始</strong>
+                    <div class="hint">新位置不会得到任何任务；旧目录原样保留，随时可以改回来。</div>
+                  </span>
+                </label>
+              </div>
+              <div class="row-between" style="margin-top:16px">
+                <span class="hint">完成后需要重启应用。</span>
+                <span style="display:flex;gap:8px">
+                  <button class="btn">取消</button>
+                  <button class="btn btn-primary">迁移并重启</button>
+                </span>
+              </div>
+            </div>`
+        } else if (state === 6) {
+          data = `
+            <div class="section">
+              <h3>需要重启</h3>
+              <p class="hint">数据目录已更新为 <span class="mono">${CUSTOM_DIR}</span>。重启后任务会从那里加载。</p>
+              <div class="card">
+                <div class="row-between">
+                  <span>现在重启应用？</span>
+                  <span style="display:flex;gap:8px">
+                    <button class="btn">稍后</button>
+                    <button class="btn btn-primary">立即重启</button>
+                  </span>
+                </div>
+              </div>
+            </div>`
+        } else {
+          data = `
+            <div class="section">
+              ${state === 3 ? warningBanner() : ''}
+              <h3 style="margin-top:${state === 3 ? '20px' : '0'}">数据目录</h3>
+              <p class="hint">所有任务、列表、提醒与主题都保存在这个目录里。移动它只会复制数据库，不会动你的列表结构。</p>
+              <div class="card">
+                <div class="row-between">
+                  <div style="min-width:0">
+                    <div class="mono" style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${dir}</div>
+                    <div class="hint" style="margin-top:4px">数据库 <span class="mono">todo.db</span> · 84 KB · 上次写入 2 分钟前</div>
+                  </div>
+                  ${badge}
+                </div>
+                <div style="display:flex;gap:8px;margin-top:16px">
+                  <button class="btn btn-primary">更改…</button>
+                  <button class="btn">打开所在文件夹</button>
+                  ${state === 2 ? '<button class="btn">恢复默认</button>' : ''}
+                </div>
+              </div>
+            </div>
+            <div class="section">
+              <h3>备份</h3>
+              <p class="hint">更改目录时留下的旧目录，不会自动删除。</p>
+              <table class="backup-table">
+                <thead><tr><th>目录</th><th>大小</th><th>创建时间</th><th></th></tr></thead>
+                <tbody>
+                  <tr><td class="mono">${BACKUP}</td><td>84 KB</td><td>2026-10-20 14:32</td><td style="text-align:right"><button class="btn-danger-ghost">删除</button></td></tr>
+                </tbody>
+              </table>
+            </div>`
+        }
+
+        return shell(`
+          <div class="variant-a">
+            <nav class="rail">
+              <button>通用</button>
+              <button class="on">数据</button>
+              <button>关于</button>
+            </nav>
+            <div class="pane">${data}</div>
+          </div>`)
+      }
+
+      /* ─────────── variant B: compact modal ─────────── */
+      function modalB() {
+        const dir = state === 2 ? CUSTOM_DIR : DEFAULT_DIR
+        let body = ''
+        if (state === 5) {
+          body = `
+            <div class="rows">
+              <div class="row" style="display:block">
+                <div style="font-size:13px;margin-bottom:12px">
+                  将数据目录改为 <span class="mono">${CUSTOM_DIR}</span>
+                </div>
+                <label style="display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--brand);border-radius:8px;background:var(--brand-light);cursor:pointer">
+                  <input type="radio" name="b" checked style="margin-top:3px" />
+                  <span>
+                    <strong style="font-size:13px">迁移现有数据（推荐）</strong>
+                    <div class="hint">复制数据库并在新位置做完整性检查；旧目录改名 ${BACKUP}。</div>
+                  </span>
+                </label>
+                <label style="display:flex;gap:10px;align-items:flex-start;padding:12px;border:1px solid var(--border-light);border-radius:8px;margin-top:8px;cursor:pointer">
+                  <input type="radio" name="b" style="margin-top:3px" />
+                  <span>
+                    <strong style="font-size:13px">从空目录开始</strong>
+                    <div class="hint">旧目录原样保留，可改回来。</div>
+                  </span>
+                </label>
+              </div>
+            </div>
+            <div class="hint" style="padding:0 24px 12px">完成后需要重启应用。</div>`
+        } else if (state === 6) {
+          body = `
+            <div class="rows">
+              <div class="row" style="display:block">
+                <div style="font-size:13px;margin-bottom:6px">数据目录已更新为</div>
+                <div class="mono" style="margin-bottom:12px">${CUSTOM_DIR}</div>
+                <div class="hint">重启后任务会从该位置加载。现在重启？</div>
+              </div>
+            </div>`
+        } else {
+          body = `
+            <div class="rows">
+              ${state === 3 ? `<div style="padding:12px 0">${warningBannerShort}</div>` : ''}
+              <div class="row">
+                <div class="label">数据目录</div>
+                <div class="value">
+                  <div class="mono path" title="${dir}">${dir}</div>
+                  <div class="hint">84 KB · 数据库 todo.db</div>
+                </div>
+                <button class="btn">更改…</button>
+              </div>
+              <div class="row">
+                <div class="label"></div>
+                <div class="value">
+                  <button class="btn btn-ghost" style="padding-left:0">打开所在文件夹</button>
+                </div>
+              </div>
+              <details>
+                <summary>备份（1）</summary>
+                <div class="row-between" style="padding:8px 0 0">
+                  <span class="mono" style="font-size:12px">${BACKUP} · 84 KB</span>
+                  <button class="btn-danger-ghost">删除</button>
+                </div>
+              </details>
+              <div class="row">
+                <div class="label">主题</div>
+                <div class="value">
+                  <select class="btn" style="min-width:120px">
+                    <option>跟随系统</option><option>浅色</option><option>深色</option>
+                  </select>
+                </div>
+              </div>
+            </div>`
+        }
+        return `
+          <div class="overlay">
+            <div class="modal-b">
+              <header>
+                <h3>${state === 5 ? '更改数据目录' : state === 6 ? '重启应用' : '设置'}</h3>
+                <button class="btn btn-ghost btn-icon">✕</button>
+              </header>
+              ${body}
+              <footer>
+                ${
+                  state === 5
+                    ? '<button class="btn">取消</button><button class="btn btn-primary">迁移并重启</button>'
+                    : state === 6
+                      ? '<button class="btn">稍后</button><button class="btn btn-primary">立即重启</button>'
+                      : '<button class="btn">关闭</button>'
+                }
+              </footer>
+            </div>
+          </div>`
+      }
+
+      /* ─────────── variant C: bottom sheet ─────────── */
+      function sheetC() {
+        const dir = state === 2 ? CUSTOM_DIR : DEFAULT_DIR
+        let inner = ''
+        if (state === 5) {
+          inner = `
+            <div class="sheet-title"><span>第 2 步 / 2 · 复制方式</span><button class="btn btn-ghost" style="padding:0 6px">取消</button></div>
+            <div style="padding:0 4px 8px">
+              <div class="hint" style="margin-bottom:12px">从 <span class="mono">${DEFAULT_DIR}</span> 到 <span class="mono">${CUSTOM_DIR}</span></div>
+              <button class="opt-card recommended">
+                <span class="radio"></span>
+                <span>
+                  <strong>迁移现有数据</strong>
+                  <div class="hint">复制 84 KB 数据库 → 完整性检查 → 切换；旧目录改名备份。</div>
+                </span>
+              </button>
+              <button class="opt-card">
+                <span class="radio"></span>
+                <span>
+                  <strong>从空目录开始</strong>
+                  <div class="hint">旧目录原样保留，可随时改回来。</div>
+                </span>
+              </button>
+              <button class="btn btn-primary" style="width:100%;margin-top:8px;padding:10px">继续</button>
+            </div>`
+        } else if (state === 6) {
+          inner = `
+            <div class="sheet-title"><span>第 3 步 / 3 · 重启</span></div>
+            <div class="group">
+              <div class="g-row" style="display:block">
+                <div style="font-weight:600;margin-bottom:4px">数据目录已更新</div>
+                <div class="mono" style="font-size:12px">${CUSTOM_DIR}</div>
+                <div class="hint" style="margin-top:8px">重启后任务从这里加载。</div>
+              </div>
+            </div>
+            <button class="btn btn-primary" style="width:100%;padding:10px">立即重启</button>
+            <button class="btn" style="width:100%;margin-top:8px;padding:10px">稍后</button>`
+        } else {
+          inner = `
+            <div class="sheet-title"><span>设置</span><button class="btn btn-ghost" style="padding:0 6px">完成</button></div>
+            ${
+              state === 3
+                ? `<div style="margin-bottom:12px">${warningBannerShort}</div>`
+                : ''
+            }
+            <div class="group">
+              <button class="g-row">
+                <span style="width:20px;color:var(--text-3)">▤</span>
+                <span class="grow-main">
+                  <div>数据目录</div>
+                  <div class="grow-sub mono">${dir}</div>
+                </span>
+                ${
+                  state === 2
+                    ? '<span class="badge">自定义</span>'
+                    : '<span class="badge ok">默认</span>'
+                }
+                <span style="color:var(--n400)">›</span>
+              </button>
+              <button class="g-row">
+                <span style="width:20px;color:var(--text-3)">↗</span>
+                <span class="grow-main">打开所在文件夹</span>
+              </button>
+              <button class="g-row">
+                <span style="width:20px;color:var(--text-3)">⟲</span>
+                <span class="grow-main">备份（1 个 · 84 KB）</span>
+                <span style="color:var(--n400)">›</span>
+              </button>
+            </div>
+            <div class="group">
+              <div class="g-row" style="border-bottom:0">
+                <span style="width:20px;color:var(--text-3)">◐</span>
+                <span class="grow-main">主题</span>
+                <div class="segmented"><button>跟随系统</button><button class="on">浅色</button><button>深色</button></div>
+              </div>
+            </div>
+            <div class="hint" style="text-align:center;padding-top:4px">ToDoList 0.2.0</div>`
+        }
+        return `
+          <div class="sheet-wrap">
+            <div class="sheet-c">
+              <div class="grabber"></div>
+              ${inner}
+            </div>
+          </div>`
+      }
+
+      /* ─────────── state 4: no-store safe mode ─────────── */
+      function safeMode() {
+        return `
+          <div class="safe">
+            <div class="safe-card">
+              <div class="warn-dot">!</div>
+              <h3>无法打开数据目录</h3>
+              <p>
+                <span class="mono">${CUSTOM_DIR}</span> 当前不可用 —— 可能已断开、被移除，或没有写入权限。
+              </p>
+              <p>
+                <strong>应用没有打开任何数据库</strong>，也没有改用其他目录，以免你在一个空的列表里继续工作。
+              </p>
+              <p class="hint">
+                这个位置来自 <span class="mono">${BROKEN_CONFIG}</span>。接回该位置后点「重试」，或改用别的目录。
+              </p>
+              <div class="actions">
+                <button class="btn btn-primary">重试</button>
+                <button class="btn">选择其他目录…</button>
+                <button class="btn">退出</button>
+              </div>
+            </div>
+          </div>`
+      }
+
+      function render() {
+        const app = document.getElementById('app')
+        if (state === 4) {
+          app.innerHTML = safeMode()
+        } else if (variant === 'A') {
+          app.innerHTML = pageA()
+        } else if (variant === 'B') {
+          app.innerHTML = shell() + modalB()
+        } else {
+          app.innerHTML = shell() + sheetC()
+        }
+
+        document.getElementById('variantBar').innerHTML = `
+          <button data-nav="prev">←</button>
+          <span class="label">${variant} · ${VARIANTS[variant]}</span>
+          <button data-nav="next">→</button>`
+        document.getElementById('stateBar').innerHTML = STATES.map(
+          (label, i) =>
+            `<button data-state="${i + 1}" class="${
+              state === i + 1 ? 'on' : ''
+            }">${label}</button>`
+        ).join('')
+
+        document
+          .querySelectorAll('[data-nav]')
+          .forEach((b) =>
+            b.addEventListener('click', () => {
+              const keys = Object.keys(VARIANTS)
+              const i = keys.indexOf(variant)
+              variant =
+                keys[(i + (b.dataset.nav === 'next' ? 1 : -1) + keys.length) % keys.length]
+              setUrl()
+            })
+          )
+        document
+          .querySelectorAll('[data-state]')
+          .forEach((b) =>
+            b.addEventListener('click', () => {
+              state = Number(b.dataset.state)
+              setUrl()
+            })
+          )
+      }
+
+      document.addEventListener('keydown', (e) => {
+        const tag = (e.target.tagName || '').toLowerCase()
+        if (['input', 'textarea', 'select'].includes(tag)) return
+        if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+          const keys = Object.keys(VARIANTS)
+          const i = keys.indexOf(variant)
+          variant =
+            keys[
+              (i + (e.key === 'ArrowRight' ? 1 : -1) + keys.length) % keys.length
+            ]
+          setUrl()
+        }
+      })
+
+      render()
+    </script>
+  </body>
+</html>
