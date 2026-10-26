@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, FolderOpen } from 'lucide-react'
 import type { ThemeController, ThemeMode } from '../services/theme'
+import type { DataDirState } from '../../shared/ipc'
 
 type SettingsSection = 'general' | 'data' | 'about'
 
@@ -36,6 +37,34 @@ export default function SettingsPage({ theme, onExit }: SettingsPageProps) {
     )
     first?.focus()
   }, [])
+
+  const [dataDirState, setDataDirState] = useState<DataDirState | null>(null)
+  const [dataDirError, setDataDirError] = useState<string | null>(null)
+
+  // Load the data directory snapshot when the 数据 or 关于 tab is shown
+  // (关于 displays the app version from the same snapshot).
+  useEffect(() => {
+    if (section !== 'data' && section !== 'about') {
+      return
+    }
+    let cancelled = false
+    window.electronAPI.dataDir
+      .getState()
+      .then((state) => {
+        if (!cancelled) {
+          setDataDirState(state)
+          setDataDirError(null)
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setDataDirError('无法读取数据目录状态。')
+        }
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [section])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
@@ -113,7 +142,56 @@ export default function SettingsPage({ theme, onExit }: SettingsPageProps) {
         {section === 'data' && (
           <div className="settings-section" data-testid="settings-section-data">
             <h2>数据</h2>
-            <p className="settings-hint">数据目录与备份管理即将推出。</p>
+            {dataDirError && (
+              <p className="settings-hint" data-testid="data-dir-error">
+                {dataDirError}
+              </p>
+            )}
+            {!dataDirError && !dataDirState && (
+              <p className="settings-hint" data-testid="data-dir-loading">
+                正在读取数据目录…
+              </p>
+            )}
+            {dataDirState && (
+              <>
+                <div className="settings-row">
+                  <span className="settings-row-label">数据目录</span>
+                  <span
+                    className={
+                      dataDirState.isDefault
+                        ? 'settings-badge settings-badge-default'
+                        : 'settings-badge settings-badge-custom'
+                    }
+                    data-testid="data-dir-badge"
+                  >
+                    {dataDirState.isDefault ? '默认' : '自定义'}
+                  </span>
+                </div>
+                <p className="settings-mono-path" data-testid="data-dir-path">
+                  {dataDirState.dir}
+                </p>
+                <div className="settings-row">
+                  <span className="settings-row-label">引导配置</span>
+                  <button
+                    type="button"
+                    className="btn btn-ghost"
+                    data-testid="data-dir-reveal-button"
+                    onClick={() => {
+                      void window.electronAPI.dataDir.reveal()
+                    }}
+                  >
+                    <FolderOpen size={16} />
+                    打开所在文件夹
+                  </button>
+                </div>
+                <p
+                  className="settings-mono-path"
+                  data-testid="data-dir-config-path"
+                >
+                  {dataDirState.configPath}
+                </p>
+              </>
+            )}
           </div>
         )}
 
@@ -126,6 +204,12 @@ export default function SettingsPage({ theme, onExit }: SettingsPageProps) {
             <p className="settings-hint">
               ToDoList — 离线优先的跨平台待办桌面应用。
             </p>
+            <div className="settings-row">
+              <span className="settings-row-label">版本</span>
+              <span data-testid="about-app-version">
+                {dataDirState ? dataDirState.appVersion : '…'}
+              </span>
+            </div>
           </div>
         )}
       </div>

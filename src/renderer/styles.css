@@ -762,6 +762,43 @@ select:focus {
   color: var(--color-text-tertiary, #86909c);
 }
 
+.settings-badge {
+  font-size: var(--font-size-xs, 12px);
+  font-weight: var(--font-weight-medium, 500);
+  padding: 2px 8px;
+  border-radius: var(--border-radius-sm, 4px);
+  letter-spacing: 0.3px;
+}
+
+.settings-badge-default {
+  color: var(--color-text-secondary, #4e5969);
+  background: var(--color-bg-tertiary, #f2f3f5);
+}
+
+.settings-badge-custom {
+  color: var(--color-accent, #1456f0);
+  background: var(--color-accent-light, #e8eefd);
+}
+
+.settings-mono-path {
+  margin: 0;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  font-family: var(
+    --font-family-mono,
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace
+  );
+  font-size: var(--font-size-sm, 13px);
+  color: var(--color-text-secondary, #4e5969);
+  background: var(--color-bg-tertiary, #f2f3f5);
+  border-radius: var(--border-radius-md, 6px);
+  word-break: break-all;
+  user-select: text;
+}
+
 .settings-nav-item:focus-visible,
 .settings-segmented-item:focus-visible,
 .settings-back-button:focus-visible {

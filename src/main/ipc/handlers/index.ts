@@ -4,6 +4,7 @@ import { listHandlers } from './lists.js'
 import { taskHandlers } from './tasks.js'
 import { importExportHandlers } from './importExport.js'
 import { themeHandlers } from './theme.js'
+import { dataDirHandlers } from './dataDir.js'
 
 type HandlerRegistration = {
   [K in keyof IpcHandlers]: {
@@ -14,7 +15,9 @@ type HandlerRegistration = {
 
 type CallableHandler = (...args: unknown[]) => unknown
 
-const pingHandler: IpcHandlers[typeof IPC_CHANNELS.PING] = (message: string) => {
+const pingHandler: IpcHandlers[typeof IPC_CHANNELS.PING] = (
+  message: string,
+) => {
   return `pong: ${message}`
 }
 
@@ -24,6 +27,7 @@ export const ipcHandlers: HandlerRegistration[] = [
   ...listHandlers,
   ...importExportHandlers,
   ...themeHandlers,
+  ...dataDirHandlers,
 ]
 
 export function registerIpcHandlers(): void {
