@@ -34,8 +34,8 @@ Typical data flow (create task): `TaskForm` → `useTasks.createTask` → `windo
 | `src/main/` | Main process: `main.ts` (lifecycle), `window.ts` (BrowserWindow factory), `preload.ts` |
 | `src/main/ipc/handlers/` | Per-domain `ipcMain.handle` wiring: `tasks.ts`, `lists.ts`, `theme.ts`, `importExport.ts`, `dataDir.ts` |
 | `src/main/db/` | `connection.ts`, `migrations.ts`, `dataDirConfig.ts` + `dataDirValidation.ts` (ADR-0005 bootstrap config: resolve/validate the data directory before `whenReady`), `repositories/` (`taskRepository`, `taskQueries`, `taskValidation`, `taskRecurrence`, `listRepository`), `migrations/*.sql` |
-| `src/main/services/` | `theme.ts`, `reminderScheduler.ts`, `importExport.ts` + `importExportImport.ts` / `importExportHelpers.ts` |
-| `src/renderer/` | React app: `App.tsx`, `main.tsx`, `components/`, `hooks/`, `services/theme.ts`, `types/global.d.ts` |
+| `src/main/services/` | `theme.ts`, `reminderScheduler.ts`, `importExport.ts` + `importExportImport.ts` / `importExportHelpers.ts`, `dataDirMigration.ts` (copy + `quick_check` + atomic config write + backup), `dataDirState.ts` (startup snapshot singleton), `storageStartup.ts` (open db → migrate → scheduler → theme), `safeMode.ts` (no-store recovery), `configNotice.ts` (bad-config fingerprint acknowledgement) |
+| `src/renderer/` | React app: `App.tsx`, `main.tsx`, `components/` (incl. `SettingsPage.tsx`, `ConfigNotice.tsx`, `NoStoreScreen.tsx`), `hooks/`, `services/theme.ts`, `types/global.d.ts` |
 | `src/shared/` | Code imported by both processes: `ipc.ts` (contracts), `utils/dateValidator.ts` |
 | `src/__tests__/` | All tests, mirrored by domain: `components/ db/ services/ main/ types/ perf/ renderer/ e2e/` |
 | `scripts/` | Packaged-app verification: `smoke-test.js`, `perf-report.js`, `verify-mac-dmg.sh`, `verify-win-exe.sh` (checks EXE + ZIP artifacts, full `/S /D=` install → launch → todo.db → uninstall flow on a Windows host) |
@@ -69,12 +69,12 @@ CI (`release.yml`, on `v*` tags or `workflow_dispatch`) runs typecheck + lint + 
 - **State:** hook-local `useState` only. `useTasks`/`useLists` expose CRUD + `refresh()`; always refetch after mutation. `useSearchAndFilter` debounces IPC search 200ms and falls back to the in-memory list when no filters are active. `useSortableTasks` (dnd-kit) reorders locally then persists via `tasks:updateSortOrder`.
 - **Perf:** `TaskItem` and `SortableTaskItem` are `memo()`-wrapped — preserve that for long lists. Search is server-side over IPC, not a renderer filter.
 - **Security:** `BrowserWindow` has `contextIsolation: true`, `sandbox: true`, `nodeIntegration: false`; preload exposes only whitelisted `invoke`/`on` channels. Do not weaken any of this.
-- **Test hooks in prod code:** DB path honors `TODO_USER_DATA_DIR` env; `E2E_TEST=1` (set by `playwright.config.ts`) disables the single-instance lock; import-export handlers support a test-only `globalThis.__dialogMock`. These are intentional — keep them.
+- **Test hooks in prod code:** DB path honors `TODO_USER_DATA_DIR` env (highest precedence — it also short-circuits reading `config.json`); the bootstrap config path honors `TODO_CONFIG_DIR`; `E2E_TEST=1` (set by `playwright.config.ts`) disables the single-instance lock; import-export and `data-dir:choose` support a test-only `globalThis.__dialogMock`. These are intentional — keep them.
 
 ## Important Files
 
 - `src/shared/ipc.ts` — IPC channel constants, `IpcHandlers`, `ElectronAPI` type; start here for any new IPC surface
-- `src/main/main.ts` — lifecycle: lazy DB init inside `whenReady`, single-instance lock (skipped under `E2E_TEST`), menu, scheduler start/stop, IPC registration
+- `src/main/main.ts` — lifecycle: single-instance lock (skipped under `E2E_TEST`), then bootstrap data-directory resolution and `app.setPath('userData'/'sessionData')` before `whenReady`, then storage startup, menu, scheduler start/stop, IPC registration
 - `src/main/preload.ts` — the entire renderer-visible API surface
 - `src/main/db/connection.ts` — `getDb()`/`closeDb()`; DB path order: `TODO_USER_DATA_DIR/todo.db` → `app.getPath('userData')/todo.db` → tmp fallback
 - `src/main/db/migrations.ts` + `migrations/*.sql` — numeric-prefixed SQL migrations (currently 001–005) applied in order inside a transaction
@@ -83,7 +83,7 @@ CI (`release.yml`, on `v*` tags or `workflow_dispatch`) runs typecheck + lint + 
 - `src/renderer/App.tsx` — root orchestration: auto-selects first list, listens for `reminder:clicked` to switch list, toggles list/quadrant view
 - `src/renderer/hooks/useTasks.ts`, `useLists.ts`, `useSearchAndFilter.ts` — renderer data layer
 - `src/renderer/styles.css` — design-token CSS variables (theme via `data-theme`)
-- `electron.vite.config.ts` — three targets (main/preload/renderer); `better-sqlite3` is external; plugin copies migrations SQL into `out/main/chunks/migrations`
+- `electron.vite.config.ts` — three targets (main/preload/renderer); `better-sqlite3` is external; plugin copies migrations SQL into `out/main/migrations` (main is a single bundle, so `__dirname` is `out/main` — not `out/main/chunks`)
 - `electron-builder.yml` — `appId: com.example.todolist`, asar with `better-sqlite3` unpacked; targets DMG / NSIS-x64 assisted installer + portable zip (ADR-0004 supersedes ADR-0002: `oneClick: false`, `allowToChangeInstallationDirectory`, per-user, no elevation, `deleteAppDataOnUninstall: false`)
 
 ## Runtime/Tooling Preferences

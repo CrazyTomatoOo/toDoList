@@ -123,6 +123,7 @@ ToDoList-<version>-x64.exe /S /D=D:\Apps\ToDoList
 ### 数据目录
 
 - **默认位置**：`%APPDATA%\todolist-app`（macOS 为 `~/Library/Application Support/todolist-app`）。数据库 `todo.db`（及其 `-wal`/`-shm` 文件）在该目录下。
+- **在应用内修改（推荐）**：标题栏齿轮 → 设置 → 数据 → 「更改…」，选好新目录后选择「迁移现有数据（推荐）」或「从空目录开始」，点「迁移并重启」。迁移会复制 `todo.db` 及其 `-wal`/`-shm`、校验新库、写入引导配置，然后重启；旧目录改名为 `todo-data-backup-<时间戳>` 留在新目录旁，设置页的备份表格会列出它的大小与创建时间，可手动删除（应用不会自动清理）。
 - **修改方式**：引导配置文件 `%APPDATA%\ToDoList\config.json`（注意 `ToDoList` 与 `todolist-app` 是两个不同目录），内容形如：
 
   ```json
@@ -133,6 +134,7 @@ ToDoList-<version>-x64.exe /S /D=D:\Apps\ToDoList
 
 - **命令行**：`ToDoList.exe --data-dir=D:\MyData\ToDoList` 临时指定数据目录（必须用等号形式，空格分隔不生效）。启动优先级从高到低：`--data-dir=` → `config.json` → `portable.txt` → 默认目录。
 - 配置了不可用目录（如已拔出的移动硬盘）时应用进入安全模式，不会在错误位置悄悄新建数据库。
+- 引导配置本身有问题（JSON 写坏、`version` 来自更新版本、`dataDir` 缺失或不是绝对路径）时，应用照常用默认目录启动，并在标题栏下方显示一条提示，写明原因与配置文件路径；同一份坏配置只提示一次，点「知道了」后不再打扰，可点「打开设置」直接到数据页。
 - 数据目录路径要求：绝对路径、本地磁盘（UNC/网络路径会被拒绝——SQLite 的 WAL 锁在网络文件系统上不可靠）、可写。
 - **卸载保留数据**：卸载程序不删除数据目录，`%APPDATA%\todolist-app` 里的数据库原样保留；`%APPDATA%\ToDoList` 下的引导配置也不会被动。若确要清理引导配置，可运行卸载器并加 `--delete-app-data` 参数（只清 `%APPDATA%\ToDoList`，数据库需手动删除）。
 

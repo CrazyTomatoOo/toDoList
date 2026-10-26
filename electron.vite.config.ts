@@ -11,7 +11,6 @@ import type { Plugin } from 'vite'
  * at runtime is `out/main` — not `out/main/chunks`, which is where this used
  * to land when the module was still code-split behind a dynamic import.
  */
- */
 function copyMigrations(): Plugin {
   return {
     name: 'copy-migrations',

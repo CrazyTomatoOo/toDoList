@@ -65,15 +65,23 @@ The Windows installer mode: NSIS in assisted mode (`oneClick: false`), so the wi
 _Avoid_: 一键安装 (the previous mode, no longer shipped), 免安装
 
 **数据目录**:
-The folder holding the task database (`todo.db` with its `-wal`/`-shm` siblings) plus the rest of the app profile for those tasks. Never set by the installer: it defaults to `%APPDATA%\todolist-app` and is moved only through the 引导配置 file, `--data-dir=` on the command line, or a `portable.txt` next to the exe. The settings page's 数据 section shows the directory in effect and where its 引导配置 lives.
+The folder holding the task database (`todo.db` with its `-wal`/`-shm` siblings) plus the rest of the app profile for those tasks. Never set by the installer: it defaults to `%APPDATA%\todolist-app` and changes through the settings page's 数据 section (which migrates and relaunches), or by pointing at it through the 引导配置 file, `--data-dir=` on the command line, or a `portable.txt` next to the exe. The settings page shows the directory in effect, where its 引导配置 lives, and the 备份 left by earlier switches.
 _Avoid_: 存储路径, 保存位置, 数据文件夹, 安装目录 (a different folder)
+
+**备份**:
+A directory renamed `todo-data-backup-<timestamp>` beside the new 数据目录 when a switch migrated the data — the previous database, untouched and still openable. Listed in the settings page's 数据 section with size and creation time, deleted only on explicit request; never cleaned up automatically and never migrated forward.
+_Avoid_: 快照, 副本, 恢复点 (implies restore support that does not exist)
+
+**迁移**:
+Moving the task data to a new 数据目录: checkpoint the WAL, close the database, copy `todo.db` and its siblings, open the copy and require `PRAGMA quick_check` to pass, then atomically rewrite the 引导配置 and relaunch. Any failure before the config write leaves the config bytes unchanged, the old database in use and the half-built target removed; a failed rename of the old directory downgrades to a warning. Choosing 从空目录开始 skips the copy and leaves the old directory alone.
+_Avoid_: 搬家 (informal), 同步, 导入/导出 (different feature)
 
 **引导配置**:
 The small hand-editable file at `%APPDATA%\ToDoList\config.json` (`~/Library/Application Support/ToDoList/config.json`) that names the 数据目录. It sits outside the data directory — otherwise it could not point at it — and is read before the app opens any database.
 _Avoid_: 配置文件, settings.json, 用户配置 (too generic)
 
 **配置未生效**:
-The state where `config.json` exists but cannot be used — unparsable JSON, a `version` from a newer build, or a `dataDir` that is missing, relative or not a string — so the app runs on the default data directory. The problem rides along in the data-dir state channel (`data-dir:getState`) with its kind, detail, and a fingerprint, so the UI can show it without re-reading the file. The file itself is never rewritten.
+The state where `config.json` exists but cannot be used — unparsable JSON, a `version` from a newer build, or a `dataDir` that is missing, relative or not a string — so the app runs on the default data directory. The problem rides along in the data-dir state channel (`data-dir:getState`) with its kind, detail, and a fingerprint, so the UI can show it without re-reading the file: once as a dismissible bar under the header and again, permanently, in the settings page's 数据 section. The fingerprint of the broken bytes is stored in the `settings` table of the data directory in use, so each distinct broken config is announced once and only a dismissal (not 打开设置) counts as acknowledging it. The file itself is never rewritten.
 _Avoid_: 配置损坏 (names only the parse failure), 启动报错, 配置丢失
 
 **安全模式**:

@@ -99,6 +99,7 @@ test.describe('设置页换目录闭环', () => {
 
     // ── Phase 2: settings → 数据 → 更改… ──
     await page.click('[data-testid="settings-button"]')
+    await page.click('[data-testid="settings-nav-data"]')
     await page.waitForSelector('[data-testid="settings-section-data"]')
     await expect(page.locator('[data-testid="data-dir-path"]')).toContainText(
       userDataDir,
@@ -126,9 +127,9 @@ test.describe('设置页换目录闭环', () => {
     await expect(
       page.locator('[data-testid="data-dir-empty-option"]'),
     ).not.toBeChecked()
-    await expect(page.locator('[data-testid="data-dir-switch-target"]')).toHaveText(
-      newDir,
-    )
+    await expect(
+      page.locator('[data-testid="data-dir-switch-target"]'),
+    ).toHaveText(newDir)
 
     // ── Phase 3: 迁移并重启 ──
     // app:relaunch() + app.exit(0) tears this process down; Playwright sees
@@ -145,6 +146,7 @@ test.describe('设置页换目录闭环', () => {
     await waitForShell(page)
 
     await page.click('[data-testid="settings-button"]')
+    await page.click('[data-testid="settings-nav-data"]')
     await page.waitForSelector('[data-testid="settings-section-data"]')
     await expect(page.locator('[data-testid="data-dir-path"]')).toHaveText(
       newDir,
@@ -159,14 +161,19 @@ test.describe('设置页换目录闭环', () => {
       timeout: 10000,
     })
     await expect(
-      page.locator('[data-testid="task-title"]', { hasText: '迁移后仍在的任务' }),
+      page.locator('[data-testid="task-title"]', {
+        hasText: '迁移后仍在的任务',
+      }),
     ).toHaveCount(1)
 
     // Old directory shows up in the backup table.
     await page.click('[data-testid="settings-button"]')
+    await page.click('[data-testid="settings-nav-data"]')
     await page.waitForSelector('[data-testid="settings-section-data"]')
     await page.waitForSelector('[data-testid="backup-table"]')
-    const backupNames = await page.locator('[data-testid="backup-row"] td:first-child').allTextContents()
+    const backupNames = await page
+      .locator('[data-testid="backup-row"] td:first-child')
+      .allTextContents()
     const oldDirName = path.basename(userDataDir)
     expect(
       backupNames.some((name) => name.startsWith('todo-data-backup-')),
