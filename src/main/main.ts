@@ -139,12 +139,16 @@ export function initializeApp(): void {
   // userData/sessionData later. The single-instance lock is requested above
   // first because its identity derives from DIR_USER_DATA (electron#24447);
   // resolving after the lock would create one instance per data directory.
+  // Read the default once, before setPath() below re-points it: the UI shows
+  // this value as "默认目录" and "恢复默认" migrates back to it.
+  const defaultUserDataDir = app.getPath('userData')
+
   const resolution = resolveDataDir({
     env: process.env,
     argv: process.argv,
     appDataDir: app.getPath('appData'),
     exeDir: path.dirname(process.execPath),
-    defaultUserDataDir: app.getPath('userData'),
+    defaultUserDataDir,
     validate: (dir) =>
       validateDataDir(dir, { resourcesDir: process.resourcesPath }),
   })
@@ -161,7 +165,7 @@ export function initializeApp(): void {
   // shows exactly the directory this process booted on.
   setDataDirState({
     resolution,
-    defaultDir: app.getPath('userData'),
+    defaultDir: defaultUserDataDir,
     noStore,
   })
 
