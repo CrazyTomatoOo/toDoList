@@ -72,6 +72,10 @@ _Avoid_: 存储路径, 保存位置, 数据文件夹, 安装目录 (a different 
 The small hand-editable file at `%APPDATA%\ToDoList\config.json` (`~/Library/Application Support/ToDoList/config.json`) that names the 数据目录. It sits outside the data directory — otherwise it could not point at it — and is read before the app opens any database.
 _Avoid_: 配置文件, settings.json, 用户配置 (too generic)
 
+**配置未生效**:
+The state where `config.json` exists but cannot be used — unparsable JSON, a `version` from a newer build, or a `dataDir` that is missing, relative or not a string — so the app runs on the default data directory. Surfaced twice: a dismissible banner under the header (shown once per distinct broken config) and a permanent notice on the settings page. The file itself is never rewritten.
+_Avoid_: 配置损坏 (names only the parse failure), 启动报错, 配置丢失
+
 **便携版**:
 The optional Windows zip artifact: unzip anywhere (a second drive, a USB stick) and run without installing — no self-extraction, no registry writes.
 _Avoid_: portable-exe 自解压包, 免安装版

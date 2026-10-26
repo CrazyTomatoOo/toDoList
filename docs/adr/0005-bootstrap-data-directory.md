@@ -31,11 +31,15 @@ before any database work, with the resolved directory becoming Electron's
   rejected. Hand-edits are supported, so a file that parses is never rewritten
   implicitly; the writer emits exactly these two keys and drops anything else it
   finds on the next explicit save (documented, not silent).
-- **Corrupt config degrades to defaults, never to a rewrite.** Unparsable JSON,
-  a wrong `version`, or a `dataDir` that is not a string: run on the default
+- **Corrupt config degrades to defaults, never to a rewrite.** Unparsable JSON, a
+  wrong `version`, or a `dataDir` that is not a string: run on the default
   directory and show a warning naming the problem and the file path. The file
   stays byte-identical — no rebuilding, no renaming it out of the way, no
-  writing defaults over it.
+  writing defaults over it. That "never a rewrite" is scoped to the file and its
+  neighborhood: nothing new is created in the config directory either, so the
+  record of which broken config the user has already acknowledged lives in the
+  `settings` table of the data directory in use, not in a sidecar next to
+  `config.json`.
 - **An unusable configured directory is not a fallback.** A valid `config.json`
   pointing at a missing, unmounted, or unwritable directory (a removed USB disk,
   a disconnected drive) starts the app in a **no-store safe mode**: the window
