@@ -2,6 +2,7 @@ import { test, expect, type ElectronApplication, type Page, _electron as electro
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createTempUserDataDir } from '../main/ipc.harness'
+import { chooseThemeMode } from './settings.helpers'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -21,7 +22,7 @@ async function waitForDbReady(page: Page) {
   throw new Error('Database did not become ready within 10s')
 }
 
-test.describe('Task 8 - Theme toggle and import/export polish', () => {
+test.describe('Task 8 - Settings entry and import/export polish', () => {
   let electronApp: ElectronApplication
 
   test.beforeAll(async () => {
@@ -39,7 +40,7 @@ test.describe('Task 8 - Theme toggle and import/export polish', () => {
     await electronApp.close()
   })
 
-  test('captures theme toggle and import/export buttons', async () => {
+  test('captures settings button and import/export buttons', async () => {
     const page = await electronApp.firstWindow()
     await waitForDbReady(page)
 
@@ -49,26 +50,26 @@ test.describe('Task 8 - Theme toggle and import/export polish', () => {
     await page.click('[data-testid="list-form-save"]')
     await page.waitForTimeout(500)
 
-    // Verify theme toggle is visible
-    const themeToggle = page.locator('[data-testid="theme-toggle"]')
-    await expect(themeToggle).toBeVisible()
+    // Verify settings button is visible
+    const settingsButton = page.locator('[data-testid="settings-button"]')
+    await expect(settingsButton).toBeVisible()
 
-    // Get initial theme mode from aria-label
-    const initialLabel = await themeToggle.getAttribute('aria-label')
-    expect(initialLabel).toBeTruthy()
+    // Change theme through the settings page
+    const initialTheme = await page.evaluate(
+      () => document.documentElement.dataset.theme,
+    )
+    await chooseThemeMode(page, initialTheme === 'light' ? 'dark' : 'light')
 
-    // Click theme toggle to cycle theme
-    await themeToggle.click()
-    await page.waitForTimeout(300)
+    // Verify theme changed
+    const newTheme = await page.evaluate(
+      () => document.documentElement.dataset.theme,
+    )
+    expect(newTheme).not.toBe(initialTheme)
 
-    // Verify theme changed (aria-label should be different)
-    const newLabel = await themeToggle.getAttribute('aria-label')
-    expect(newLabel).not.toBe(initialLabel)
-
-    // Screenshot showing theme toggle in action
+    // Screenshot showing the new header in action
     await page.screenshot({
       path: '.omo/evidence/ui-redesign/task-8-polish.png',
-      fullPage: false
+      fullPage: false,
     })
 
     // Now test that import/export buttons don't affect theme
@@ -80,38 +81,41 @@ test.describe('Task 8 - Theme toggle and import/export polish', () => {
     await expect(exportJsonButton).toBeVisible()
     await expect(exportCsvButton).toBeVisible()
 
-    // Get theme state before clicking import/export
-    const themeBeforeImport = await themeToggle.getAttribute('aria-label')
-
     // Click import button (will show file dialog, but we just verify it doesn't change theme)
     // Note: We can't actually complete the import in e2e without mocking, but we verify the click doesn't affect theme
     await importButton.click()
     await page.waitForTimeout(300)
 
     // Verify theme didn't change
-    const themeAfterImport = await themeToggle.getAttribute('aria-label')
-    expect(themeAfterImport).toBe(themeBeforeImport)
+    const themeAfterImport = await page.evaluate(
+      () => document.documentElement.dataset.theme,
+    )
+    expect(themeAfterImport).toBe(newTheme)
 
     // Click export JSON button
     await exportJsonButton.click()
     await page.waitForTimeout(300)
 
     // Verify theme still didn't change
-    const themeAfterExportJson = await themeToggle.getAttribute('aria-label')
-    expect(themeAfterExportJson).toBe(themeBeforeImport)
+    const themeAfterExportJson = await page.evaluate(
+      () => document.documentElement.dataset.theme,
+    )
+    expect(themeAfterExportJson).toBe(newTheme)
 
     // Click export CSV button
     await exportCsvButton.click()
     await page.waitForTimeout(300)
 
     // Verify theme still didn't change
-    const themeAfterExportCsv = await themeToggle.getAttribute('aria-label')
-    expect(themeAfterExportCsv).toBe(themeBeforeImport)
+    const themeAfterExportCsv = await page.evaluate(
+      () => document.documentElement.dataset.theme,
+    )
+    expect(themeAfterExportCsv).toBe(newTheme)
 
     // Screenshot showing import/export buttons after clicks with theme unchanged
     await page.screenshot({
       path: '.omo/evidence/ui-redesign/task-8-polish-failure.png',
-      fullPage: false
+      fullPage: false,
     })
   })
 })
