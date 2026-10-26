@@ -11,6 +11,7 @@ import {
 } from './db/repositories/taskRepository.js'
 import { computeNextReminderFire } from './db/repositories/reminderSchedule.js'
 import { resolveDataDir } from './db/dataDirConfig.js'
+import { setDataDirState } from './services/dataDirState.js'
 import { validateDataDir } from './db/dataDirValidation.js'
 import {
   REMINDER_FIRED_CHANNEL,
@@ -155,6 +156,14 @@ export function initializeApp(): void {
     app.setPath('userData', resolution.dir)
     app.setPath('sessionData', resolution.dir)
   }
+
+  // Capture the resolution for the data-dir IPC handlers (issue #13): the UI
+  // shows exactly the directory this process booted on.
+  setDataDirState({
+    resolution,
+    defaultDir: app.getPath('userData'),
+    noStore,
+  })
 
   app.whenReady().then(() => {
     Menu.setApplicationMenu(createApplicationMenu())
