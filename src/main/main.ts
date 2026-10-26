@@ -11,6 +11,7 @@ import {
 } from './db/repositories/taskRepository.js'
 import { computeNextReminderFire } from './db/repositories/reminderSchedule.js'
 import { resolveDataDir } from './db/dataDirConfig.js'
+import { setDataDirState } from './services/dataDirState.js'
 import { validateDataDir } from './db/dataDirValidation.js'
 import {
   REMINDER_FIRED_CHANNEL,
@@ -138,12 +139,16 @@ export function initializeApp(): void {
   // userData/sessionData later. The single-instance lock is requested above
   // first because its identity derives from DIR_USER_DATA (electron#24447);
   // resolving after the lock would create one instance per data directory.
+  // Read the default once, before setPath() below re-points it: the UI shows
+  // this value as "默认目录" and "恢复默认" migrates back to it.
+  const defaultUserDataDir = app.getPath('userData')
+
   const resolution = resolveDataDir({
     env: process.env,
     argv: process.argv,
     appDataDir: app.getPath('appData'),
     exeDir: path.dirname(process.execPath),
-    defaultUserDataDir: app.getPath('userData'),
+    defaultUserDataDir,
     validate: (dir) =>
       validateDataDir(dir, { resourcesDir: process.resourcesPath }),
   })
@@ -155,6 +160,14 @@ export function initializeApp(): void {
     app.setPath('userData', resolution.dir)
     app.setPath('sessionData', resolution.dir)
   }
+
+  // Capture the resolution for the data-dir IPC handlers (issue #13): the UI
+  // shows exactly the directory this process booted on.
+  setDataDirState({
+    resolution,
+    defaultDir: defaultUserDataDir,
+    noStore,
+  })
 
   app.whenReady().then(() => {
     Menu.setApplicationMenu(createApplicationMenu())

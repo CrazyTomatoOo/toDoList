@@ -28,7 +28,15 @@ win:
   target:
     - target: nsis
       arch: x64
+    - target: zip
+      arch: x64
   signExecutable: true
   artifactName: '${productName}-${version}-${arch}.${ext}'
   verifyUpdateCodeSignature: false
   requestedExecutionLevel: asInvoker
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  perMachine: false
+  allowElevation: false
+  deleteAppDataOnUninstall: false

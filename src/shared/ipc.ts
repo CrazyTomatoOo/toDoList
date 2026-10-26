@@ -28,6 +28,8 @@ export const IPC_CHANNELS = {
   THEME_GET_MODE: 'theme:getMode',
   THEME_SET_MODE: 'theme:setMode',
   THEME_GET_SYSTEM_THEME: 'theme:getSystemTheme',
+  DATA_DIR_GET_STATE: 'data-dir:getState',
+  DATA_DIR_REVEAL: 'data-dir:reveal',
 } as const
 
 export const REMINDER_CLICKED_CHANNEL = 'reminder:clicked' as const
@@ -180,6 +182,40 @@ export interface IpcHandlers {
   [IPC_CHANNELS.THEME_GET_MODE]: () => ThemeMode
   [IPC_CHANNELS.THEME_SET_MODE]: (mode: ThemeMode) => void
   [IPC_CHANNELS.THEME_GET_SYSTEM_THEME]: () => ResolvedTheme
+  [IPC_CHANNELS.DATA_DIR_GET_STATE]: () => DataDirState
+  [IPC_CHANNELS.DATA_DIR_REVEAL]: () => void
+}
+
+export type DataDirSource = 'env' | 'cli' | 'config' | 'portable' | 'default'
+
+export interface DataDirProblem {
+  kind:
+    | 'unreadable'
+    | 'invalid-json'
+    | 'bad-version'
+    | 'bad-data-dir'
+    | 'unusable-dir'
+  detail: string
+  fingerprint: string
+}
+
+export interface DataDirBackupInfo {
+  path: string
+  sizeBytes: number
+  createdAt: string
+}
+
+/** Snapshot of the resolved data directory state (issue #13). */
+export interface DataDirState {
+  dir: string
+  defaultDir: string
+  source: DataDirSource
+  isDefault: boolean
+  configPath: string
+  problem: DataDirProblem | null
+  noStore: boolean
+  backups: DataDirBackupInfo[]
+  appVersion: string
 }
 
 /** Helper type: request payload for a given channel. */
@@ -235,6 +271,10 @@ export type ElectronAPI = {
     getMode: () => Promise<ThemeMode>
     setMode: (mode: ThemeMode) => Promise<void>
     getSystemTheme: () => Promise<ResolvedTheme>
+  }
+  dataDir: {
+    getState: () => Promise<DataDirState>
+    reveal: () => Promise<void>
   }
 }
 
