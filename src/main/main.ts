@@ -1,4 +1,6 @@
 import { app, BrowserWindow, Menu } from 'electron'
+import fs from 'node:fs'
+import path from 'node:path'
 import { createMainWindow, focusMainWindow, getMainWindow } from './window.js'
 import { registerIpcHandlers } from './ipc/handlers/index.js'
 import { ReminderScheduler } from './services/reminderScheduler.js'
@@ -8,6 +10,8 @@ import {
   updateReminderNextFire,
 } from './db/repositories/taskRepository.js'
 import { computeNextReminderFire } from './db/repositories/reminderSchedule.js'
+import { resolveDataDir } from './db/dataDirConfig.js'
+import { validateDataDir } from './db/dataDirValidation.js'
 import {
   REMINDER_FIRED_CHANNEL,
   type ReminderClickedPayload,
@@ -130,7 +134,39 @@ export function initializeApp(): void {
     })
   }
 
+  // Resolve the data directory before app.whenReady(): Electron cannot re-point
+  // userData/sessionData later. The single-instance lock is requested above
+  // first because its identity derives from DIR_USER_DATA (electron#24447);
+  // resolving after the lock would create one instance per data directory.
+  const resolution = resolveDataDir({
+    env: process.env,
+    argv: process.argv,
+    appDataDir: app.getPath('appData'),
+    exeDir: path.dirname(process.execPath),
+    defaultUserDataDir: app.getPath('userData'),
+    validate: (dir) =>
+      validateDataDir(dir, { resourcesDir: process.resourcesPath }),
+  })
+
+  const noStore = resolution.problem?.kind === 'unusable-dir'
+
+  if (!noStore) {
+    fs.mkdirSync(resolution.dir, { recursive: true })
+    app.setPath('userData', resolution.dir)
+    app.setPath('sessionData', resolution.dir)
+  }
+
   app.whenReady().then(() => {
+    Menu.setApplicationMenu(createApplicationMenu())
+    registerIpcHandlers()
+
+    if (noStore) {
+      // Safe mode (ADR-0005): the configured directory is unusable, so no
+      // database is opened or created — the renderer shows the no-store screen.
+      createMainWindow()
+      return
+    }
+
     // Initialize the database lazily. If the native module is not yet rebuilt
     // for the current Electron version (e.g. during T5 development), the app
     // continues to start so that IPC and UI can be verified independently.
@@ -172,8 +208,6 @@ export function initializeApp(): void {
         // Keep startup non-blocking; database access errors surface through IPC handlers.
       })
 
-    Menu.setApplicationMenu(createApplicationMenu())
-    registerIpcHandlers()
     createMainWindow()
 
     app.on('activate', () => {
