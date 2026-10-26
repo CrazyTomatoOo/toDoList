@@ -7,7 +7,7 @@ import {
 } from '@playwright/test'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { createTempUserDataDir } from '../main/ipc.harness'
+import { ensureResolvedTheme } from './settings.helpers'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -28,15 +28,7 @@ async function waitForDbReady(page: Page) {
 }
 
 async function setTheme(page: Page, target: 'light' | 'dark') {
-  for (let i = 0; i < 6; i++) {
-    const theme = await page.evaluate(
-      () => document.documentElement.dataset.theme,
-    )
-    if (theme === target) return
-    await page.click('[data-testid="theme-toggle"]')
-    await page.waitForTimeout(250)
-  }
-  throw new Error(`could not reach ${target}`)
+  await ensureResolvedTheme(page, target)
 }
 
 test.describe('Custom date picker theming', () => {
