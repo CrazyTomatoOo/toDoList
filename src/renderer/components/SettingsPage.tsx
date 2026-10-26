@@ -20,14 +20,20 @@ const SECTIONS: { id: SettingsSection; label: string }[] = [
 interface SettingsPageProps {
   theme: ThemeController
   onExit: () => void
+  /** Opening tab; the config notice banner jumps straight to 数据. */
+  initialSection?: SettingsSection
 }
 
 /**
  * Full-main settings page (issue #11): left nav 通用 / 数据 / 关于.
  * The 通用 tab hosts the three-option theme picker.
  */
-export default function SettingsPage({ theme, onExit }: SettingsPageProps) {
-  const [section, setSection] = useState<SettingsSection>('general')
+export default function SettingsPage({
+  theme,
+  onExit,
+  initialSection = 'general',
+}: SettingsPageProps) {
+  const [section, setSection] = useState<SettingsSection>(initialSection)
   const navRef = useRef<HTMLDivElement>(null)
 
   // Move focus into the nav when the page opens; restore is handled by App.

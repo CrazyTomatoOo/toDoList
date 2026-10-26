@@ -60,6 +60,7 @@ describe('data-dir IPC handlers (issue #13)', () => {
         noStore: false,
         backups: [],
         appVersion: '0.2.0-test',
+        noticeAcknowledged: false,
       })
     })
 

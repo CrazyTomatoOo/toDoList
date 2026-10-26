@@ -1,13 +1,19 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Settings, Plus } from 'lucide-react'
-import type { TaskRow, CreateTaskInput, UpdateTaskInput } from '../shared/ipc'
+import type {
+  TaskRow,
+  CreateTaskInput,
+  UpdateTaskInput,
+  DataDirState,
+} from '../shared/ipc'
 import { useLists } from './hooks/useLists'
 import { useTasks } from './hooks/useTasks'
 import { useSelectedList } from './hooks/useSelectedList'
 import { useSearchAndFilter } from './hooks/useSearchAndFilter'
 import { useTheme } from './services/theme'
-import SettingsPage from './components/SettingsPage'
 import ListSidebar from './components/ListSidebar'
+import SettingsPage from './components/SettingsPage'
+import ConfigNotice from './components/ConfigNotice'
 import TaskList from './components/TaskList'
 import SearchBar from './components/SearchBar'
 import FilterBar from './components/FilterBar'
@@ -17,8 +23,9 @@ import './styles.css'
 
 export default function App() {
   const [showAddForm, setShowAddForm] = useState(false)
-  const [settingsOpen, setSettingsOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list')
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [noticeHidden, setNoticeHidden] = useState(false)
   const theme = useTheme()
   const {
     lists,
@@ -72,6 +79,27 @@ export default function App() {
     }
   }, [lists, selectedListId, selectList, clearSelection])
 
+  // 配置未生效提示条 (issue #14): load the startup snapshot once; the banner
+  // shows while the bootstrap config is broken and not yet acknowledged.
+  const [configNotice, setConfigNotice] = useState<DataDirState | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    window.electronAPI.dataDir
+      .getState()
+      .then((state) => {
+        if (!cancelled) {
+          setConfigNotice(state)
+        }
+      })
+      .catch(() => {
+        // Without a snapshot there is nothing to announce; the settings page
+        // shows its own read error.
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
   // Focus the list when the user clicks a reminder notification.
   useEffect(() => {
     const unsubscribe = window.electronAPI.reminders.onReminderClicked(
@@ -222,6 +250,23 @@ export default function App() {
           </div>
         </div>
 
+        {configNotice?.problem &&
+          !configNotice.noticeAcknowledged &&
+          !noticeHidden && (
+          <ConfigNotice
+            problem={configNotice.problem}
+            configPath={configNotice.configPath}
+            onOpenSettings={() => setSettingsOpen(true)}
+            onAcknowledge={() => {
+              setNoticeHidden(true)
+              window.electronAPI.dataDir.ackNotice().catch(() => {
+                // The main process already degrades to re-showing the notice
+                // next launch when the acknowledgement cannot be persisted.
+              })
+            }}
+          />
+        )}
+
         {!settingsOpen && selectedListId !== null && viewMode === 'list' && (
           <div className="search-filter-bar" data-testid="search-filter-bar">
             <SearchBar query={query} onQueryChange={setQuery} />
@@ -241,7 +286,11 @@ export default function App() {
         )}
 
         {settingsOpen ? (
-          <SettingsPage theme={theme} onExit={() => setSettingsOpen(false)} />
+          <SettingsPage
+            theme={theme}
+            onExit={() => setSettingsOpen(false)}
+            initialSection="data"
+          />
         ) : viewMode === 'list' ? (
           <TaskList
             tasks={filteredTasks}

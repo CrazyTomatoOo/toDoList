@@ -76,6 +76,7 @@ const electronAPI: ElectronAPI = {
   dataDir: {
     getState: () => ipcRenderer.invoke(IPC_CHANNELS.DATA_DIR_GET_STATE),
     reveal: () => ipcRenderer.invoke(IPC_CHANNELS.DATA_DIR_REVEAL),
+    ackNotice: () => ipcRenderer.invoke(IPC_CHANNELS.DATA_DIR_ACK_NOTICE),
   },
 }
 
