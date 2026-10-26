@@ -4,6 +4,11 @@ import {
   type IpcHandlers,
   type DataDirState,
   type ChooseDataDirResult,
+  type ApplyDataDirInput,
+  type ApplyDataDirResult,
+  type DeleteBackupInput,
+  type DeleteBackupResult,
+  type DataDirBackupInfo,
 } from '../../../shared/ipc.js'
 import { getDataDirState } from '../../services/dataDirState.js'
 import {
@@ -18,6 +23,12 @@ import {
   writeConfigAtomic,
   validationFailureText,
 } from '../../db/dataDirConfig.js'
+import {
+  migrateDataDir,
+  listBackups,
+  deleteBackup,
+} from '../../services/dataDirMigration.js'
+import path from 'node:path'
 
 interface DialogMock {
   showOpenDialog: (
@@ -63,7 +74,7 @@ function getDataDirSnapshot(): DataDirState {
     configPath: resolution.configPath,
     problem: resolution.problem,
     noStore,
-    backups: [],
+    backups: listDataDirBackups(resolution.dir),
     appVersion: app.getVersion(),
     // Safe mode must not touch the database (issue #15): reading the settings
     // table would open/create a DB at the boot-time default userData. In a
@@ -71,6 +82,18 @@ function getDataDirSnapshot(): DataDirState {
     // instead of breaking the snapshot.
     noticeAcknowledged: noStore ? false : checkAcknowledged(fingerprint),
   }
+}
+
+/**
+ * Backups beside the current data directory (issue #17). The service helper
+ * already skips the current directory itself and returns [] on read errors.
+ */
+function listDataDirBackups(currentDir: string): DataDirBackupInfo[] {
+  return listBackups(path.dirname(currentDir), currentDir).map((backup) => ({
+    path: backup.path,
+    sizeBytes: backup.sizeBytes,
+    createdAt: backup.createdAt,
+  }))
 }
 
 function checkAcknowledged(fingerprint: string): boolean {
@@ -174,6 +197,48 @@ async function chooseDataDir(): Promise<ChooseDataDirResult> {
   return { canceled: false, dir }
 }
 
+/**
+ * Apply a data-directory switch (issue #17): run the migration pipeline from
+ * the CURRENT resolution so source and config path always match what the app
+ * booted with. On success the database is intentionally NOT reopened here —
+ * the renderer relaunches the app (two-phase flow) so a failed switch keeps
+ * the UI on the settings page with the old process fully intact.
+ */
+async function applyDataDir(input: ApplyDataDirInput): Promise<ApplyDataDirResult> {
+  const state = getDataDirState()
+
+  if (!state) {
+    throw new Error('数据目录尚未解析（应用未完成启动初始化）')
+  }
+
+  return migrateDataDir({
+    sourceDir: state.resolution.dir,
+    targetDir: input.targetDir,
+    mode: input.mode,
+    configPath: state.resolution.configPath,
+  })
+}
+
+/**
+ * Delete one backup directory (issue #17). Refusals from the service
+ * (non-backup prefix, missing dir, non-absolute) become `{ok:false,message}`
+ * instead of a thrown IPC error so the renderer can show the reason.
+ */
+async function deleteBackupHandler(
+  input: DeleteBackupInput,
+): Promise<DeleteBackupResult> {
+  try {
+    deleteBackup(input.path)
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : String(error) }
+  }
+
+  // The next `getState` recomputes the list, but a fresh snapshot right here
+  // keeps the in-flight renderer state honest after the delete.
+  getDataDirSnapshot()
+  return { ok: true }
+}
+
 export const dataDirHandlers = [
   {
     channel: IPC_CHANNELS.DATA_DIR_GET_STATE,
@@ -191,6 +256,14 @@ export const dataDirHandlers = [
     channel: IPC_CHANNELS.DATA_DIR_CHOOSE,
     handler: chooseDataDir,
   },
+  {
+    channel: IPC_CHANNELS.DATA_DIR_APPLY,
+    handler: applyDataDir,
+  },
+  {
+    channel: IPC_CHANNELS.DATA_DIR_DELETE_BACKUP,
+    handler: deleteBackupHandler,
+  },
 ] satisfies {
   [
     K in keyof Pick<
@@ -199,6 +272,8 @@ export const dataDirHandlers = [
       | typeof IPC_CHANNELS.DATA_DIR_REVEAL
       | typeof IPC_CHANNELS.DATA_DIR_ACK_NOTICE
       | typeof IPC_CHANNELS.DATA_DIR_CHOOSE
+      | typeof IPC_CHANNELS.DATA_DIR_APPLY
+      | typeof IPC_CHANNELS.DATA_DIR_DELETE_BACKUP
     >
   ]: { channel: K; handler: IpcHandlers[K] }
 }[keyof Pick<
@@ -207,4 +282,6 @@ export const dataDirHandlers = [
   | typeof IPC_CHANNELS.DATA_DIR_REVEAL
   | typeof IPC_CHANNELS.DATA_DIR_ACK_NOTICE
   | typeof IPC_CHANNELS.DATA_DIR_CHOOSE
+  | typeof IPC_CHANNELS.DATA_DIR_APPLY
+  | typeof IPC_CHANNELS.DATA_DIR_DELETE_BACKUP
 >][]

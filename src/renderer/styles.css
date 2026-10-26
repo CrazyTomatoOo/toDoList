@@ -819,6 +819,80 @@ select:focus {
   color: var(--color-text-primary, #1d2129);
 }
 
+/* ── Data-directory switch flow (issue #17) ── */
+.settings-row-actions .settings-actions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-1, 4px);
+}
+
+.settings-hint-error {
+  color: var(--color-danger, #d93026);
+}
+
+.settings-switch-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2, 8px);
+  margin: var(--space-1, 4px) 0;
+  padding: var(--space-3, 12px);
+  border: 1px solid var(--color-border, #e5e6eb);
+  border-radius: var(--border-radius-md, 6px);
+  background: var(--color-bg-tertiary, #f2f3f5);
+}
+
+.settings-mode-choice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1, 4px);
+}
+
+.settings-mode-option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1, 4px);
+  font-size: var(--font-size-sm, 13px);
+  color: var(--color-text-primary, #1d2129);
+  cursor: pointer;
+}
+
+.settings-switch-cancel {
+  align-self: flex-start;
+}
+
+/* ── Backup table (issue #17) ── */
+.settings-backup-block {
+  margin-top: var(--space-2, 8px);
+}
+
+.settings-backup-block h3 {
+  margin: 0 0 var(--space-1, 4px);
+  font-size: var(--font-size-md, 13px);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-primary, #1d2129);
+}
+
+.settings-backup-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm, 13px);
+}
+
+.settings-backup-table th,
+.settings-backup-table td {
+  padding: var(--space-1, 4px) var(--space-2, 8px);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border, #e5e6eb);
+  color: var(--color-text-primary, #1d2129);
+}
+
+.settings-backup-table th {
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-secondary, #4e5969);
+}
+
 /* ── Import/Export Actions ── */
 .import-export-actions {
   display: inline-flex;

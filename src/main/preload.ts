@@ -78,6 +78,10 @@ const electronAPI: ElectronAPI = {
     reveal: () => ipcRenderer.invoke(IPC_CHANNELS.DATA_DIR_REVEAL),
     ackNotice: () => ipcRenderer.invoke(IPC_CHANNELS.DATA_DIR_ACK_NOTICE),
     choose: () => ipcRenderer.invoke(IPC_CHANNELS.DATA_DIR_CHOOSE),
+    apply: (input) =>
+      ipcRenderer.invoke(IPC_CHANNELS.DATA_DIR_APPLY, input),
+    deleteBackup: (input) =>
+      ipcRenderer.invoke(IPC_CHANNELS.DATA_DIR_DELETE_BACKUP, input),
   },
   app: {
     relaunch: () => ipcRenderer.invoke(IPC_CHANNELS.APP_RELAUNCH),
