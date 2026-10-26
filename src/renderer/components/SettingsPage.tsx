@@ -3,7 +3,7 @@ import { ArrowLeft, FolderOpen } from 'lucide-react'
 import type { ThemeController, ThemeMode } from '../services/theme'
 import type { DataDirState } from '../../shared/ipc'
 
-type SettingsSection = 'general' | 'data' | 'about'
+export type SettingsSection = 'general' | 'data' | 'about'
 
 const THEME_OPTIONS: { mode: ThemeMode; label: string }[] = [
   { mode: 'system', label: '跟随系统' },

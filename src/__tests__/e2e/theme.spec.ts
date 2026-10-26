@@ -7,6 +7,7 @@ import {
 } from '@playwright/test'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { createTempUserDataDir } from '../main/ipc.harness'
 import { openSettings } from './settings.helpers'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
