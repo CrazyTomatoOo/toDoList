@@ -1,5 +1,15 @@
 # Windows distribution — one-click installer plus portable zip
 
+> **Superseded by [ADR-0004](0004-windows-assisted-installer.md).** Its two
+> promises went opposite ways. The "no directory choice, one-click only" clause
+> was **reversed**: Windows ships an assisted installer whose wizard lets the
+> user pick the install directory. The portable `zip` artifact and the
+> `portable.txt` marker were **never built** — neither `v0.1.0` nor `v0.2.0`
+> shipped one — and are now specified in ADR-0004, with the marker's place in
+> the data-directory resolution order owned by
+> [ADR-0005](0005-bootstrap-data-directory.md). The text below is kept verbatim
+> as the record of what was decided at the time.
+
 The Windows NSIS installer shipped with default electron-builder settings: `oneClick: true`, per-user, installed to `%LOCALAPPDATA%\Programs\ToDoList` with no directory choice — users cannot pick the install path. We decided this is deliberate, not a defect: for a single-user offline app, a one-click per-user install avoids UAC, elevation and SmartScreen friction. To serve users who want the app elsewhere, we ship an additional **portable zip** artifact instead of adding an installation-directory wizard.
 
 - **One-click NSIS stays** (`oneClick: true`, `perMachine: false`); the silent contract (`/S` → `%LOCALAPPDATA%\Programs\ToDoList`) keeps `scripts/verify-win-exe.sh` and CI unchanged.
@@ -7,7 +17,7 @@ The Windows NSIS installer shipped with default electron-builder settings: `oneC
 - **Optional beside-app data:** when a `portable.txt` marker file sits next to the executable, the app redirects its data directory to `<exe dir>/data` so the database travels with the zip; without the marker the data stays in `%APPDATA%`. Resolution order: `TODO_USER_DATA_DIR` env var → `portable.txt` marker → `app.getPath('userData')`.
 - `release.yml` attaches `dist/*`, so the added zip needs no workflow change.
 
-**Status:** accepted
+**Status:** superseded by ADR-0004
 
 **Considered options:**
 

@@ -56,10 +56,22 @@ _Avoid_: Reintroducing the native date popup as the visible control, datetime-lo
 
 ## 安装与分发
 
-**一键安装**:
-The Windows distribution default: a one-click NSIS installer (`oneClick: true`), no wizard, installs per-user into `%LOCALAPPDATA%\Programs\ToDoList` and supports silent install (`/S`). Deliberate — per-user install avoids UAC, elevation and SmartScreen friction for a single-user offline app.
-_Avoid_: 自定义安装, 安装向导
+**安装目录**:
+The folder the Windows installer unpacks the app into. Picked on the wizard's directory page, defaulting to `%LOCALAPPDATA%\Programs\ToDoList`; any writable folder on the installing user's own disk works, and `C:\Program Files` does not — the installer runs per-user and never elevates. Silent installs pass it as `/D=<path>`.
+_Avoid_: 安装路径, 程序目录, 存储路径 (all read as the data directory instead)
+
+**向导安装**:
+The Windows installer mode: NSIS in assisted mode (`oneClick: false`), so the wizard pages are shown and the 安装目录 can be changed — still per-user, still without elevation. `/S` skips the pages and keeps the silent contract.
+_Avoid_: 一键安装 (the previous mode, no longer shipped), 免安装
+
+**数据目录**:
+The folder holding the task database (`todo.db` with its `-wal`/`-shm` siblings) plus the rest of the app profile for those tasks. Chosen in the app's settings, never by the installer; changing it migrates the database and relaunches.
+_Avoid_: 存储路径, 保存位置, 数据文件夹, 安装目录 (a different folder)
+
+**引导配置**:
+The small hand-editable file at `%APPDATA%\ToDoList\config.json` (`~/Library/Application Support/ToDoList/config.json`) that names the 数据目录. It sits outside the data directory — otherwise it could not point at it — and is read before the app opens any database.
+_Avoid_: 配置文件, settings.json, 用户配置 (too generic)
 
 **便携版**:
-The optional Windows artifact (a zip) for users who want the app without installing — extract anywhere (D:\, USB) and run. No self-extraction, no registry changes.
-_Avoid_: portable-exe 自解压包
+The optional Windows zip artifact: unzip anywhere (a second drive, a USB stick) and run without installing — no self-extraction, no registry writes.
+_Avoid_: portable-exe 自解压包, 免安装版

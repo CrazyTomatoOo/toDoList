@@ -40,7 +40,7 @@ Typical data flow (create task): `TaskForm` → `useTasks.createTask` → `windo
 | `src/__tests__/` | All tests, mirrored by domain: `components/ db/ services/ main/ types/ perf/ renderer/ e2e/` |
 | `scripts/` | Packaged-app verification: `smoke-test.js`, `perf-report.js`, `verify-mac-dmg.sh`, `verify-win-exe.sh` |
 | `out/` | electron-vite build output — gitignored, never edit |
-|`dist/` | electron-builder installers (DMG/NSIS) + portable zip |
+|`dist/`|electron-builder installers (DMG / NSIS x64); the Windows zip of ADR-0004 is not built yet|
 
 ## Development Commands
 
@@ -56,7 +56,7 @@ npm only; Node 22 (CI pins it; no `engines` field in package.json).
 | `npm run test:ui` | Interactive Vitest UI |
 | `npm run test:e2e` | `build` + `electron-rebuild --force` + Playwright |
 | `npm run build` | electron-vite build → `out/` |
-|`npm run build:mac` / `build:win` / `dist` | electron-builder packaging (DMG / NSIS x64 + portable zip / both) |
+|`npm run build:mac` / `build:win` / `dist`|electron-builder packaging (DMG / NSIS x64 / both)|
 
 CI (`release.yml`, on `v*` tags or `workflow_dispatch`) runs typecheck + lint + build + package only — **not** the test suites; run `npm test` locally before pushing. Release job attaches `dist/*` to a GitHub Release (signing optional via `CSC_LINK`, `APPLE_ID`, `WIN_CSC_LINK` secrets).
 
@@ -84,7 +84,7 @@ CI (`release.yml`, on `v*` tags or `workflow_dispatch`) runs typecheck + lint + 
 - `src/renderer/hooks/useTasks.ts`, `useLists.ts`, `useSearchAndFilter.ts` — renderer data layer
 - `src/renderer/styles.css` — design-token CSS variables (theme via `data-theme`)
 - `electron.vite.config.ts` — three targets (main/preload/renderer); `better-sqlite3` is external; plugin copies migrations SQL into `out/main/chunks/migrations`
-- `electron-builder.yml` — `appId: com.example.todolist`, asar with `better-sqlite3` unpacked, DMG / NSIS-x64 + portable zip targets (ADR-0002)
+- `electron-builder.yml` — `appId: com.example.todolist`, asar with `better-sqlite3` unpacked, DMG / NSIS-x64 targets (ADR-0002; ADR-0004 switches NSIS to the assisted installer and adds a Windows zip — neither is wired up yet)
 
 ## Runtime/Tooling Preferences
 
