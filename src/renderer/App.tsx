@@ -14,6 +14,7 @@ import { useTheme } from './services/theme'
 import ListSidebar from './components/ListSidebar'
 import SettingsPage from './components/SettingsPage'
 import ConfigNotice from './components/ConfigNotice'
+import NoStoreScreen from './components/NoStoreScreen'
 import TaskList from './components/TaskList'
 import SearchBar from './components/SearchBar'
 import FilterBar from './components/FilterBar'
@@ -21,7 +22,102 @@ import ImportExportButtons from './components/ImportExportButtons'
 import QuadrantBoard from './components/QuadrantBoard'
 import './styles.css'
 
+/**
+ * 应用根组件 (issue #15).
+ *
+ * First resolves the data directory snapshot via data-dir:getState. When the
+ * configured directory is unusable (noStore) the app renders the full-screen
+ * safe mode INSTEAD of the shell — the shell's hooks (useTheme, useLists, …)
+ * all touch the database at mount, and mounting them in safe mode would create
+ * a database at the boot-time default userData, which safe mode must never do.
+ */
 export default function App() {
+  const [boot, setBoot] = useState<
+    | { kind: 'loading' }
+    | { kind: 'noStore'; state: DataDirState }
+    | { kind: 'ready'; state: DataDirState | null }
+  >({ kind: 'loading' })
+  const [retrying, setRetrying] = useState(false)
+  const [chooseError, setChooseError] = useState<string | null>(null)
+
+  const loadState = useCallback(() => {
+    return window.electronAPI.dataDir
+      .getState()
+      .then((state) => {
+        setBoot(
+          state.noStore
+            ? { kind: 'noStore', state }
+            : { kind: 'ready', state },
+        )
+      })
+      .catch(() => {
+        // Fail open: without a snapshot render the normal app — any database
+        // access errors then surface through the usual hook error states.
+        setBoot({ kind: 'ready', state: null })
+      })
+  }, [])
+
+  useEffect(() => {
+    void loadState()
+  }, [loadState])
+
+  const handleRetry = useCallback(async () => {
+    setRetrying(true)
+    try {
+      await loadState()
+    } finally {
+      setRetrying(false)
+    }
+  }, [loadState])
+
+  const handleChoose = useCallback(async () => {
+    setChooseError(null)
+    try {
+      const result = await window.electronAPI.dataDir.choose()
+      if (result.canceled) {
+        return
+      }
+      if (result.failure) {
+        setChooseError(result.failure)
+        return
+      }
+      // A valid directory was committed; restart into it.
+      await window.electronAPI.app.relaunch()
+    } catch (error) {
+      setChooseError(error instanceof Error ? error.message : '选择目录失败')
+    }
+  }, [])
+
+  const handleExit = useCallback(() => {
+    void window.electronAPI.app.quit()
+  }, [])
+
+  if (boot.kind === 'loading') {
+    return null
+  }
+
+  if (boot.kind === 'noStore') {
+    return (
+      <NoStoreScreen
+        state={boot.state}
+        retrying={retrying}
+        chooseError={chooseError}
+        onRetry={handleRetry}
+        onChoose={handleChoose}
+        onExit={handleExit}
+      />
+    )
+  }
+
+  return <MainApp configNotice={boot.state} />
+}
+
+interface MainAppProps {
+  configNotice: DataDirState | null
+}
+
+/** The normal application shell (list sidebar + task area). */
+function MainApp({ configNotice }: MainAppProps) {
   const [showAddForm, setShowAddForm] = useState(false)
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list')
   const [settingsOpen, setSettingsOpen] = useState(false)
@@ -79,27 +175,6 @@ export default function App() {
     }
   }, [lists, selectedListId, selectList, clearSelection])
 
-  // 配置未生效提示条 (issue #14): load the startup snapshot once; the banner
-  // shows while the bootstrap config is broken and not yet acknowledged.
-  const [configNotice, setConfigNotice] = useState<DataDirState | null>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    window.electronAPI.dataDir
-      .getState()
-      .then((state) => {
-        if (!cancelled) {
-          setConfigNotice(state)
-        }
-      })
-      .catch(() => {
-        // Without a snapshot there is nothing to announce; the settings page
-        // shows its own read error.
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [])
   // Focus the list when the user clicks a reminder notification.
   useEffect(() => {
     const unsubscribe = window.electronAPI.reminders.onReminderClicked(

@@ -31,6 +31,9 @@ export const IPC_CHANNELS = {
   DATA_DIR_GET_STATE: 'data-dir:getState',
   DATA_DIR_REVEAL: 'data-dir:reveal',
   DATA_DIR_ACK_NOTICE: 'data-dir:ackNotice',
+  DATA_DIR_CHOOSE: 'data-dir:choose',
+  APP_RELAUNCH: 'app:relaunch',
+  APP_QUIT: 'app:quit',
 } as const
 
 export const REMINDER_CLICKED_CHANNEL = 'reminder:clicked' as const
@@ -186,6 +189,9 @@ export interface IpcHandlers {
   [IPC_CHANNELS.DATA_DIR_GET_STATE]: () => DataDirState
   [IPC_CHANNELS.DATA_DIR_REVEAL]: () => void
   [IPC_CHANNELS.DATA_DIR_ACK_NOTICE]: () => void
+  [IPC_CHANNELS.DATA_DIR_CHOOSE]: () => Promise<ChooseDataDirResult>
+  [IPC_CHANNELS.APP_RELAUNCH]: () => void
+  [IPC_CHANNELS.APP_QUIT]: () => void
 }
 
 export type DataDirSource = 'env' | 'cli' | 'config' | 'portable' | 'default'
@@ -219,6 +225,16 @@ export interface DataDirState {
   backups: DataDirBackupInfo[]
   appVersion: string
   noticeAcknowledged: boolean
+}
+
+/** Result of the `data-dir:choose` directory picker (issue #15). */
+export interface ChooseDataDirResult {
+  /** True when the user dismissed the dialog without picking a directory. */
+  canceled: boolean
+  /** Absolute path of the validated directory (set when not canceled and valid). */
+  dir?: string
+  /** Human-readable validation failure reason (set when the pick is invalid). */
+  failure?: string
 }
 
 /** Helper type: request payload for a given channel. */
@@ -279,6 +295,11 @@ export type ElectronAPI = {
     getState: () => Promise<DataDirState>
     reveal: () => Promise<void>
     ackNotice: () => Promise<void>
+    choose: () => Promise<ChooseDataDirResult>
+  }
+  app: {
+    relaunch: () => Promise<void>
+    quit: () => Promise<void>
   }
 }
 

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import App from '../../renderer/App'
-import type { TaskRow } from '../../shared/ipc'
+import type { DataDirState, TaskRow } from '../../shared/ipc'
 
 // Mock hooks
 vi.mock('../../renderer/hooks/useLists', () => ({
@@ -116,6 +116,19 @@ vi.mock('../../renderer/services/theme', () => ({
   }),
 }))
 
+const readyState: DataDirState = {
+  dir: '/data',
+  defaultDir: '/data',
+  source: 'default',
+  isDefault: true,
+  configPath: '/config.json',
+  problem: null,
+  noStore: false,
+  backups: [],
+  appVersion: '0.2.0',
+  noticeAcknowledged: false,
+}
+
 // Mock electronAPI
 beforeEach(() => {
   Object.defineProperty(window, 'electronAPI', {
@@ -137,23 +150,33 @@ beforeEach(() => {
         onReminderClicked: vi.fn(() => vi.fn()),
       },
       dataDir: {
-        getState: vi.fn(async () => null),
+        getState: vi.fn(async () => readyState),
         reveal: vi.fn(async () => undefined),
         ackNotice: vi.fn(async () => undefined),
+        choose: vi.fn(async () => ({ canceled: true })),
+      },
+      app: {
+        relaunch: vi.fn(async () => undefined),
+        quit: vi.fn(async () => undefined),
       },
     },
   })
 })
 
+async function renderApp() {
+  render(<App />)
+  await screen.findByTestId('app-shell')
+}
+
 describe('App view toggle', () => {
-  it('renders view toggle buttons when a list is selected', () => {
-    render(<App />)
+  it('renders view toggle buttons when a list is selected', async () => {
+    await renderApp()
     expect(screen.getByTestId('view-toggle-list')).toBeInTheDocument()
     expect(screen.getByTestId('view-toggle-board')).toBeInTheDocument()
   })
 
-  it('starts in list view by default', () => {
-    render(<App />)
+  it('starts in list view by default', async () => {
+    await renderApp()
     expect(screen.getByTestId('view-toggle-list')).toHaveAttribute(
       'aria-pressed',
       'true',
@@ -165,8 +188,8 @@ describe('App view toggle', () => {
     expect(screen.getByTestId('search-filter-bar')).toBeInTheDocument()
   })
 
-  it('switches to board view when Board button is clicked', () => {
-    render(<App />)
+  it('switches to board view when Board button is clicked', async () => {
+    await renderApp()
     fireEvent.click(screen.getByTestId('view-toggle-board'))
 
     expect(screen.getByTestId('view-toggle-board')).toHaveAttribute(
@@ -181,8 +204,8 @@ describe('App view toggle', () => {
     expect(screen.getByTestId('quadrant-board')).toBeInTheDocument()
   })
 
-  it('switches back to list view when List button is clicked', () => {
-    render(<App />)
+  it('switches back to list view when List button is clicked', async () => {
+    await renderApp()
 
     // Switch to board
     fireEvent.click(screen.getByTestId('view-toggle-board'))
@@ -194,8 +217,8 @@ describe('App view toggle', () => {
     expect(screen.queryByTestId('quadrant-board')).not.toBeInTheDocument()
   })
 
-  it('preserves selected list when switching views', () => {
-    render(<App />)
+  it('preserves selected list when switching views', async () => {
+    await renderApp()
 
     // Verify list is selected in list view
     expect(screen.getAllByText('Test List').length).toBeGreaterThanOrEqual(1)
@@ -207,8 +230,9 @@ describe('App view toggle', () => {
     expect(screen.getAllByText('Test List').length).toBeGreaterThanOrEqual(1)
     expect(screen.getByTestId('quadrant-board')).toBeInTheDocument()
   })
-  it('shows selected list name in board view after toggling', () => {
-    render(<App />)
+
+  it('shows selected list name in board view after toggling', async () => {
+    await renderApp()
 
     fireEvent.click(screen.getByTestId('view-toggle-board'))
 
@@ -220,21 +244,21 @@ describe('App view toggle', () => {
 })
 
 describe('App redesigned UI classes', () => {
-  it('renders app shell with app-layout class', () => {
-    render(<App />)
+  it('renders app shell with app-layout class', async () => {
+    await renderApp()
     expect(screen.getByTestId('app-shell')).toHaveClass('app-layout')
   })
 
-  it('renders main header and actions with redesigned classes', () => {
-    render(<App />)
+  it('renders main header and actions with redesigned classes', async () => {
+    await renderApp()
     const shell = screen.getByTestId('app-shell')
     expect(shell.querySelector('.main-area')).toBeInTheDocument()
     expect(shell.querySelector('.main-header')).toBeInTheDocument()
     expect(shell.querySelector('.main-header-actions')).toBeInTheDocument()
   })
 
-  it('renders settings button with ghost icon button classes and aria-label', () => {
-    render(<App />)
+  it('renders settings button with ghost icon button classes and aria-label', async () => {
+    await renderApp()
     const button = screen.getByTestId('settings-button')
     expect(button).toHaveClass(
       'btn',
@@ -247,16 +271,16 @@ describe('App redesigned UI classes', () => {
     expect(button.querySelector('svg')).toBeInTheDocument()
   })
 
-  it('renders Add Task button with primary class and Lucide Plus icon', () => {
-    render(<App />)
+  it('renders Add Task button with primary class and Lucide Plus icon', async () => {
+    await renderApp()
     const addButton = screen.getByTestId('add-task-button')
     expect(addButton).toHaveClass('btn', 'btn-primary')
     expect(addButton).toHaveTextContent('添加任务')
     expect(addButton.querySelector('svg')).toBeInTheDocument()
   })
 
-  it('renders search-filter-bar with redesigned class', () => {
-    render(<App />)
+  it('renders search-filter-bar with redesigned class', async () => {
+    await renderApp()
     const bar = screen.getByTestId('search-filter-bar')
     expect(bar).toHaveClass('search-filter-bar')
   })

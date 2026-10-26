@@ -1805,3 +1805,89 @@ input[type='date'].form-input {
   gap: var(--space-2, 8px);
   margin-left: auto;
 }
+
+/* ── Safe mode (issue #15) ─────────────────────────────────────────── */
+
+.no-store-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-6, 24px);
+  background: var(--color-bg, #f7f8fa);
+}
+
+.no-store-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4, 16px);
+  max-width: 520px;
+  padding: var(--space-8, 32px);
+  text-align: center;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #c9cdd4);
+  border-radius: var(--border-radius-lg, 8px);
+  box-shadow: var(--shadow-lg);
+}
+
+.no-store-icon {
+  color: var(--color-warning, #ff7d00);
+}
+
+.no-store-title {
+  margin: 0;
+  font-size: var(--font-size-xl, 20px);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-primary, #1d2129);
+}
+
+.no-store-reason {
+  margin: 0;
+  font-size: var(--font-size-md, 14px);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary, #4e5969);
+}
+
+.no-store-path {
+  font-family: var(
+    --font-family-mono,
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace
+  );
+  font-size: var(--font-size-sm, 13px);
+  color: var(--color-text-secondary, #4e5969);
+  background: var(--color-bg-tertiary, #f2f3f5);
+  border-radius: var(--border-radius-md, 6px);
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  word-break: break-all;
+  user-select: text;
+}
+
+.no-store-hint {
+  margin: 0;
+  font-size: var(--font-size-sm, 13px);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-tertiary, #86909c);
+}
+
+.no-store-error {
+  width: 100%;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  font-size: var(--font-size-sm, 13px);
+  color: var(--color-danger, #f53f3f);
+  background: var(--color-danger-light, #ffece8);
+  border-radius: var(--border-radius-md, 6px);
+}
+
+.no-store-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3, 12px);
+  margin-top: var(--space-2, 8px);
+}
