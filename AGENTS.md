@@ -32,15 +32,15 @@ Typical data flow (create task): `TaskForm` → `useTasks.createTask` → `windo
 | Path | Purpose |
 |---|---|
 | `src/main/` | Main process: `main.ts` (lifecycle), `window.ts` (BrowserWindow factory), `preload.ts` |
-| `src/main/ipc/handlers/` | Per-domain `ipcMain.handle` wiring: `tasks.ts`, `lists.ts`, `theme.ts`, `importExport.ts` |
-| `src/main/db/` | `connection.ts`, `migrations.ts`, `repositories/` (`taskRepository`, `taskQueries`, `taskValidation`, `taskRecurrence`, `listRepository`), `migrations/*.sql` |
+| `src/main/ipc/handlers/` | Per-domain `ipcMain.handle` wiring: `tasks.ts`, `lists.ts`, `theme.ts`, `importExport.ts`, `dataDir.ts` |
+| `src/main/db/` | `connection.ts`, `migrations.ts`, `dataDirConfig.ts` + `dataDirValidation.ts` (ADR-0005 bootstrap config: resolve/validate the data directory before `whenReady`), `repositories/` (`taskRepository`, `taskQueries`, `taskValidation`, `taskRecurrence`, `listRepository`), `migrations/*.sql` |
 | `src/main/services/` | `theme.ts`, `reminderScheduler.ts`, `importExport.ts` + `importExportImport.ts` / `importExportHelpers.ts` |
 | `src/renderer/` | React app: `App.tsx`, `main.tsx`, `components/`, `hooks/`, `services/theme.ts`, `types/global.d.ts` |
 | `src/shared/` | Code imported by both processes: `ipc.ts` (contracts), `utils/dateValidator.ts` |
 | `src/__tests__/` | All tests, mirrored by domain: `components/ db/ services/ main/ types/ perf/ renderer/ e2e/` |
-| `scripts/` | Packaged-app verification: `smoke-test.js`, `perf-report.js`, `verify-mac-dmg.sh`, `verify-win-exe.sh` |
+| `scripts/` | Packaged-app verification: `smoke-test.js`, `perf-report.js`, `verify-mac-dmg.sh`, `verify-win-exe.sh` (checks EXE + ZIP artifacts, full `/S /D=` install → launch → todo.db → uninstall flow on a Windows host) |
 | `out/` | electron-vite build output — gitignored, never edit |
-|`dist/`|electron-builder installers (DMG / NSIS x64); the Windows zip of ADR-0004 is not built yet|
+| `dist/` | electron-builder artifacts (DMG / NSIS x64 installer / portable zip) |
 
 ## Development Commands
 
@@ -84,7 +84,7 @@ CI (`release.yml`, on `v*` tags or `workflow_dispatch`) runs typecheck + lint + 
 - `src/renderer/hooks/useTasks.ts`, `useLists.ts`, `useSearchAndFilter.ts` — renderer data layer
 - `src/renderer/styles.css` — design-token CSS variables (theme via `data-theme`)
 - `electron.vite.config.ts` — three targets (main/preload/renderer); `better-sqlite3` is external; plugin copies migrations SQL into `out/main/chunks/migrations`
-- `electron-builder.yml` — `appId: com.example.todolist`, asar with `better-sqlite3` unpacked, DMG / NSIS-x64 targets (ADR-0002; ADR-0004 switches NSIS to the assisted installer and adds a Windows zip — neither is wired up yet)
+- `electron-builder.yml` — `appId: com.example.todolist`, asar with `better-sqlite3` unpacked; targets DMG / NSIS-x64 assisted installer + portable zip (ADR-0004 supersedes ADR-0002: `oneClick: false`, `allowToChangeInstallationDirectory`, per-user, no elevation, `deleteAppDataOnUninstall: false`)
 
 ## Runtime/Tooling Preferences
 

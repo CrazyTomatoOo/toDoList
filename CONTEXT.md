@@ -65,7 +65,7 @@ The Windows installer mode: NSIS in assisted mode (`oneClick: false`), so the wi
 _Avoid_: 一键安装 (the previous mode, no longer shipped), 免安装
 
 **数据目录**:
-The folder holding the task database (`todo.db` with its `-wal`/`-shm` siblings) plus the rest of the app profile for those tasks. Chosen in the app's settings, never by the installer; changing it migrates the database and relaunches.
+The folder holding the task database (`todo.db` with its `-wal`/`-shm` siblings) plus the rest of the app profile for those tasks. Never set by the installer: it defaults to `%APPDATA%\todolist-app` and is moved only through the 引导配置 file, `--data-dir=` on the command line, or a `portable.txt` next to the exe. The settings page's 数据 section shows the directory in effect and where its 引导配置 lives.
 _Avoid_: 存储路径, 保存位置, 数据文件夹, 安装目录 (a different folder)
 
 **引导配置**:
@@ -73,7 +73,7 @@ The small hand-editable file at `%APPDATA%\ToDoList\config.json` (`~/Library/App
 _Avoid_: 配置文件, settings.json, 用户配置 (too generic)
 
 **配置未生效**:
-The state where `config.json` exists but cannot be used — unparsable JSON, a `version` from a newer build, or a `dataDir` that is missing, relative or not a string — so the app runs on the default data directory. Surfaced twice: a dismissible banner under the header (shown once per distinct broken config) and a permanent notice on the settings page. The file itself is never rewritten.
+The state where `config.json` exists but cannot be used — unparsable JSON, a `version` from a newer build, or a `dataDir` that is missing, relative or not a string — so the app runs on the default data directory. The problem rides along in the data-dir state channel (`data-dir:getState`) with its kind, detail, and a fingerprint, so the UI can show it without re-reading the file. The file itself is never rewritten.
 _Avoid_: 配置损坏 (names only the parse failure), 启动报错, 配置丢失
 
 **便携版**:
