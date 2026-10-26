@@ -30,6 +30,7 @@ export const IPC_CHANNELS = {
   THEME_GET_SYSTEM_THEME: 'theme:getSystemTheme',
   DATA_DIR_GET_STATE: 'data-dir:getState',
   DATA_DIR_REVEAL: 'data-dir:reveal',
+  DATA_DIR_ACK_NOTICE: 'data-dir:ackNotice',
 } as const
 
 export const REMINDER_CLICKED_CHANNEL = 'reminder:clicked' as const
@@ -184,6 +185,7 @@ export interface IpcHandlers {
   [IPC_CHANNELS.THEME_GET_SYSTEM_THEME]: () => ResolvedTheme
   [IPC_CHANNELS.DATA_DIR_GET_STATE]: () => DataDirState
   [IPC_CHANNELS.DATA_DIR_REVEAL]: () => void
+  [IPC_CHANNELS.DATA_DIR_ACK_NOTICE]: () => void
 }
 
 export type DataDirSource = 'env' | 'cli' | 'config' | 'portable' | 'default'
@@ -216,6 +218,7 @@ export interface DataDirState {
   noStore: boolean
   backups: DataDirBackupInfo[]
   appVersion: string
+  noticeAcknowledged: boolean
 }
 
 /** Helper type: request payload for a given channel. */
@@ -275,6 +278,7 @@ export type ElectronAPI = {
   dataDir: {
     getState: () => Promise<DataDirState>
     reveal: () => Promise<void>
+    ackNotice: () => Promise<void>
   }
 }
 

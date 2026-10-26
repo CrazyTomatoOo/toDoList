@@ -136,6 +136,11 @@ beforeEach(() => {
       reminders: {
         onReminderClicked: vi.fn(() => vi.fn()),
       },
+      dataDir: {
+        getState: vi.fn(async () => null),
+        reveal: vi.fn(async () => undefined),
+        ackNotice: vi.fn(async () => undefined),
+      },
     },
   })
 })
