@@ -5,6 +5,7 @@ import { taskHandlers } from './tasks.js'
 import { importExportHandlers } from './importExport.js'
 import { themeHandlers } from './theme.js'
 import { dataDirHandlers } from './dataDir.js'
+import { appHandlers } from './app.js'
 
 type HandlerRegistration = {
   [K in keyof IpcHandlers]: {
@@ -28,6 +29,7 @@ export const ipcHandlers: HandlerRegistration[] = [
   ...importExportHandlers,
   ...themeHandlers,
   ...dataDirHandlers,
+  ...appHandlers,
 ]
 
 export function registerIpcHandlers(): void {

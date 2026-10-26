@@ -53,7 +53,7 @@ function messageOf(error: unknown): string {
   return String(error)
 }
 
-function validationFailureText(failure: ValidationFailure): string {
+export function validationFailureText(failure: ValidationFailure): string {
   switch (failure) {
     case 'not-absolute':
       return '不是绝对路径'

@@ -76,6 +76,10 @@ _Avoid_: 配置文件, settings.json, 用户配置 (too generic)
 The state where `config.json` exists but cannot be used — unparsable JSON, a `version` from a newer build, or a `dataDir` that is missing, relative or not a string — so the app runs on the default data directory. The problem rides along in the data-dir state channel (`data-dir:getState`) with its kind, detail, and a fingerprint, so the UI can show it without re-reading the file. The file itself is never rewritten.
 _Avoid_: 配置损坏 (names only the parse failure), 启动报错, 配置丢失
 
+**安全模式**:
+The full-screen state when the resolved data directory is unusable (a network/UNC path, a system directory, a location inside the packaged resources, or an unwritable volume) and the app therefore cannot open a database. It shows the reason plus the directory in monospace with 重试 / 选择其他目录 / 退出; the sidebar and task area are not rendered, no database is opened or created, and the reminder scheduler and native-theme follow are not started. 重试 re-checks the directory in place and re-enters the app without a relaunch when it recovers; 选择其他目录 validates a new pick and, in safe mode, atomically rewrites the 引导配置 then relaunches. Electron's own scratch (cache, session) may fall back to the default user data dir, but the database never does.
+_Avoid_: 只读模式, 紧急模式, 降级模式
+
 **便携版**:
 The optional Windows zip artifact: unzip anywhere (a second drive, a USB stick) and run without installing — no self-extraction, no registry writes.
 _Avoid_: portable-exe 自解压包, 免安装版
