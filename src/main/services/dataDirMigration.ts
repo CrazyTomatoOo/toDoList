@@ -5,6 +5,7 @@ import type DatabaseType from 'better-sqlite3'
 import { closeDb, getDb } from '../db/connection.js'
 import { CONFIG_VERSION, writeConfigAtomic } from '../db/dataDirConfig.js'
 import { validateDataDir } from '../db/dataDirValidation.js'
+import { validationFailureText } from '../db/dataDirConfig.js'
 
 /** Ordered steps of a migration; `error.step` reports where one failed. */
 export type MigrationStep =
@@ -156,9 +157,13 @@ export function migrateDataDir(input: MigrationInput): MigrationResult {
   let createdTarget: boolean
   try {
     createdTarget = !fs.existsSync(targetDir)
-    const failure = validateDataDir(targetDir)
+    // Same check the startup resolver and the picker use, resources dir
+    // included: the renderer is not the only caller of this service.
+    const failure = validateDataDir(targetDir, {
+      resourcesDir: process.resourcesPath,
+    })
     if (failure) {
-      return fail('validate', `目标目录不可用（${failure}）`)
+      return fail('validate', `目标目录不可用（${validationFailureText(failure)}）`)
     }
   } catch (error) {
     return fail('validate', messageOf(error))

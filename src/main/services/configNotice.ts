@@ -35,6 +35,16 @@ export function saveNoticeAcknowledgement(fingerprint: string | null): void {
     .run(NOTICE_KEY, fingerprint)
 }
 
+/**
+ * Drop the acknowledgement once the config parses again (issue #14). Called on
+ * every state read with no problem, so a later breakage — even the identical
+ * bytes — is announced fresh instead of staying silent forever.
+ */
+export function clearNoticeAcknowledgement(): void {
+  ensureSettingsTable()
+  getDb().prepare('DELETE FROM settings WHERE key = ?').run(NOTICE_KEY)
+}
+
 /** True when the given fingerprint is the acknowledged one. */
 export function isNoticeAcknowledged(fingerprint: string): boolean {
   ensureSettingsTable()

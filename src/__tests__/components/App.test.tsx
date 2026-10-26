@@ -271,6 +271,19 @@ describe('App redesigned UI classes', () => {
     expect(button.querySelector('svg')).toBeInTheDocument()
   })
 
+  it('opens the settings page from the gear and returns focus to it on exit', async () => {
+    await renderApp()
+    const button = screen.getByTestId('settings-button')
+
+    fireEvent.click(button)
+    expect(screen.getByTestId('settings-page')).toBeInTheDocument()
+    expect(screen.getByTestId('settings-theme-segmented')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByTestId('settings-back-button'))
+    expect(screen.queryByTestId('settings-page')).not.toBeInTheDocument()
+    expect(document.activeElement).toBe(button)
+  })
+
   it('renders Add Task button with primary class and Lucide Plus icon', async () => {
     await renderApp()
     const addButton = screen.getByTestId('add-task-button')

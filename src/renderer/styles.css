@@ -862,6 +862,12 @@ select:focus {
   align-self: flex-start;
 }
 
+.settings-switch-actions {
+  display: flex;
+  gap: var(--space-1, 8px);
+  align-items: center;
+}
+
 /* ── Backup table (issue #17) ── */
 .settings-backup-block {
   margin-top: var(--space-2, 8px);

@@ -35,6 +35,28 @@ verify_artifact() {
   fi
 }
 
+# A zip that exists but does not unpack to a runnable exe is not a deliverable.
+verify_zip_contents() {
+  local artifact="${1}"
+  if ! command -v unzip >/dev/null 2>&1; then
+    echo "[ZIP archive] 'unzip' not available; skipping content check"
+    return 0
+  fi
+  # `set -o pipefail` + `grep -q` would report failure when grep exits early and
+  # SIGPIPEs unzip, so capture the listing first and match in the shell.
+  local listing
+  if ! listing="$(unzip -l "${artifact}")"; then
+    echo "ERROR: ${artifact} could not be listed by unzip" >&2
+    return 1
+  fi
+  if [[ "${listing}" == *"${APP_NAME}.exe"* ]]; then
+    echo "[ZIP archive] Contains ${APP_NAME}.exe"
+    return 0
+  fi
+  echo "ERROR: ${artifact} does not contain ${APP_NAME}.exe" >&2
+  return 1
+}
+
 EXE_FAILED=0
 if [ -n "${EXE_PATH}" ] && [ -f "${EXE_PATH}" ]; then
   verify_artifact "EXE installer" "${EXE_PATH}" || EXE_FAILED=1
@@ -45,7 +67,11 @@ fi
 
 ZIP_FAILED=0
 if [ -n "${ZIP_PATH}" ] && [ -f "${ZIP_PATH}" ]; then
-  verify_artifact "ZIP archive" "${ZIP_PATH}" || ZIP_FAILED=1
+  if verify_artifact "ZIP archive" "${ZIP_PATH}" && verify_zip_contents "${ZIP_PATH}"; then
+    :
+  else
+    ZIP_FAILED=1
+  fi
 else
   echo "ERROR: No ZIP archive found in ${DIST_DIR} (expected ${APP_NAME}-<version>-x64.zip)" >&2
   ZIP_FAILED=1

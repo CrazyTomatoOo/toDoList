@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Settings, Plus } from 'lucide-react'
 import type {
   TaskRow,
@@ -121,6 +121,7 @@ function MainApp({ configNotice }: MainAppProps) {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [settingsSection, setSettingsSection] =
     useState<SettingsSection>('general')
+  const settingsButtonRef = useRef<HTMLButtonElement>(null)
   const [noticeHidden, setNoticeHidden] = useState(false)
   const theme = useTheme()
   const {
@@ -297,6 +298,7 @@ function MainApp({ configNotice }: MainAppProps) {
               </div>
             )}
             <button
+              ref={settingsButtonRef}
               className="btn btn-ghost btn-icon settings-button"
               onClick={() => {
                 setSettingsSection('general')
@@ -369,7 +371,12 @@ function MainApp({ configNotice }: MainAppProps) {
         {settingsOpen ? (
           <SettingsPage
             theme={theme}
-            onExit={() => setSettingsOpen(false)}
+            onExit={() => {
+              setSettingsOpen(false)
+              // Focus returns to the control that opened the page, so keyboard
+              // users are not dropped at the top of the document.
+              settingsButtonRef.current?.focus()
+            }}
             initialSection={settingsSection}
           />
         ) : viewMode === 'list' ? (

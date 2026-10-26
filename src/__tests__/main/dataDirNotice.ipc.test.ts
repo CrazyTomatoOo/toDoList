@@ -161,7 +161,7 @@ describe('data-dir:ackNotice (issue #14)', () => {
     expect((await getState(harness)).noticeAcknowledged).toBe(false)
   })
 
-  it('reports noticeAcknowledged false without a problem, even if a stale key exists', async () => {
+  it('drops a stale key once the config parses again', async () => {
     tempDir = bootOnTempDir({
       dir: DEFAULT_DIR,
       source: 'default',
@@ -176,6 +176,13 @@ describe('data-dir:ackNotice (issue #14)', () => {
 
     const harness = registerDataDirHandlers()
     expect((await getState(harness)).noticeAcknowledged).toBe(false)
+
+    // The row is gone, so the identical broken bytes are announced again
+    // instead of hiding behind an acknowledgement from an earlier breakage.
+    const row = getDb()
+      .prepare('SELECT value FROM settings WHERE key = ?')
+      .get(NOTICE_KEY)
+    expect(row).toBeUndefined()
   })
 
   it('does not throw when the database is unwritable', async () => {

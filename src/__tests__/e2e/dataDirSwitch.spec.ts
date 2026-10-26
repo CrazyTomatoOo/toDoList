@@ -136,6 +136,9 @@ test.describe('设置页换目录闭环', () => {
     // the close as a normal exit. A stray `electron.launch({args: []})` would
     // boot the real default userData — nothing to wait for here.
     await page.click('[data-testid="data-dir-apply-button"]')
+    // The migration commits the config; the restart is offered, not forced.
+    await page.waitForSelector('[data-testid="data-dir-migrated-panel"]')
+    await page.click('[data-testid="data-dir-restart-now"]')
     // Old process exits via app.exit(0); tolerate either close or an already
     // closed connection.
     await app.waitForEvent('close', { timeout: 15000 }).catch(() => undefined)

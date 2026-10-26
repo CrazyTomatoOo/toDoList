@@ -82,11 +82,21 @@ export default function SettingsPage({
   const [applyError, setApplyError] = useState<string | null>(null)
   const [applyStep, setApplyStep] = useState<string | null>(null)
   const [applying, setApplying] = useState(false)
+  // The migration committed but this process still runs on the old directory;
+  // the new one only takes effect on the next boot (ADR-0005).
+  const [migratedTo, setMigratedTo] = useState<string | null>(null)
   const [backupPendingDelete, setBackupPendingDelete] = useState<string | null>(
     null,
   )
 
+  const dismissMigrated = () => {
+    setMigratedTo(null)
+    setApplyError(null)
+    setApplyStep(null)
+  }
+
   const resetSwitchFlow = () => {
+    dismissMigrated()
     setSwitchTarget(null)
     setSwitchMode('migrate')
     setChooseFailure(null)
@@ -138,8 +148,11 @@ export default function SettingsPage({
       result = null
     }
     if (result && result.ok) {
-      // Two-phase: the new directory takes effect on the next boot.
-      await window.electronAPI.app.relaunch()
+      // Two-phase: the new directory takes effect on the next boot, so offer
+      // the restart instead of forcing it — 稍后 keeps the app usable.
+      setMigratedTo(switchTarget)
+      setApplying(false)
+      setSwitchTarget(null)
       return
     }
     const error =
@@ -325,6 +338,41 @@ export default function SettingsPage({
                   </p>
                 )}
 
+                {migratedTo && (
+                  <div
+                    className="settings-switch-panel"
+                    data-testid="data-dir-migrated-panel"
+                  >
+                    <p className="settings-hint">
+                      数据已迁移到
+                      <span data-testid="data-dir-migrated-target">
+                        {migratedTo}
+                      </span>
+                      ，重启后生效。
+                    </p>
+                    <div className="settings-switch-actions">
+                      <button
+                        type="button"
+                        className="btn btn-primary"
+                        data-testid="data-dir-restart-now"
+                        onClick={() => {
+                          void window.electronAPI.app.relaunch()
+                        }}
+                      >
+                        立即重启
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-ghost"
+                        data-testid="data-dir-restart-later"
+                        onClick={dismissMigrated}
+                      >
+                        稍后
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {switchTarget && (
                   <div
                     className="settings-switch-panel"
@@ -373,7 +421,7 @@ export default function SettingsPage({
                         void handleApply()
                       }}
                     >
-                      {applying ? '正在迁移…' : '迁移并重启'}
+                      {applying ? '正在迁移…' : '迁移'}
                     </button>
                     {applyError && (
                       <p

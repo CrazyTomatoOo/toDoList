@@ -125,7 +125,7 @@ describe('SettingsPage 数据 tab (issue #13)', () => {
     })
   })
 
-  it('runs the switch flow: 更改… → 迁移现有数据 default-checked → 迁移并重启 calls apply then relaunch', async () => {
+  it('runs the switch flow: 更改… → 迁移现有数据 default-checked → offers 立即重启 / 稍后', async () => {
     const api = stubElectronAPI()
     api.dataDir.choose = vi.fn(
       async () => ({ canceled: false, dir: '/home/tester/NewData' }) as const,
@@ -160,9 +160,52 @@ describe('SettingsPage 数据 tab (issue #13)', () => {
         mode: 'migrate',
       })
     })
+
+    // The new directory only takes effect on the next boot, so the restart is
+    // offered rather than forced.
+    await waitFor(() => {
+      expect(screen.getByTestId('data-dir-migrated-panel')).toBeInTheDocument()
+    })
+    expect(screen.getByTestId('data-dir-migrated-target')).toHaveTextContent(
+      '/home/tester/NewData',
+    )
+    expect(api.app.relaunch).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByTestId('data-dir-restart-now'))
     await waitFor(() => {
       expect(api.app.relaunch).toHaveBeenCalledTimes(1)
     })
+  })
+
+  it('dismisses the migrated panel on 稍后 without relaunching', async () => {
+    const api = stubElectronAPI()
+    api.dataDir.choose = vi.fn(
+      async () => ({ canceled: false, dir: '/home/tester/NewData' }) as const,
+    )
+    api.dataDir.apply = vi.fn(
+      async () => ({ ok: true, warnings: [] }) as const,
+    )
+
+    render(<SettingsPage theme={themeController} onExit={vi.fn()} />)
+    fireEvent.click(screen.getByTestId('settings-nav-data'))
+    await waitFor(() => {
+      expect(screen.getByTestId('data-dir-path')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByText('更改…'))
+    await waitFor(() => {
+      expect(screen.getByTestId('data-dir-switch-target')).toBeInTheDocument()
+    })
+    fireEvent.click(screen.getByTestId('data-dir-apply-button'))
+    await waitFor(() => {
+      expect(screen.getByTestId('data-dir-migrated-panel')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByTestId('data-dir-restart-later'))
+    expect(
+      screen.queryByTestId('data-dir-migrated-panel'),
+    ).not.toBeInTheDocument()
+    expect(api.app.relaunch).not.toHaveBeenCalled()
   })
 
   it('passes mode empty when 从空目录开始 is selected', async () => {

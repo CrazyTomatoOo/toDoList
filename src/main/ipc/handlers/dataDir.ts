@@ -3,6 +3,7 @@ import {
   IPC_CHANNELS,
   type IpcHandlers,
   type DataDirState,
+  type DataDirProblem,
   type ChooseDataDirResult,
   type ApplyDataDirInput,
   type ApplyDataDirResult,
@@ -13,6 +14,7 @@ import {
 import { getDataDirState } from '../../services/dataDirState.js'
 import {
   saveNoticeAcknowledgement,
+  clearNoticeAcknowledgement,
   isNoticeAcknowledged,
 } from '../../services/configNotice.js'
 import { recoverDataDir } from '../../services/safeMode.js'
@@ -46,8 +48,8 @@ function getDialogMock(): DialogMock | undefined {
  * getState reuses the resolution captured at startup (see
  * services/dataDirState.ts) — except in safe mode, where a retry re-runs the
  * resolution in-process (services/safeMode.ts) so the app can enter the
- * recovered directory without a relaunch. Backups are listed by issue #16;
- * this ticket returns an empty list.
+ * recovered directory without a relaunch. Backups beside the current directory
+ * are listed here too, so the settings page needs one round-trip.
  */
 function getDataDirSnapshot(): DataDirState {
   const state = getDataDirState()
@@ -64,7 +66,7 @@ function getDataDirSnapshot(): DataDirState {
 
   const fresh = getDataDirState() ?? state
   const { resolution, defaultDir, noStore } = fresh
-  const fingerprint = resolution.problem?.fingerprint ?? ''
+  const problem = resolution.problem
 
   return {
     dir: resolution.dir,
@@ -72,7 +74,7 @@ function getDataDirSnapshot(): DataDirState {
     source: resolution.source,
     isDefault: resolution.dir === defaultDir,
     configPath: resolution.configPath,
-    problem: resolution.problem,
+    problem,
     noStore,
     backups: listDataDirBackups(resolution.dir),
     appVersion: app.getVersion(),
@@ -80,7 +82,7 @@ function getDataDirSnapshot(): DataDirState {
     // table would open/create a DB at the boot-time default userData. In a
     // normal run an unreadable settings table degrades to "not acknowledged"
     // instead of breaking the snapshot.
-    noticeAcknowledged: noStore ? false : checkAcknowledged(fingerprint),
+    noticeAcknowledged: noStore ? false : resolveNoticeState(problem),
   }
 }
 
@@ -96,13 +98,28 @@ function listDataDirBackups(currentDir: string): DataDirBackupInfo[] {
   }))
 }
 
-function checkAcknowledged(fingerprint: string): boolean {
-  if (fingerprint === '') {
+/**
+ * Whether the banner is already dismissed for the config in effect. A config
+ * that parses again clears the stored fingerprint here, so the same broken
+ * bytes later cannot hide behind an old acknowledgement.
+ */
+function resolveNoticeState(problem: DataDirProblem | null): boolean {
+  if (!problem) {
+    try {
+      clearNoticeAcknowledgement()
+    } catch {
+      // Non-fatal: the row simply stays until the database is writable again.
+    }
+
+    return false
+  }
+
+  if (problem.fingerprint === '') {
     return false
   }
 
   try {
-    return isNoticeAcknowledged(fingerprint)
+    return isNoticeAcknowledged(problem.fingerprint)
   } catch {
     return false
   }
@@ -201,8 +218,11 @@ async function chooseDataDir(): Promise<ChooseDataDirResult> {
  * Apply a data-directory switch (issue #17): run the migration pipeline from
  * the CURRENT resolution so source and config path always match what the app
  * booted with. On success the database is intentionally NOT reopened here —
- * the renderer relaunches the app (two-phase flow) so a failed switch keeps
- * the UI on the settings page with the old process fully intact.
+ * the renderer relaunches (two-phase flow), so a failed switch keeps the UI on
+ * the settings page with the old process fully intact. A failure needs no
+ * explicit reopen either: the migration service closed the connection, and
+ * `getDb()` reopens the old file lazily on the next IPC call, since userData
+ * still points at it.
  */
 async function applyDataDir(input: ApplyDataDirInput): Promise<ApplyDataDirResult> {
   const state = getDataDirState()
