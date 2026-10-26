@@ -5,6 +5,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
 import { createTempUserDataDir } from '../main/ipc.harness'
+import { ensureResolvedTheme } from './settings.helpers'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const projectRoot = path.resolve(__dirname, '../../../')
@@ -211,13 +212,8 @@ test.describe('Packaged macOS app integration', () => {
       await page.fill('[data-testid="search-input"]', '')
       await page.waitForTimeout(500)
 
-      // 6. Toggle theme until the UI is in dark mode and verify the data-theme attribute.
-      for (let i = 0; i < 5; i++) {
-        const theme = await page.evaluate(() => document.documentElement.dataset.theme)
-        if (theme === 'dark') break
-        await page.click('[data-testid="theme-toggle"]')
-        await page.waitForTimeout(300)
-      }
+      // 6. Select dark mode in settings and verify the data-theme attribute.
+      await ensureResolvedTheme(page, 'dark')
       await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark', { timeout: 5000 })
 
       // 7. Export data to JSON, clear the database, import the JSON, and verify the task reappears.

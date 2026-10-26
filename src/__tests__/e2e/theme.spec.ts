@@ -1,7 +1,13 @@
-import { test, expect, type ElectronApplication, type Page, _electron as electron } from '@playwright/test'
+import {
+  test,
+  expect,
+  type ElectronApplication,
+  type Page,
+  _electron as electron,
+} from '@playwright/test'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { createTempUserDataDir } from '../main/ipc.harness'
+import { openSettings } from './settings.helpers'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -35,17 +41,22 @@ async function launchApp(userDataDir: string): Promise<ElectronApplication> {
     args: [path.resolve(__dirname, '../../../out/main/main.js')],
     env: {
       ...process.env,
-      TODO_USER_DATA_DIR: userDataDir
-    }
+      TODO_USER_DATA_DIR: userDataDir,
+    },
   })
 }
 
-async function clickUntilMode(page: Page, targetMode: string) {
-  for (let i = 0; i < 4; i++) {
-    if ((await getSavedThemeMode(page)) === targetMode) return
-    await page.click('[data-testid="theme-toggle"]')
-    await page.waitForTimeout(300)
-  }
+async function selectMode(page: Page, targetMode: 'system' | 'light' | 'dark') {
+  await openSettings(page)
+  await page.click(
+    `[data-testid="settings-theme-segmented"] button[data-mode="${targetMode}"]`,
+  )
+  await page.waitForTimeout(300)
+  await expect(
+    page.locator(`[data-testid="settings-theme-${targetMode}"]`),
+  ).toHaveAttribute('aria-pressed', 'true')
+  await page.click('[data-testid="settings-back-button"]')
+  await expect(page.locator('[data-testid="settings-page"]')).toBeHidden()
   expect(await getSavedThemeMode(page)).toBe(targetMode)
 }
 
@@ -66,22 +77,28 @@ test.describe('Theme toggle and persistence', () => {
     const page = await electronApp.firstWindow()
     await waitForDbReady(page)
 
-    const systemTheme = await page.evaluate(() => window.electronAPI.theme.getSystemTheme())
-    await expect(page.locator('html')).toHaveAttribute('data-theme', systemTheme, { timeout: 10000 })
+    const systemTheme = await page.evaluate(() =>
+      window.electronAPI.theme.getSystemTheme(),
+    )
+    await expect(page.locator('html')).toHaveAttribute(
+      'data-theme',
+      systemTheme,
+      { timeout: 10000 },
+    )
     expect(await getSavedThemeMode(page)).toBe('system')
   })
 
-  test('theme toggle button is visible', async () => {
+  test('settings button is visible', async () => {
     const page = await electronApp.firstWindow()
-    await expect(page.locator('[data-testid="theme-toggle"]')).toBeVisible()
+    await expect(page.locator('[data-testid="settings-button"]')).toBeVisible()
   })
 
-  test('clicking toggle changes the saved mode through IPC', async () => {
+  test('selecting a mode in settings changes the saved mode through IPC', async () => {
     const page = await electronApp.firstWindow()
     const before = await getSavedThemeMode(page)
 
-    await page.click('[data-testid="theme-toggle"]')
-    await page.waitForTimeout(300)
+    const next = before === 'light' ? 'dark' : 'light'
+    await selectMode(page, next)
 
     const after = await getSavedThemeMode(page)
     expect(after).not.toBe(before)
@@ -91,9 +108,10 @@ test.describe('Theme toggle and persistence', () => {
 
   test('theme persists across app restarts via SQLite-backed IPC', async () => {
     const page = await electronApp.firstWindow()
-
-    await clickUntilMode(page, 'dark')
-    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark', { timeout: 5000 })
+    await selectMode(page, 'dark')
+    await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark', {
+      timeout: 5000,
+    })
 
     await electronApp.close()
 
@@ -101,7 +119,11 @@ test.describe('Theme toggle and persistence', () => {
     const newPage = await electronApp.firstWindow()
     await waitForDbReady(newPage)
 
-    await expect(newPage.locator('html')).toHaveAttribute('data-theme', 'dark', { timeout: 10000 })
+    await expect(newPage.locator('html')).toHaveAttribute(
+      'data-theme',
+      'dark',
+      { timeout: 10000 },
+    )
     expect(await getSavedThemeMode(newPage)).toBe('dark')
   })
 })

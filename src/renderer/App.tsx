@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Moon, Sun, Monitor, Plus } from 'lucide-react'
+import { Settings, Plus } from 'lucide-react'
 import type { TaskRow, CreateTaskInput, UpdateTaskInput } from '../shared/ipc'
 import { useLists } from './hooks/useLists'
 import { useTasks } from './hooks/useTasks'
 import { useSelectedList } from './hooks/useSelectedList'
 import { useSearchAndFilter } from './hooks/useSearchAndFilter'
 import { useTheme } from './services/theme'
+import SettingsPage from './components/SettingsPage'
 import ListSidebar from './components/ListSidebar'
 import TaskList from './components/TaskList'
 import SearchBar from './components/SearchBar'
@@ -16,9 +17,17 @@ import './styles.css'
 
 export default function App() {
   const [showAddForm, setShowAddForm] = useState(false)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list')
-  const { mode: themeMode, toggle: toggleTheme } = useTheme()
-  const { lists, loading: listsLoading, createList, updateList, deleteList, refresh: refreshLists } = useLists()
+  const theme = useTheme()
+  const {
+    lists,
+    loading: listsLoading,
+    createList,
+    updateList,
+    deleteList,
+    refresh: refreshLists,
+  } = useLists()
   const { selectedListId, selectList, clearSelection } = useSelectedList()
   const {
     tasks,
@@ -28,7 +37,7 @@ export default function App() {
     updateTask,
     deleteTask,
     toggleComplete,
-    refresh: refreshTasks
+    refresh: refreshTasks,
   } = useTasks(selectedListId)
 
   const {
@@ -46,14 +55,17 @@ export default function App() {
     setQuadrantFilter,
     filteredTasks,
     isFiltering,
-    loading: searchLoading
+    loading: searchLoading,
   } = useSearchAndFilter(tasks, selectedListId)
 
   // Auto-select first list when lists load
   useEffect(() => {
     if (lists.length > 0 && selectedListId === null) {
       selectList(lists[0].id)
-    } else if (lists.length > 0 && !lists.some((l) => l.id === selectedListId)) {
+    } else if (
+      lists.length > 0 &&
+      !lists.some((l) => l.id === selectedListId)
+    ) {
       selectList(lists[0].id)
     } else if (lists.length === 0) {
       clearSelection()
@@ -62,18 +74,19 @@ export default function App() {
 
   // Focus the list when the user clicks a reminder notification.
   useEffect(() => {
-    const unsubscribe = window.electronAPI.reminders.onReminderClicked((payload) => {
-      selectList(payload.listId)
-    })
+    const unsubscribe = window.electronAPI.reminders.onReminderClicked(
+      (payload) => {
+        selectList(payload.listId)
+      },
+    )
     return unsubscribe
   }, [selectList])
-
 
   const handleDeleteList = useCallback(
     async (id: number) => {
       await deleteList(id)
     },
-    [deleteList]
+    [deleteList],
   )
 
   const handleCreateTask = useCallback(
@@ -81,7 +94,7 @@ export default function App() {
       await createTask(input)
       await refreshLists()
     },
-    [createTask, refreshLists]
+    [createTask, refreshLists],
   )
 
   const handleUpdateTask = useCallback(
@@ -89,7 +102,7 @@ export default function App() {
       await updateTask(id, input)
       await refreshLists()
     },
-    [updateTask, refreshLists]
+    [updateTask, refreshLists],
   )
 
   const handleDeleteTask = useCallback(
@@ -97,7 +110,7 @@ export default function App() {
       await deleteTask(id)
       await refreshLists()
     },
-    [deleteTask, refreshLists]
+    [deleteTask, refreshLists],
   )
 
   const handleToggleComplete = useCallback(
@@ -105,7 +118,7 @@ export default function App() {
       await toggleComplete(task)
       await refreshLists()
     },
-    [toggleComplete, refreshLists]
+    [toggleComplete, refreshLists],
   )
 
   const handleReorder = useCallback(() => {
@@ -146,8 +159,12 @@ export default function App() {
         lists={lists}
         selectedListId={selectedListId}
         onSelectList={selectList}
-        onCreateList={async (name) => { await createList(name) }}
-        onUpdateList={async (id, name) => { await updateList(id, name) }}
+        onCreateList={async (name) => {
+          await createList(name)
+        }}
+        onUpdateList={async (id, name) => {
+          await updateList(id, name)
+        }}
         onDeleteList={handleDeleteList}
         loading={listsLoading}
       />
@@ -156,7 +173,7 @@ export default function App() {
         <div className="main-header">
           <h1>{selectedList?.name ?? '未选择列表'}</h1>
           <div className="main-header-actions">
-            {selectedListId !== null && (
+            {!settingsOpen && selectedListId !== null && (
               <div className="view-toggle" role="group" aria-label="视图模式">
                 <button
                   className="view-toggle-btn"
@@ -177,15 +194,15 @@ export default function App() {
               </div>
             )}
             <button
-              className="btn btn-ghost btn-icon theme-toggle"
-              onClick={toggleTheme}
-              data-testid="theme-toggle"
-              title={`主题：${themeMode}`}
-              aria-label={`当前主题：${themeMode}。点击切换。`}
+              className="btn btn-ghost btn-icon settings-button"
+              onClick={() => setSettingsOpen(true)}
+              data-testid="settings-button"
+              title="设置"
+              aria-label="设置"
             >
-              {themeMode === 'dark' ? <Moon size={20} /> : themeMode === 'light' ? <Sun size={20} /> : <Monitor size={20} />}
+              <Settings size={20} />
             </button>
-            {selectedListId !== null && (
+            {!settingsOpen && selectedListId !== null && (
               <button
                 className="btn btn-primary"
                 onClick={() => setShowAddForm(true)}
@@ -195,15 +212,17 @@ export default function App() {
                 添加任务
               </button>
             )}
-            <ImportExportButtons
-              onImport={handleImport}
-              onExportJson={handleExportJson}
-              onExportCsv={handleExportCsv}
-            />
+            {!settingsOpen && (
+              <ImportExportButtons
+                onImport={handleImport}
+                onExportJson={handleExportJson}
+                onExportCsv={handleExportCsv}
+              />
+            )}
           </div>
         </div>
 
-        {selectedListId !== null && viewMode === 'list' && (
+        {!settingsOpen && selectedListId !== null && viewMode === 'list' && (
           <div className="search-filter-bar" data-testid="search-filter-bar">
             <SearchBar query={query} onQueryChange={setQuery} />
             <FilterBar
@@ -221,7 +240,9 @@ export default function App() {
           </div>
         )}
 
-        {viewMode === 'list' ? (
+        {settingsOpen ? (
+          <SettingsPage theme={theme} onExit={() => setSettingsOpen(false)} />
+        ) : viewMode === 'list' ? (
           <TaskList
             tasks={filteredTasks}
             selectedListId={selectedListId}

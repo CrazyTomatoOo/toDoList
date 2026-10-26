@@ -112,6 +112,7 @@ vi.mock('../../renderer/services/theme', () => ({
   useTheme: () => ({
     mode: 'light',
     toggle: vi.fn(),
+    setMode: vi.fn(),
   }),
 }))
 
@@ -227,12 +228,18 @@ describe('App redesigned UI classes', () => {
     expect(shell.querySelector('.main-header-actions')).toBeInTheDocument()
   })
 
-  it('renders theme toggle with ghost icon button classes and aria-label', () => {
+  it('renders settings button with ghost icon button classes and aria-label', () => {
     render(<App />)
-    const toggle = screen.getByTestId('theme-toggle')
-    expect(toggle).toHaveClass('btn', 'btn-ghost', 'btn-icon', 'theme-toggle')
-    expect(toggle).toHaveAttribute('aria-label', '当前主题：light。点击切换。')
-    expect(toggle.querySelector('svg')).toBeInTheDocument()
+    const button = screen.getByTestId('settings-button')
+    expect(button).toHaveClass(
+      'btn',
+      'btn-ghost',
+      'btn-icon',
+      'settings-button',
+    )
+    expect(button).toHaveAttribute('aria-label', '设置')
+    expect(button).toHaveAttribute('title', '设置')
+    expect(button.querySelector('svg')).toBeInTheDocument()
   })
 
   it('renders Add Task button with primary class and Lucide Plus icon', () => {

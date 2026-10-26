@@ -3,6 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createTempUserDataDir } from '../main/ipc.harness'
 import fs from 'node:fs'
+import { ensureResolvedTheme } from './settings.helpers'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -91,12 +92,7 @@ test.describe('Task 9 - Accessibility fixes', () => {
 
     // --- Light Mode ---
     // Ensure light mode
-    const themeToggle = page.locator('[data-testid="theme-toggle"]')
-    let ariaLabel = await themeToggle.getAttribute('aria-label')
-    if (ariaLabel?.includes('dark')) {
-      await themeToggle.click()
-      await page.waitForTimeout(300)
-    }
+    await ensureResolvedTheme(page, 'light')
 
     const lightResults = await runAxeCore(page)
     evidenceLines.push(
@@ -119,11 +115,7 @@ test.describe('Task 9 - Accessibility fixes', () => {
     expect(lightResults.violations).toEqual([])
 
     // --- Dark Mode ---
-    ariaLabel = await themeToggle.getAttribute('aria-label')
-    if (ariaLabel?.includes('light')) {
-      await themeToggle.click()
-      await page.waitForTimeout(300)
-    }
+    await ensureResolvedTheme(page, 'dark')
 
     const darkResults = await runAxeCore(page)
     evidenceLines.push(
@@ -147,11 +139,7 @@ test.describe('Task 9 - Accessibility fixes', () => {
 
     // --- Keyboard Traversal ---
     // Switch back to light mode for consistent testing
-    ariaLabel = await themeToggle.getAttribute('aria-label')
-    if (ariaLabel?.includes('dark')) {
-      await themeToggle.click()
-      await page.waitForTimeout(300)
-    }
+    await ensureResolvedTheme(page, 'light')
 
     // Tab through the app and collect focused elements
     const focusedElements: string[] = []
@@ -193,20 +181,20 @@ test.describe('Task 9 - Accessibility fixes', () => {
 
     // Verify key interactive elements are focusable
     const hasSidebarButton = focusedElements.some((el) => el.includes('sidebar-item'))
-    const hasThemeToggle = focusedElements.some((el) => el.includes('theme-toggle'))
+    const hasSettingsButton = focusedElements.some((el) => el.includes('settings-button'))
     const hasAddTask = focusedElements.some((el) => el.includes('add-task-button'))
 
     evidenceLines.push(
       'Key checks:',
       `  - Sidebar button focusable: ${hasSidebarButton}`,
-      `  - Theme toggle focusable: ${hasThemeToggle}`,
+      `  - Settings button focusable: ${hasSettingsButton}`,
       `  - Add task button focusable: ${hasAddTask}`,
       ''
     )
 
     expect(focusedElements.length).toBeGreaterThan(3)
     expect(hasSidebarButton).toBe(true)
-    expect(hasThemeToggle).toBe(true)
+    expect(hasSettingsButton).toBe(true)
     expect(hasAddTask).toBe(true)
 
     // --- Contrast Ratios ---
