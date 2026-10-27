@@ -58,19 +58,32 @@ export async function initTheme(): Promise<ThemeMode> {
   return mode
 }
 
-/** React hook for theme management. */
-export function useTheme() {
-  const [mode, setMode] = useState<ThemeMode>('system')
-  const [resolved, setResolved] = useState<ResolvedTheme>(() => currentDocumentTheme())
+/** What useTheme() exposes to consumers. */
+export interface ThemeController {
+  mode: ThemeMode
+  resolved: ResolvedTheme
+  toggle: () => void
+  setMode: (mode: ThemeMode) => void
+}
 
-  const applyAndStore = useCallback(async (nextMode: ThemeMode, persist: boolean) => {
-    if (persist) {
-      await saveMode(nextMode)
-    }
-    const nextResolved = await applyTheme(nextMode)
-    setMode(nextMode)
-    setResolved(nextResolved)
-  }, [])
+/** React hook for theme management. */
+export function useTheme(): ThemeController {
+  const [mode, setMode] = useState<ThemeMode>('system')
+  const [resolved, setResolved] = useState<ResolvedTheme>(() =>
+    currentDocumentTheme(),
+  )
+
+  const applyAndStore = useCallback(
+    async (nextMode: ThemeMode, persist: boolean) => {
+      if (persist) {
+        await saveMode(nextMode)
+      }
+      const nextResolved = await applyTheme(nextMode)
+      setMode(nextMode)
+      setResolved(nextResolved)
+    },
+    [],
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -95,5 +108,12 @@ export function useTheme() {
     void applyAndStore(cycleTheme(mode), true)
   }, [applyAndStore, mode])
 
-  return { mode, resolved, toggle }
+  const setThemeMode = useCallback(
+    (nextMode: ThemeMode) => {
+      void applyAndStore(nextMode, true)
+    },
+    [applyAndStore],
+  )
+
+  return { mode, resolved, toggle, setMode: setThemeMode }
 }

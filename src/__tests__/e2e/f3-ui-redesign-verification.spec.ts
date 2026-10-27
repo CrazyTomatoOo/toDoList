@@ -2,6 +2,7 @@ import { test, expect, type ElectronApplication, type Page, _electron as electro
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createTempUserDataDir } from '../main/ipc.harness'
+import { ensureResolvedTheme } from './settings.helpers'
 import fs from 'node:fs'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -24,18 +25,7 @@ async function waitForDbReady(page: Page) {
 }
 
 async function ensureLightMode(page: Page) {
-  const html = page.locator('html')
-  const current = await html.getAttribute('data-theme')
-  if (current === 'light') return
-
-  const themeToggle = page.locator('[data-testid="theme-toggle"]')
-  for (let i = 0; i < 5; i++) {
-    const theme = await html.getAttribute('data-theme')
-    if (theme === 'light') break
-    await themeToggle.click()
-    await page.waitForTimeout(300)
-  }
-  await expect(html).toHaveAttribute('data-theme', 'light', { timeout: 5000 })
+  await ensureResolvedTheme(page, 'light')
 }
 
 async function createAndSelectList(page: Page, name: string) {

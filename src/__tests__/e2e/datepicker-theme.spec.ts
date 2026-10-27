@@ -8,6 +8,7 @@ import {
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createTempUserDataDir } from '../main/ipc.harness'
+import { ensureResolvedTheme } from './settings.helpers'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -28,15 +29,7 @@ async function waitForDbReady(page: Page) {
 }
 
 async function setTheme(page: Page, target: 'light' | 'dark') {
-  for (let i = 0; i < 6; i++) {
-    const theme = await page.evaluate(
-      () => document.documentElement.dataset.theme,
-    )
-    if (theme === target) return
-    await page.click('[data-testid="theme-toggle"]')
-    await page.waitForTimeout(250)
-  }
-  throw new Error(`could not reach ${target}`)
+  await ensureResolvedTheme(page, target)
 }
 
 test.describe('Custom date picker theming', () => {
@@ -77,14 +70,16 @@ test.describe('Custom date picker theming', () => {
     await expect(popup.locator('.date-picker-weekday').first()).toHaveText('日')
 
     // select a day through the visible calendar; hidden native input stays in sync
-    await page.click('[data-testid="task-form-due-date-day-2026-08-21"]')
+    const today = new Date()
+    const todayISO = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+    await page.click('[data-testid="task-form-due-date-today"]')
     await expect(popup).not.toBeVisible()
     await expect(
       page.locator('[data-testid="task-form-due-date"]'),
-    ).toHaveValue('2026-08-21')
+    ).toHaveValue(todayISO)
     await expect(
       page.locator('[data-testid="task-form-due-date-trigger"]'),
-    ).toContainText('8月21日')
+    ).toContainText(`${today.getMonth() + 1}月${today.getDate()}日`)
     await page.click('[data-testid="task-form-close"]')
     await page.waitForSelector('[data-testid="task-form"]', {
       state: 'detached',

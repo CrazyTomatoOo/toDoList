@@ -1,12 +1,20 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Moon, Sun, Monitor, Plus } from 'lucide-react'
-import type { TaskRow, CreateTaskInput, UpdateTaskInput } from '../shared/ipc'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Settings, Plus } from 'lucide-react'
+import type {
+  TaskRow,
+  CreateTaskInput,
+  UpdateTaskInput,
+  DataDirState,
+} from '../shared/ipc'
 import { useLists } from './hooks/useLists'
 import { useTasks } from './hooks/useTasks'
 import { useSelectedList } from './hooks/useSelectedList'
 import { useSearchAndFilter } from './hooks/useSearchAndFilter'
 import { useTheme } from './services/theme'
 import ListSidebar from './components/ListSidebar'
+import SettingsPage, { type SettingsSection } from './components/SettingsPage'
+import ConfigNotice from './components/ConfigNotice'
+import NoStoreScreen from './components/NoStoreScreen'
 import TaskList from './components/TaskList'
 import SearchBar from './components/SearchBar'
 import FilterBar from './components/FilterBar'
@@ -14,11 +22,116 @@ import ImportExportButtons from './components/ImportExportButtons'
 import QuadrantBoard from './components/QuadrantBoard'
 import './styles.css'
 
+/**
+ * 应用根组件 (issue #15).
+ *
+ * First resolves the data directory snapshot via data-dir:getState. When the
+ * configured directory is unusable (noStore) the app renders the full-screen
+ * safe mode INSTEAD of the shell — the shell's hooks (useTheme, useLists, …)
+ * all touch the database at mount, and mounting them in safe mode would create
+ * a database at the boot-time default userData, which safe mode must never do.
+ */
 export default function App() {
+  const [boot, setBoot] = useState<
+    | { kind: 'loading' }
+    | { kind: 'noStore'; state: DataDirState }
+    | { kind: 'ready'; state: DataDirState | null }
+  >({ kind: 'loading' })
+  const [retrying, setRetrying] = useState(false)
+  const [chooseError, setChooseError] = useState<string | null>(null)
+
+  const loadState = useCallback(() => {
+    return window.electronAPI.dataDir
+      .getState()
+      .then((state) => {
+        setBoot(
+          state.noStore ? { kind: 'noStore', state } : { kind: 'ready', state },
+        )
+      })
+      .catch(() => {
+        // Fail open: without a snapshot render the normal app — any database
+        // access errors then surface through the usual hook error states.
+        setBoot({ kind: 'ready', state: null })
+      })
+  }, [])
+
+  useEffect(() => {
+    void loadState()
+  }, [loadState])
+
+  const handleRetry = useCallback(async () => {
+    setRetrying(true)
+    try {
+      await loadState()
+    } finally {
+      setRetrying(false)
+    }
+  }, [loadState])
+
+  const handleChoose = useCallback(async () => {
+    setChooseError(null)
+    try {
+      const result = await window.electronAPI.dataDir.choose()
+      if (result.canceled) {
+        return
+      }
+      if (result.failure) {
+        setChooseError(result.failure)
+        return
+      }
+      // A valid directory was committed; restart into it.
+      await window.electronAPI.app.relaunch()
+    } catch (error) {
+      setChooseError(error instanceof Error ? error.message : '选择目录失败')
+    }
+  }, [])
+
+  const handleExit = useCallback(() => {
+    void window.electronAPI.app.quit()
+  }, [])
+
+  if (boot.kind === 'loading') {
+    return null
+  }
+
+  if (boot.kind === 'noStore') {
+    return (
+      <NoStoreScreen
+        state={boot.state}
+        retrying={retrying}
+        chooseError={chooseError}
+        onRetry={handleRetry}
+        onChoose={handleChoose}
+        onExit={handleExit}
+      />
+    )
+  }
+
+  return <MainApp configNotice={boot.state} />
+}
+
+interface MainAppProps {
+  configNotice: DataDirState | null
+}
+
+/** The normal application shell (list sidebar + task area). */
+function MainApp({ configNotice }: MainAppProps) {
   const [showAddForm, setShowAddForm] = useState(false)
   const [viewMode, setViewMode] = useState<'list' | 'board'>('list')
-  const { mode: themeMode, toggle: toggleTheme } = useTheme()
-  const { lists, loading: listsLoading, createList, updateList, deleteList, refresh: refreshLists } = useLists()
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [settingsSection, setSettingsSection] =
+    useState<SettingsSection>('general')
+  const settingsButtonRef = useRef<HTMLButtonElement>(null)
+  const [noticeHidden, setNoticeHidden] = useState(false)
+  const theme = useTheme()
+  const {
+    lists,
+    loading: listsLoading,
+    createList,
+    updateList,
+    deleteList,
+    refresh: refreshLists,
+  } = useLists()
   const { selectedListId, selectList, clearSelection } = useSelectedList()
   const {
     tasks,
@@ -28,7 +141,7 @@ export default function App() {
     updateTask,
     deleteTask,
     toggleComplete,
-    refresh: refreshTasks
+    refresh: refreshTasks,
   } = useTasks(selectedListId)
 
   const {
@@ -46,14 +159,17 @@ export default function App() {
     setQuadrantFilter,
     filteredTasks,
     isFiltering,
-    loading: searchLoading
+    loading: searchLoading,
   } = useSearchAndFilter(tasks, selectedListId)
 
   // Auto-select first list when lists load
   useEffect(() => {
     if (lists.length > 0 && selectedListId === null) {
       selectList(lists[0].id)
-    } else if (lists.length > 0 && !lists.some((l) => l.id === selectedListId)) {
+    } else if (
+      lists.length > 0 &&
+      !lists.some((l) => l.id === selectedListId)
+    ) {
       selectList(lists[0].id)
     } else if (lists.length === 0) {
       clearSelection()
@@ -62,18 +178,19 @@ export default function App() {
 
   // Focus the list when the user clicks a reminder notification.
   useEffect(() => {
-    const unsubscribe = window.electronAPI.reminders.onReminderClicked((payload) => {
-      selectList(payload.listId)
-    })
+    const unsubscribe = window.electronAPI.reminders.onReminderClicked(
+      (payload) => {
+        selectList(payload.listId)
+      },
+    )
     return unsubscribe
   }, [selectList])
-
 
   const handleDeleteList = useCallback(
     async (id: number) => {
       await deleteList(id)
     },
-    [deleteList]
+    [deleteList],
   )
 
   const handleCreateTask = useCallback(
@@ -81,7 +198,7 @@ export default function App() {
       await createTask(input)
       await refreshLists()
     },
-    [createTask, refreshLists]
+    [createTask, refreshLists],
   )
 
   const handleUpdateTask = useCallback(
@@ -89,7 +206,7 @@ export default function App() {
       await updateTask(id, input)
       await refreshLists()
     },
-    [updateTask, refreshLists]
+    [updateTask, refreshLists],
   )
 
   const handleDeleteTask = useCallback(
@@ -97,7 +214,7 @@ export default function App() {
       await deleteTask(id)
       await refreshLists()
     },
-    [deleteTask, refreshLists]
+    [deleteTask, refreshLists],
   )
 
   const handleToggleComplete = useCallback(
@@ -105,7 +222,7 @@ export default function App() {
       await toggleComplete(task)
       await refreshLists()
     },
-    [toggleComplete, refreshLists]
+    [toggleComplete, refreshLists],
   )
 
   const handleReorder = useCallback(() => {
@@ -146,8 +263,12 @@ export default function App() {
         lists={lists}
         selectedListId={selectedListId}
         onSelectList={selectList}
-        onCreateList={async (name) => { await createList(name) }}
-        onUpdateList={async (id, name) => { await updateList(id, name) }}
+        onCreateList={async (name) => {
+          await createList(name)
+        }}
+        onUpdateList={async (id, name) => {
+          await updateList(id, name)
+        }}
         onDeleteList={handleDeleteList}
         loading={listsLoading}
       />
@@ -156,7 +277,7 @@ export default function App() {
         <div className="main-header">
           <h1>{selectedList?.name ?? '未选择列表'}</h1>
           <div className="main-header-actions">
-            {selectedListId !== null && (
+            {!settingsOpen && selectedListId !== null && (
               <div className="view-toggle" role="group" aria-label="视图模式">
                 <button
                   className="view-toggle-btn"
@@ -177,15 +298,19 @@ export default function App() {
               </div>
             )}
             <button
-              className="btn btn-ghost btn-icon theme-toggle"
-              onClick={toggleTheme}
-              data-testid="theme-toggle"
-              title={`主题：${themeMode}`}
-              aria-label={`当前主题：${themeMode}。点击切换。`}
+              ref={settingsButtonRef}
+              className="btn btn-ghost btn-icon settings-button"
+              onClick={() => {
+                setSettingsSection('general')
+                setSettingsOpen(true)
+              }}
+              data-testid="settings-button"
+              title="设置"
+              aria-label="设置"
             >
-              {themeMode === 'dark' ? <Moon size={20} /> : themeMode === 'light' ? <Sun size={20} /> : <Monitor size={20} />}
+              <Settings size={20} />
             </button>
-            {selectedListId !== null && (
+            {!settingsOpen && selectedListId !== null && (
               <button
                 className="btn btn-primary"
                 onClick={() => setShowAddForm(true)}
@@ -195,15 +320,37 @@ export default function App() {
                 添加任务
               </button>
             )}
-            <ImportExportButtons
-              onImport={handleImport}
-              onExportJson={handleExportJson}
-              onExportCsv={handleExportCsv}
-            />
+            {!settingsOpen && (
+              <ImportExportButtons
+                onImport={handleImport}
+                onExportJson={handleExportJson}
+                onExportCsv={handleExportCsv}
+              />
+            )}
           </div>
         </div>
 
-        {selectedListId !== null && viewMode === 'list' && (
+        {configNotice?.problem &&
+          !configNotice.noticeAcknowledged &&
+          !noticeHidden && (
+            <ConfigNotice
+              problem={configNotice.problem}
+              configPath={configNotice.configPath}
+              onOpenSettings={() => {
+                setSettingsSection('data')
+                setSettingsOpen(true)
+              }}
+              onAcknowledge={() => {
+                setNoticeHidden(true)
+                window.electronAPI.dataDir.ackNotice().catch(() => {
+                  // The main process already degrades to re-showing the notice
+                  // next launch when the acknowledgement cannot be persisted.
+                })
+              }}
+            />
+          )}
+
+        {!settingsOpen && selectedListId !== null && viewMode === 'list' && (
           <div className="search-filter-bar" data-testid="search-filter-bar">
             <SearchBar query={query} onQueryChange={setQuery} />
             <FilterBar
@@ -221,7 +368,18 @@ export default function App() {
           </div>
         )}
 
-        {viewMode === 'list' ? (
+        {settingsOpen ? (
+          <SettingsPage
+            theme={theme}
+            onExit={() => {
+              setSettingsOpen(false)
+              // Focus returns to the control that opened the page, so keyboard
+              // users are not dropped at the top of the document.
+              settingsButtonRef.current?.focus()
+            }}
+            initialSection={settingsSection}
+          />
+        ) : viewMode === 'list' ? (
           <TaskList
             tasks={filteredTasks}
             selectedListId={selectedListId}

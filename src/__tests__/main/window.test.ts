@@ -1,4 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+
+/**
+ * Electron's userData/appData live under this throwaway root: initializeApp()
+ * now resolves the data directory (issue #12) and mkdir's it before whenReady.
+ */
+const testRoot = path.join(os.tmpdir(), `todolist-window-test-${process.pid}`)
 
 /**
  * Mock browser window instances. We keep a live list so that
@@ -62,6 +71,9 @@ const appMock = {
     return appMock
   }),
   name: 'ToDoList',
+  getPath: vi.fn((name: string) => path.join(testRoot, name)),
+  setPath: vi.fn(),
+  getVersion: vi.fn(() => '0.2.0'),
 }
 
 const menuMock = {
@@ -89,6 +101,10 @@ beforeEach(() => {
   BrowserWindowMock.getAllWindows.mockReturnValue([])
   Object.keys(appHandlers).forEach((key) => delete appHandlers[key])
   delete process.env.ELECTRON_RENDERER_URL
+})
+
+afterAll(() => {
+  fs.rmSync(testRoot, { recursive: true, force: true })
 })
 
 describe('window creation', () => {
@@ -189,5 +205,35 @@ describe('single-instance lock', () => {
     appHandlers['second-instance']?.forEach((h) => h())
 
     expect(win.focus).toHaveBeenCalled()
+  })
+})
+
+describe('data directory wiring', () => {
+  it('re-points userData but keeps the original default in the state snapshot', async () => {
+    const configDir = path.join(testRoot, 'config')
+    const customDir = path.join(testRoot, 'custom-data')
+    fs.mkdirSync(configDir, { recursive: true })
+    fs.writeFileSync(
+      path.join(configDir, 'config.json'),
+      JSON.stringify({ version: 1, dataDir: customDir }),
+    )
+    process.env.TODO_CONFIG_DIR = configDir
+    appMock.requestSingleInstanceLock.mockReturnValue(true)
+
+    try {
+      // Imported, not statically referenced: the module runs initializeApp on
+      // load, which is the boundary this test exercises.
+      await import('../../main/main')
+      const { getDataDirState } =
+        await import('../../main/services/dataDirState')
+
+      const state = getDataDirState()
+      expect(state?.resolution.dir).toBe(customDir)
+      expect(state?.defaultDir).toBe(path.join(testRoot, 'userData'))
+      expect(appMock.setPath).toHaveBeenCalledWith('userData', customDir)
+      expect(appMock.setPath).toHaveBeenCalledWith('sessionData', customDir)
+    } finally {
+      delete process.env.TODO_CONFIG_DIR
+    }
   })
 })

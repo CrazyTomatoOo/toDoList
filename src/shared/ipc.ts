@@ -28,6 +28,14 @@ export const IPC_CHANNELS = {
   THEME_GET_MODE: 'theme:getMode',
   THEME_SET_MODE: 'theme:setMode',
   THEME_GET_SYSTEM_THEME: 'theme:getSystemTheme',
+  DATA_DIR_GET_STATE: 'data-dir:getState',
+  DATA_DIR_REVEAL: 'data-dir:reveal',
+  DATA_DIR_ACK_NOTICE: 'data-dir:ackNotice',
+  DATA_DIR_CHOOSE: 'data-dir:choose',
+  DATA_DIR_APPLY: 'data-dir:apply',
+  DATA_DIR_DELETE_BACKUP: 'data-dir:deleteBackup',
+  APP_RELAUNCH: 'app:relaunch',
+  APP_QUIT: 'app:quit',
 } as const
 
 export const REMINDER_CLICKED_CHANNEL = 'reminder:clicked' as const
@@ -180,6 +188,104 @@ export interface IpcHandlers {
   [IPC_CHANNELS.THEME_GET_MODE]: () => ThemeMode
   [IPC_CHANNELS.THEME_SET_MODE]: (mode: ThemeMode) => void
   [IPC_CHANNELS.THEME_GET_SYSTEM_THEME]: () => ResolvedTheme
+  [IPC_CHANNELS.DATA_DIR_GET_STATE]: () => DataDirState
+  [IPC_CHANNELS.DATA_DIR_REVEAL]: () => void
+  [IPC_CHANNELS.DATA_DIR_ACK_NOTICE]: () => void
+  [IPC_CHANNELS.DATA_DIR_CHOOSE]: () => Promise<ChooseDataDirResult>
+  [IPC_CHANNELS.DATA_DIR_APPLY]: (
+    input: ApplyDataDirInput,
+  ) => Promise<ApplyDataDirResult>
+  [IPC_CHANNELS.DATA_DIR_DELETE_BACKUP]: (
+    input: DeleteBackupInput,
+  ) => Promise<DeleteBackupResult>
+  [IPC_CHANNELS.APP_RELAUNCH]: () => void
+  [IPC_CHANNELS.APP_QUIT]: () => void
+}
+
+export type DataDirSource = 'env' | 'cli' | 'config' | 'portable' | 'default'
+
+export interface DataDirProblem {
+  kind:
+    | 'unreadable'
+    | 'invalid-json'
+    | 'bad-version'
+    | 'bad-data-dir'
+    | 'unusable-dir'
+  detail: string
+  fingerprint: string
+}
+
+export interface DataDirBackupInfo {
+  path: string
+  sizeBytes: number
+  createdAt: string
+}
+
+/** Snapshot of the resolved data directory state (issue #13). */
+export interface DataDirState {
+  dir: string
+  defaultDir: string
+  source: DataDirSource
+  isDefault: boolean
+  configPath: string
+  problem: DataDirProblem | null
+  noStore: boolean
+  backups: DataDirBackupInfo[]
+  appVersion: string
+  noticeAcknowledged: boolean
+}
+
+/** Result of the `data-dir:choose` directory picker (issue #15). */
+export interface ChooseDataDirResult {
+  /** True when the user dismissed the dialog without picking a directory. */
+  canceled: boolean
+  /** Absolute path of the validated directory (set when not canceled and valid). */
+  dir?: string
+  /** Human-readable validation failure reason (set when the pick is invalid). */
+  failure?: string
+}
+
+/** Request payload for `data-dir:apply` (issue #17). */
+export interface ApplyDataDirInput {
+  /** Absolute path of the validated directory chosen in `data-dir:choose`. */
+  targetDir: string
+  /** `migrate` copies existing data first; `empty` starts a fresh directory. */
+  mode: 'migrate' | 'empty'
+}
+
+/** Which migration step failed (`data-dir:apply`, issue #17). */
+export type DataDirMigrationStep =
+  | 'validate'
+  | 'checkpoint'
+  | 'copy'
+  | 'verify'
+  | 'write-config'
+
+export interface DataDirApplyError {
+  step: DataDirMigrationStep
+  message: string
+}
+
+/** Result of `data-dir:apply` (issue #17). Mirrors migrateDataDir(). */
+export interface ApplyDataDirResult {
+  ok: boolean
+  error?: DataDirApplyError
+  /** Backup created from the old directory after a successful migration. */
+  backupPath?: string
+  /** Non-fatal notes, e.g. the old dir could not be renamed to a backup. */
+  warnings: string[]
+}
+
+/** Request payload for `data-dir:deleteBackup` (issue #17). */
+export interface DeleteBackupInput {
+  path: string
+}
+
+/** Result of `data-dir:deleteBackup` (issue #17). */
+export interface DeleteBackupResult {
+  ok: boolean
+  /** Human-readable reason when the deletion was refused. */
+  message?: string
 }
 
 /** Helper type: request payload for a given channel. */
@@ -235,6 +341,18 @@ export type ElectronAPI = {
     getMode: () => Promise<ThemeMode>
     setMode: (mode: ThemeMode) => Promise<void>
     getSystemTheme: () => Promise<ResolvedTheme>
+  }
+  dataDir: {
+    getState: () => Promise<DataDirState>
+    reveal: () => Promise<void>
+    ackNotice: () => Promise<void>
+    choose: () => Promise<ChooseDataDirResult>
+    apply: (input: ApplyDataDirInput) => Promise<ApplyDataDirResult>
+    deleteBackup: (input: DeleteBackupInput) => Promise<DeleteBackupResult>
+  }
+  app: {
+    relaunch: () => Promise<void>
+    quit: () => Promise<void>
   }
 }
 

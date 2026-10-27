@@ -622,14 +622,29 @@ select:focus {
   min-height: 28px;
 }
 
-/* ── Theme Toggle (icon-only button) ── */
-.theme-toggle {
-  display: inline-flex;
+/* ── Settings Page ── */
+.settings-page {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.settings-nav {
+  flex: 0 0 168px;
+  width: 168px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1, 4px);
+  padding: var(--space-4, 16px) var(--space-3, 12px);
+  border-right: 1px solid var(--color-border-light, #e5e6eb);
+}
+
+.settings-nav-item {
+  display: flex;
   align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  padding: 0;
+  text-align: left;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
   border: none;
   border-radius: var(--border-radius-md, 6px);
   color: var(--color-text-secondary, #4e5969);
@@ -640,18 +655,248 @@ select:focus {
     color var(--transition-fast, 150ms ease);
 }
 
-.theme-toggle:hover {
+.settings-nav-item:hover {
   background: var(--color-surface-hover, rgba(29, 33, 41, 0.08));
   color: var(--color-text-primary, #1d2129);
 }
 
-.theme-toggle:active {
-  background: var(--color-surface-active, rgba(29, 33, 41, 0.12));
+.settings-nav-item[aria-current='true'] {
+  background: var(--color-accent-light, #e8eefd);
+  color: var(--color-accent, #1456f0);
+  font-weight: var(--font-weight-semibold, 600);
 }
 
-.theme-toggle:focus-visible {
+.settings-pane {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4, 16px) var(--space-6, 24px) var(--space-6, 24px);
+  overflow-y: auto;
+}
+
+.settings-pane-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  margin-bottom: var(--space-4, 16px);
+}
+
+.settings-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1, 4px);
+}
+
+.settings-section-title {
+  margin: 0 0 var(--space-1, 4px);
+  font-size: var(--font-size-lg, 14px);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-primary, #1d2129);
+}
+
+.settings-section-desc {
+  margin: 0 0 var(--space-4, 16px);
+  font-size: var(--font-size-sm, 13px);
+  color: var(--color-text-secondary, #4e5969);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4, 16px);
+  padding: var(--space-3, 12px) 0;
+}
+
+.settings-row-label {
+  flex: 1;
+  font-size: var(--font-size-md, 14px);
+  color: var(--color-text-primary, #1d2129);
+}
+
+.settings-hint {
+  margin: var(--space-1, 4px) 0 0;
+  font-size: var(--font-size-sm, 13px);
+  color: var(--color-text-tertiary, #86909c);
+}
+
+.settings-segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 2px;
+  border: 1px solid var(--color-border, #c9cdd4);
+  border-radius: var(--border-radius-md, 6px);
+  background: transparent;
+}
+
+.settings-segmented-item {
+  padding: var(--space-1, 4px) var(--space-3, 12px);
+  font-size: var(--font-size-sm, 13px);
+  font-weight: var(--font-weight-medium, 500);
+  color: var(--color-text-secondary, #4e5969);
+  background: transparent;
+  border-radius: calc(var(--border-radius-md, 6px) - 2px);
+  transition:
+    background var(--transition-fast, 150ms ease),
+    color var(--transition-fast, 150ms ease);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+
+.settings-segmented-item:hover {
+  background: var(--color-surface-hover, rgba(29, 33, 41, 0.08));
+  color: var(--color-text-primary, #1d2129);
+}
+
+.settings-segmented-item[aria-pressed='true'] {
+  background: var(--color-accent-light, #e8eefd);
+  color: var(--color-accent, #1456f0);
+  font-weight: var(--font-weight-semibold, 600);
+}
+
+.settings-placeholder {
+  padding: var(--space-4, 16px) 0;
+  font-size: var(--font-size-md, 14px);
+  color: var(--color-text-tertiary, #86909c);
+}
+
+.settings-badge {
+  font-size: var(--font-size-xs, 12px);
+  font-weight: var(--font-weight-medium, 500);
+  padding: 2px 8px;
+  border-radius: var(--border-radius-sm, 4px);
+  letter-spacing: 0.3px;
+}
+
+.settings-badge-default {
+  color: var(--color-text-secondary, #4e5969);
+  background: var(--color-bg-tertiary, #f2f3f5);
+}
+
+.settings-badge-custom {
+  color: var(--color-accent, #1456f0);
+  background: var(--color-accent-light, #e8eefd);
+}
+
+.settings-mono-path {
+  margin: 0;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  font-family: var(
+    --font-family-mono,
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace
+  );
+  font-size: var(--font-size-sm, 13px);
+  color: var(--color-text-secondary, #4e5969);
+  background: var(--color-bg-tertiary, #f2f3f5);
+  border-radius: var(--border-radius-md, 6px);
+  word-break: break-all;
+  user-select: text;
+}
+
+.settings-nav-item:focus-visible,
+.settings-segmented-item:focus-visible,
+.settings-back-button:focus-visible {
   outline: 2px solid var(--color-accent, #1456f0);
   outline-offset: 2px;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2, 8px);
+}
+
+.settings-section h2 {
+  margin: 0;
+  font-size: var(--font-size-lg, 14px);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-primary, #1d2129);
+}
+
+/* ── Data-directory switch flow (issue #17) ── */
+.settings-row-actions .settings-actions {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-1, 4px);
+}
+
+.settings-hint-error {
+  color: var(--color-danger, #d93026);
+}
+
+.settings-switch-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2, 8px);
+  margin: var(--space-1, 4px) 0;
+  padding: var(--space-3, 12px);
+  border: 1px solid var(--color-border, #e5e6eb);
+  border-radius: var(--border-radius-md, 6px);
+  background: var(--color-bg-tertiary, #f2f3f5);
+}
+
+.settings-mode-choice {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1, 4px);
+}
+
+.settings-mode-option {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1, 4px);
+  font-size: var(--font-size-sm, 13px);
+  color: var(--color-text-primary, #1d2129);
+  cursor: pointer;
+}
+
+.settings-switch-cancel {
+  align-self: flex-start;
+}
+
+.settings-switch-actions {
+  display: flex;
+  gap: var(--space-1, 8px);
+  align-items: center;
+}
+
+/* ── Backup table (issue #17) ── */
+.settings-backup-block {
+  margin-top: var(--space-2, 8px);
+}
+
+.settings-backup-block h3 {
+  margin: 0 0 var(--space-1, 4px);
+  font-size: var(--font-size-md, 13px);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-primary, #1d2129);
+}
+
+.settings-backup-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm, 13px);
+}
+
+.settings-backup-table th,
+.settings-backup-table td {
+  padding: var(--space-1, 4px) var(--space-2, 8px);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border, #e5e6eb);
+  color: var(--color-text-primary, #1d2129);
+}
+
+.settings-backup-table th {
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-secondary, #4e5969);
 }
 
 /* ── Import/Export Actions ── */
@@ -1591,4 +1836,138 @@ input[type='date'].form-input {
 
 .quadrant .task-item:last-child {
   margin-bottom: 0;
+}
+
+/* 配置未生效提示条 (issue #14): persistent warning strip between the
+   header and the content while the bootstrap config is broken. */
+.config-notice {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2, 8px);
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  background: var(--color-warning-light, rgba(255, 125, 0, 0.12));
+  color: var(--color-text-primary, #1d2129);
+  border-bottom: 1px solid var(--color-border-light, #e5e6eb);
+  font-size: var(--font-size-sm, 13px);
+}
+
+.config-notice-icon {
+  flex-shrink: 0;
+  color: var(--color-warning, #ff7d00);
+}
+
+.config-notice-reason {
+  min-width: 0;
+}
+
+.config-notice-path {
+  font-family: var(
+    --font-family-mono,
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace
+  );
+  font-size: var(--font-size-sm, 13px);
+  color: var(--color-text-secondary, #4e5969);
+  background: var(--color-bg-tertiary, #f2f3f5);
+  border-radius: var(--border-radius-md, 6px);
+  padding: 2px var(--space-2, 8px);
+  word-break: break-all;
+  user-select: text;
+}
+
+.config-notice-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  margin-left: auto;
+}
+
+/* ── Safe mode (issue #15) ─────────────────────────────────────────── */
+
+.no-store-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-6, 24px);
+  background: var(--color-bg, #f7f8fa);
+}
+
+.no-store-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4, 16px);
+  max-width: 520px;
+  padding: var(--space-8, 32px);
+  text-align: center;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #c9cdd4);
+  border-radius: var(--border-radius-lg, 8px);
+  box-shadow: var(--shadow-lg);
+}
+
+.no-store-icon {
+  color: var(--color-warning, #ff7d00);
+}
+
+.no-store-title {
+  margin: 0;
+  font-size: var(--font-size-xl, 20px);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-text-primary, #1d2129);
+}
+
+.no-store-reason {
+  margin: 0;
+  font-size: var(--font-size-md, 14px);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-secondary, #4e5969);
+}
+
+.no-store-path {
+  font-family: var(
+    --font-family-mono,
+    ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Consolas,
+    monospace
+  );
+  font-size: var(--font-size-sm, 13px);
+  color: var(--color-text-secondary, #4e5969);
+  background: var(--color-bg-tertiary, #f2f3f5);
+  border-radius: var(--border-radius-md, 6px);
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  word-break: break-all;
+  user-select: text;
+}
+
+.no-store-hint {
+  margin: 0;
+  font-size: var(--font-size-sm, 13px);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-tertiary, #86909c);
+}
+
+.no-store-error {
+  width: 100%;
+  padding: var(--space-2, 8px) var(--space-3, 12px);
+  font-size: var(--font-size-sm, 13px);
+  color: var(--color-danger, #f53f3f);
+  background: var(--color-danger-light, #ffece8);
+  border-radius: var(--border-radius-md, 6px);
+}
+
+.no-store-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3, 12px);
+  margin-top: var(--space-2, 8px);
 }

@@ -3,6 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createTempUserDataDir } from '../main/ipc.harness'
 import fs from 'node:fs'
+import { ensureResolvedTheme } from './settings.helpers'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -57,19 +58,7 @@ async function ensureListExists(page: Page, name: string) {
 }
 
 async function ensureTheme(page: Page, mode: 'light' | 'dark') {
-  const html = page.locator('html')
-  const current = await html.getAttribute('data-theme')
-  if (current === mode) return
-
-  const themeToggle = page.locator('[data-testid="theme-toggle"]')
-  const maxTries = 5
-  for (let i = 0; i < maxTries; i++) {
-    const theme = await html.getAttribute('data-theme')
-    if (theme === mode) break
-    await themeToggle.click()
-    await page.waitForTimeout(300)
-  }
-  await expect(html).toHaveAttribute('data-theme', mode, { timeout: 5000 })
+  await ensureResolvedTheme(page, mode)
 }
 
 async function captureScreenshot(page: Page, name: string) {
@@ -154,7 +143,7 @@ test.describe('Task 12 - E2E UI regression', () => {
     await page.waitForTimeout(300)
 
     const checks = [
-      page.locator('[data-testid="theme-toggle"]'),
+      page.locator('[data-testid="settings-button"]'),
       page.locator('[data-testid="add-task-button"]'),
       page.locator('[data-testid="add-list-button"]'),
       page.locator('[data-testid="view-toggle-list"]'),
