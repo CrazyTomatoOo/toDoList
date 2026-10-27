@@ -122,13 +122,11 @@ test.describe('Task CRUD', () => {
   test('can delete a task', async () => {
     const page = await electronApp.firstWindow()
 
-    // Accept confirmation dialog
-    page.on('dialog', (dialog) => dialog.accept())
-
-    // Hover to reveal delete button, then click it
+    // Hover to reveal delete button, then click it and confirm in-app
     const firstItem = page.locator('[data-testid="task-item"]').first()
     await firstItem.hover()
     await page.locator('[data-testid="task-delete-button"]').first().click()
+    await page.click('[data-testid="confirm-dialog-confirm"]')
 
     // Verify task was removed
     await expect(page.locator('[data-testid="task-item"]')).toHaveCount(1, { timeout: 10000 })

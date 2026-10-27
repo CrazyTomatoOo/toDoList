@@ -20,6 +20,7 @@ import SearchBar from './components/SearchBar'
 import FilterBar from './components/FilterBar'
 import ImportExportButtons from './components/ImportExportButtons'
 import QuadrantBoard from './components/QuadrantBoard'
+import ConfirmDialog from './components/ConfirmDialog'
 import './styles.css'
 
 /**
@@ -123,6 +124,7 @@ function MainApp({ configNotice }: MainAppProps) {
     useState<SettingsSection>('general')
   const settingsButtonRef = useRef<HTMLButtonElement>(null)
   const [noticeHidden, setNoticeHidden] = useState(false)
+  const [notice, setNotice] = useState<string | null>(null)
   const theme = useTheme()
   const {
     lists,
@@ -235,7 +237,7 @@ function MainApp({ configNotice }: MainAppProps) {
       await refreshLists()
       await refreshTasks()
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : '导入失败')
+      setNotice(err instanceof Error ? err.message : '导入失败')
     }
   }, [refreshLists, refreshTasks])
 
@@ -243,7 +245,7 @@ function MainApp({ configNotice }: MainAppProps) {
     try {
       await window.electronAPI.importExport.exportJson()
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : '导出失败')
+      setNotice(err instanceof Error ? err.message : '导出失败')
     }
   }, [])
 
@@ -251,7 +253,7 @@ function MainApp({ configNotice }: MainAppProps) {
     try {
       await window.electronAPI.importExport.exportCsv()
     } catch (err) {
-      window.alert(err instanceof Error ? err.message : '导出失败')
+      setNotice(err instanceof Error ? err.message : '导出失败')
     }
   }, [])
 
@@ -405,6 +407,16 @@ function MainApp({ configNotice }: MainAppProps) {
           />
         )}
       </main>
+
+      {notice !== null && (
+        <ConfirmDialog
+          title="提示"
+          message={notice}
+          cancelLabel={null}
+          onConfirm={() => setNotice(null)}
+          onCancel={() => setNotice(null)}
+        />
+      )}
     </div>
   )
 }

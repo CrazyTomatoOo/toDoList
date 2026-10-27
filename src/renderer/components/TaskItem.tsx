@@ -1,4 +1,4 @@
-import { memo, useEffect } from 'react'
+import { memo, useEffect, useState } from 'react'
 import type {
   TaskRow,
   Priority,
@@ -6,6 +6,7 @@ import type {
   ReminderRecurrence,
 } from '../../shared/ipc'
 import { Edit2, Trash2, GripVertical } from 'lucide-react'
+import ConfirmDialog from './ConfirmDialog'
 
 interface TaskItemProps {
   task: TaskRow
@@ -97,11 +98,11 @@ function TaskItem({
   })
 
   const isCompleted = task.completed === 1
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
-  const handleDelete = async () => {
-    if (window.confirm(`确定删除「${task.title}」吗？`)) {
-      await onDelete(task.id)
-    }
+  const handleConfirmDelete = async () => {
+    setConfirmingDelete(false)
+    await onDelete(task.id)
   }
 
   return (
@@ -191,13 +192,24 @@ function TaskItem({
         </button>
         <button
           className="btn btn-ghost btn-icon btn-sm"
-          onClick={handleDelete}
+          onClick={() => setConfirmingDelete(true)}
           data-testid="task-delete-button"
           title="删除任务"
         >
           <Trash2 size={16} />
         </button>
       </div>
+
+      {confirmingDelete && (
+        <ConfirmDialog
+          title="删除任务"
+          message={`确定删除「${task.title}」吗？`}
+          confirmLabel="删除"
+          danger
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setConfirmingDelete(false)}
+        />
+      )}
     </li>
   )
 }

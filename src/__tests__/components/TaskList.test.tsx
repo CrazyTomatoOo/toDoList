@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import TaskList from '../../renderer/components/TaskList'
 import type { TaskRow } from '../../shared/ipc'
@@ -143,15 +143,20 @@ describe('TaskList', () => {
     expect(defaultProps.onOpenAddForm).toHaveBeenCalled()
   })
 
-  it('calls onDeleteTask with confirmation', () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
+  it('calls onDeleteTask after in-app confirmation, never window.confirm', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm')
     render(<TaskList {...defaultProps} />)
-    const deleteButtons = screen.getAllByTestId('task-delete-button')
-    fireEvent.click(deleteButtons[0])
-    expect(window.confirm).toHaveBeenCalled()
-    expect(defaultProps.onDeleteTask).toHaveBeenCalledWith(1)
-  })
+    fireEvent.click(screen.getAllByTestId('task-delete-button')[0])
 
+    expect(confirmSpy).not.toHaveBeenCalled()
+    expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument()
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('confirm-dialog-confirm'))
+    })
+    expect(defaultProps.onDeleteTask).toHaveBeenCalledWith(1)
+    expect(screen.queryByTestId('confirm-dialog')).not.toBeInTheDocument()
+  })
   it('shows task form when showAddForm is true', () => {
     render(<TaskList {...defaultProps} showAddForm={true} />)
     expect(screen.getByTestId('task-form')).toBeInTheDocument()

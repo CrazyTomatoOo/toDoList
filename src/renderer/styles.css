@@ -1348,6 +1348,20 @@ input[type='date'].form-input {
   outline-offset: 2px;
 }
 
+/* ── Confirm dialog (in-app replacement for window.confirm/alert) ── */
+.confirm-dialog {
+  width: 400px;
+}
+
+.confirm-dialog-message {
+  margin: 0 0 var(--space-2, 8px);
+  font-size: var(--font-size-base, 14px);
+  line-height: var(--line-height, 1.5);
+  color: var(--color-text-primary, #1d2129);
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
 /* ── Loading / Error ── */
 .loading {
   display: flex;

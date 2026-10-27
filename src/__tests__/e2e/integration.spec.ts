@@ -223,12 +223,12 @@ test.describe('Packaged macOS app integration', () => {
       expect(fs.existsSync(exportPath)).toBe(true)
 
       // Clear the database by deleting every list via the UI.
-      page.on('dialog', (dialog) => dialog.accept())
       const sidebarItems = page.locator('[data-testid="sidebar-item"]')
       while ((await sidebarItems.count()) > 0) {
         const item = sidebarItems.first()
         await item.hover()
         await item.locator('[data-testid="sidebar-item-delete"]').click()
+        await page.click('[data-testid="confirm-dialog-confirm"]')
         await page.waitForTimeout(300)
       }
       await expect(page.locator('[data-testid="sidebar-item"]')).toHaveCount(0, {

@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import QuadrantBoard from '../../renderer/components/QuadrantBoard'
 import type { TaskRow } from '../../shared/ipc'
@@ -166,13 +166,19 @@ describe('QuadrantBoard', () => {
     expect(q2Tasks).toHaveTextContent('Q2 Planning')
   })
 
-  it('calls onDeleteTask with confirmation', () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
+  it('calls onDeleteTask after in-app confirmation, never window.confirm', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm')
     render(<QuadrantBoard {...defaultProps} />)
-    const deleteButtons = screen.getAllByTestId('task-delete-button')
-    fireEvent.click(deleteButtons[0])
-    expect(window.confirm).toHaveBeenCalled()
+    fireEvent.click(screen.getAllByTestId('task-delete-button')[0])
+
+    expect(confirmSpy).not.toHaveBeenCalled()
+    expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument()
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('confirm-dialog-confirm'))
+    })
     expect(defaultProps.onDeleteTask).toHaveBeenCalledWith(1)
+    expect(screen.queryByTestId('confirm-dialog')).not.toBeInTheDocument()
   })
   it('groups all four quadrant combinations in a single render', () => {
     const tasks = [

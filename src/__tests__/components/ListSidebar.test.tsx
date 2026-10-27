@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import '@testing-library/jest-dom/vitest'
 import ListSidebar from '../../renderer/components/ListSidebar'
 import type { ListWithTaskCount } from '../../shared/ipc'
@@ -77,21 +77,29 @@ describe('ListSidebar', () => {
     expect(screen.getByTestId('list-form')).toBeInTheDocument()
   })
 
-  it('calls onDeleteList with confirmation when deleting', () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
+  it('confirms in-app, never with window.confirm, then deletes the list', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm')
     render(<ListSidebar {...defaultProps} />)
-    const deleteButtons = screen.getAllByTestId('sidebar-item-delete')
-    fireEvent.click(deleteButtons[0])
-    expect(window.confirm).toHaveBeenCalledWith('确定删除「Work」及其全部任务吗？')
+    fireEvent.click(screen.getAllByTestId('sidebar-item-delete')[0])
+
+    expect(confirmSpy).not.toHaveBeenCalled()
+    expect(
+      screen.getByTestId('confirm-dialog-message'),
+    ).toHaveTextContent('确定删除「Work」及其全部任务吗？')
+
+    await act(async () => {
+      fireEvent.click(screen.getByTestId('confirm-dialog-confirm'))
+    })
     expect(defaultProps.onDeleteList).toHaveBeenCalledWith(1)
+    expect(screen.queryByTestId('confirm-dialog')).not.toBeInTheDocument()
   })
 
-  it('does not delete when confirmation is cancelled', () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(false)
+  it('does not delete when the confirmation is cancelled', () => {
     render(<ListSidebar {...defaultProps} />)
-    const deleteButtons = screen.getAllByTestId('sidebar-item-delete')
-    fireEvent.click(deleteButtons[0])
+    fireEvent.click(screen.getAllByTestId('sidebar-item-delete')[0])
+    fireEvent.click(screen.getByTestId('confirm-dialog-cancel'))
     expect(defaultProps.onDeleteList).not.toHaveBeenCalled()
+    expect(screen.queryByTestId('confirm-dialog')).not.toBeInTheDocument()
   })
 
   describe('semantic buttons and ARIA', () => {

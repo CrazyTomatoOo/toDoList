@@ -110,13 +110,11 @@ test.describe('List management', () => {
   test('can delete a list with confirmation', async () => {
     const page = await electronApp.firstWindow()
 
-    // Set up dialog handler to accept confirmation
-    page.on('dialog', (dialog) => dialog.accept())
-
-    // Hover to reveal delete button, then click it
+    // Hover to reveal delete button, then click it and confirm in-app
     const secondItem = page.locator('[data-testid="sidebar-item"]').nth(1)
     await secondItem.hover()
     await page.click('[data-testid="sidebar-item-delete"]')
+    await page.click('[data-testid="confirm-dialog-confirm"]')
 
     // Verify list was deleted
     await expect(page.locator('[data-testid="sidebar-item"]')).toHaveCount(1, { timeout: 10000 })

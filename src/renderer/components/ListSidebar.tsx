@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Plus, Edit2, Trash2 } from 'lucide-react'
 import type { ListWithTaskCount } from '../../shared/ipc'
 import ListForm from './ListForm'
+import ConfirmDialog from './ConfirmDialog'
 
 interface ListSidebarProps {
   lists: ListWithTaskCount[]
@@ -24,11 +25,14 @@ export default function ListSidebar({
 }: ListSidebarProps) {
   const [showForm, setShowForm] = useState(false)
   const [editingList, setEditingList] = useState<ListWithTaskCount | null>(null)
+  const [deleteTarget, setDeleteTarget] = useState<ListWithTaskCount | null>(
+    null,
+  )
 
-  const handleDelete = async (id: number, name: string) => {
-    if (window.confirm(`确定删除「${name}」及其全部任务吗？`)) {
-      await onDeleteList(id)
-    }
+  const handleConfirmDelete = async () => {
+    const target = deleteTarget
+    setDeleteTarget(null)
+    if (target) await onDeleteList(target.id)
   }
 
   const handleCreate = async (name: string) => {
@@ -118,7 +122,7 @@ export default function ListSidebar({
                   <button
                     className="sidebar-item-action sidebar-item-delete"
                     onClick={() => {
-                      handleDelete(list.id, list.name)
+                      setDeleteTarget(list)
                     }}
                     data-testid="sidebar-item-delete"
                     title="删除列表"
@@ -140,6 +144,17 @@ export default function ListSidebar({
           />
         )}
       </div>
+
+      {deleteTarget && (
+        <ConfirmDialog
+          title="删除列表"
+          message={`确定删除「${deleteTarget.name}」及其全部任务吗？`}
+          confirmLabel="删除"
+          danger
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
     </aside>
   )
 }
